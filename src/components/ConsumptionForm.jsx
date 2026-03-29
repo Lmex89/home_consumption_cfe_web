@@ -22,7 +22,7 @@ function ConsumptionForm({ onSubmit, isSubmitting, successMessage }) {
       extra={<Typography.Text type="secondary">Staff only</Typography.Text>}
     >
       <Typography.Paragraph type="secondary">
-        El formulario hace un POST simulado y actualiza el historial mock en memoria.
+        El formulario envia lecturas al backend FastAPI usando el endpoint de meter readings.
       </Typography.Paragraph>
 
       {successMessage ? (

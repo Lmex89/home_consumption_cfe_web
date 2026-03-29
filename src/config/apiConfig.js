@@ -1,11 +1,13 @@
 const backendProtocol = import.meta.env.VITE_BACKEND_PROTOCOL || 'http'
 const backendHost = import.meta.env.VITE_BACKEND_HOST || 'localhost'
-const backendPort = import.meta.env.VITE_BACKEND_PORT || '3001'
-const backendBasePath = import.meta.env.VITE_BACKEND_BASE_PATH || '/api'
+const backendPort = import.meta.env.VITE_BACKEND_PORT || '8000'
+const backendBasePath = import.meta.env.VITE_BACKEND_BASE_PATH || ''
 
-const normalizedBasePath = backendBasePath.startsWith('/')
-  ? backendBasePath
-  : `/${backendBasePath}`
+const normalizedBasePath = backendBasePath
+  ? backendBasePath.startsWith('/')
+    ? backendBasePath
+    : `/${backendBasePath}`
+  : ''
 const hostWithPort = backendPort ? `${backendHost}:${backendPort}` : backendHost
 
 export const backendConfig = {
@@ -17,8 +19,10 @@ export const backendConfig = {
 }
 
 export const apiEndpoints = {
-  consumptions: '/consumptions',
-  dashboard: '/consumptions/dashboard',
+  households: '/households',
+  meterReadings: '/meter-readings',
+  billingPeriods: '/billing-periods',
+  billingPeriodDashboard: (billingPeriodId) => `/dashboards/billing-period/${billingPeriodId}`,
 }
 
 export function buildApiUrl(endpoint) {

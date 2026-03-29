@@ -134,6 +134,35 @@
   color: var(--color-danger);
 }
 
+.selectorCard {
+  border-radius: 18px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 36%),
+    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.12), transparent 40%),
+    #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.billingCard {
+  border: 1px solid #1e3a5f;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #0a1f44 0%, #133b73 100%);
+  box-shadow: 0 16px 30px rgba(6, 18, 42, 0.35), 0 6px 14px rgba(6, 18, 42, 0.25);
+}
+
+.billingCardLabel {
+  display: block;
+  color: rgba(226, 232, 240, 0.92);
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.billingCardValue {
+  margin: 0 !important;
+  color: #ffffff !important;
+}
+
 @media (max-width: 1000px) {
   .hero {
     grid-template-columns: 1fr;
@@ -148,6 +177,10 @@
   .heroContent,
   .highlight {
     padding: 24px 20px;
+  }
+
+  .selectorCard :global(.ant-card-body) {
+    padding: 16px;
   }
 
   .metrics {

@@ -21,7 +21,7 @@ function InsertarConsumoPage() {
       const updatedData = await getDashboardConsumptions()
 
       setLatestItems(updatedData.items)
-      setSuccessMessage('Consumo guardado correctamente en el backend simulado.')
+      setSuccessMessage('Consumo guardado correctamente en el backend.')
       messageApi.success('Consumo registrado correctamente.')
       return true
     } catch {
@@ -42,7 +42,7 @@ function InsertarConsumoPage() {
           Alta de consumos para personal interno
         </Typography.Title>
         <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-          Este flujo no usa autenticacion real. Solo simula el registro staff y refresca el historial cargado en memoria.
+          Este flujo registra lecturas reales en FastAPI y refresca el historial disponible.
         </Typography.Paragraph>
       </Card>
 

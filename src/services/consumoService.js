@@ -1,12 +1,65 @@
 import { apiEndpoints, backendConfig, buildApiUrl } from '../config/apiConfig'
-import { consumptionMockConfig } from '../config/consumptionMockConfig'
 
-let consumptionsStore = [...consumptionMockConfig.seedData]
+function toNumber(value) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
 
-function wait(response, delay = 650) {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(response), delay)
+function withQuery(endpoint, query = {}) {
+  const url = new URL(buildApiUrl(endpoint))
+
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      url.searchParams.set(key, String(value))
+    }
   })
+
+  return url.toString()
+}
+
+async function requestApi(endpoint, options = {}) {
+  const { method = 'GET', query, body } = options
+  const url = withQuery(endpoint, query)
+
+  const response = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+
+  if (!response.ok) {
+    let detail = `Error ${response.status}`
+
+    try {
+      const payload = await response.json()
+      if (typeof payload?.detail === 'string') {
+        detail = payload.detail
+      }
+    } catch {
+      // If error payload is not JSON, keep generic message.
+    }
+
+    throw new Error(detail)
+  }
+
+  if (response.status === 204) {
+    return null
+  }
+
+  return response.json()
+}
+
+function normalizeReading(reading) {
+  return {
+    id: reading.id,
+    householdId: reading.household_id,
+    fecha: reading.reading_date,
+    kWh: toNumber(reading.reading_kwh),
+    note: reading.is_initial ? 'Lectura inicial' : '',
+    isInitial: Boolean(reading.is_initial),
+  }
 }
 
 function buildSummary(items) {
@@ -28,68 +81,162 @@ function buildSummary(items) {
   }
 }
 
-function buildBilling(summary) {
-  const rates = consumptionMockConfig.billingRates
-
-  const subtotalEnergia = summary.total * rates.energia
-  const cargoDistribucion = summary.total * rates.distribucion
-  const cargoTransmision = summary.total * rates.transmision
-  const cargoServicio = rates.servicio
-  const subtotal =
-    subtotalEnergia + cargoDistribucion + cargoTransmision + cargoServicio
-  const iva = subtotal * rates.iva
-  const totalMxn = subtotal + iva
+function buildBilling(costDashboard) {
+  if (!costDashboard) {
+    return {
+      totalMxn: 0,
+      breakdown: [],
+      periodId: null,
+      tariffCode: 'N/D',
+    }
+  }
 
   return {
-    totalMxn,
+    totalMxn: toNumber(costDashboard.total_cost),
     breakdown: [
-      { concept: 'Energia consumida', amount: subtotalEnergia },
-      { concept: 'Distribucion', amount: cargoDistribucion },
-      { concept: 'Transmision', amount: cargoTransmision },
-      { concept: 'Cargo fijo de servicio', amount: cargoServicio },
-      { concept: 'IVA (16%)', amount: iva },
+      {
+        concept: 'Subtotal sin impuestos',
+        amount: toNumber(costDashboard.total_cost_witout_taxes),
+      },
+      { concept: 'IVA', amount: toNumber(costDashboard.iva) },
+      { concept: 'DAP', amount: toNumber(costDashboard.dap) },
     ],
+    periodId: costDashboard.billing_period_id,
+    tariffCode: costDashboard.tariff_code,
+    averageDailyKwh: toNumber(costDashboard.average_daily_kwh),
   }
 }
 
-export async function getDashboardConsumptions() {
-  const items = [...consumptionsStore].sort((left, right) => left.fecha.localeCompare(right.fecha))
-  const summary = buildSummary(items)
+async function getLatestBillingPeriodId(householdId) {
+  const periods = await requestApi(apiEndpoints.billingPeriods, {
+    query: {
+      household_id: householdId,
+      limit: 200,
+      offset: 0,
+    },
+  })
 
-  return wait({
-    endpoint: buildApiUrl(apiEndpoints.dashboard),
+  if (!Array.isArray(periods) || periods.length === 0) {
+    return null
+  }
+
+  const sortedPeriods = [...periods].sort(
+    (left, right) => new Date(left.end_date).getTime() - new Date(right.end_date).getTime(),
+  )
+
+  return sortedPeriods.at(-1)?.id ?? null
+}
+
+async function resolveDefaultHouseholdId() {
+  const households = await requestApi(apiEndpoints.households, {
+    query: { limit: 1, offset: 0 },
+  })
+
+  if (Array.isArray(households) && households.length > 0) {
+    return households[0].id
+  }
+
+  const readings = await requestApi(apiEndpoints.meterReadings, {
+    query: { limit: 1, offset: 0 },
+  })
+
+  if (Array.isArray(readings) && readings.length > 0) {
+    return readings[0].household_id
+  }
+
+  throw new Error('No existe ningun hogar disponible para registrar lecturas.')
+}
+
+export async function listHouseholds() {
+  const households = await requestApi(apiEndpoints.households, {
+    query: { limit: 500, offset: 0 },
+  })
+
+  if (!Array.isArray(households)) {
+    return []
+  }
+
+  return households.map((household) => ({
+    value: household.id,
+    label: household.name ? `${household.id} - ${household.name}` : String(household.id),
+  }))
+}
+
+export async function getDashboardConsumptions(filters = {}) {
+  const householdFilter = filters.householdId ? Number(filters.householdId) : undefined
+
+  const rawReadings = await requestApi(apiEndpoints.meterReadings, {
+    query: {
+      household_id: householdFilter,
+      reading_date_from: filters.startDate,
+      reading_date_to: filters.endDate,
+      limit: 500,
+      offset: 0,
+    },
+  })
+
+  const items = (Array.isArray(rawReadings) ? rawReadings : [])
+    .map(normalizeReading)
+    .sort((left, right) => left.fecha.localeCompare(right.fecha))
+
+  const summary = buildSummary(items)
+  const householdId = householdFilter ?? items.at(-1)?.householdId ?? items[0]?.householdId ?? null
+  let costDashboard = null
+
+  if (householdId) {
+    const billingPeriodId = await getLatestBillingPeriodId(householdId)
+
+    if (billingPeriodId) {
+      try {
+        costDashboard = await requestApi(apiEndpoints.billingPeriodDashboard(billingPeriodId))
+      } catch {
+        costDashboard = null
+      }
+    }
+  }
+
+  return {
+    endpoint: buildApiUrl(apiEndpoints.meterReadings),
     items,
-    summary,
-    billing: buildBilling(summary),
-  }, consumptionMockConfig.getDelayMs)
+    summary: {
+      ...summary,
+      average:
+        costDashboard && Number.isFinite(Number(costDashboard.average_daily_kwh))
+          ? toNumber(costDashboard.average_daily_kwh)
+          : summary.average,
+    },
+    billing: buildBilling(costDashboard),
+  }
 }
 
 export async function createConsumption(newConsumption) {
-  const normalizedItem = {
-    fecha: newConsumption.fecha,
-    kWh: Number(newConsumption.kWh),
-    note: newConsumption.note?.trim() || '',
-  }
+  const householdId = await resolveDefaultHouseholdId()
 
-  consumptionsStore = [...consumptionsStore, normalizedItem].sort((left, right) =>
-    left.fecha.localeCompare(right.fecha),
-  )
+  const createdReading = await requestApi(apiEndpoints.meterReadings, {
+    method: 'POST',
+    body: {
+      household_id: householdId,
+      reading_date: newConsumption.fecha,
+      reading_kwh: Number(newConsumption.kWh),
+      is_initial: false,
+    },
+  })
 
-  // Simula la respuesta del POST sin persistencia real fuera de memoria.
-  return wait({
+  return {
     success: true,
-    endpoint: buildApiUrl(apiEndpoints.consumptions),
+    endpoint: buildApiUrl(apiEndpoints.meterReadings),
     backend: backendConfig,
-    item: normalizedItem,
-  }, consumptionMockConfig.postDelayMs)
+    item: normalizeReading(createdReading),
+  }
 }
 
 export function getApiConfig() {
   return {
     backend: backendConfig,
     endpoints: {
-      consumptions: buildApiUrl(apiEndpoints.consumptions),
-      dashboard: buildApiUrl(apiEndpoints.dashboard),
+      households: buildApiUrl(apiEndpoints.households),
+      meterReadings: buildApiUrl(apiEndpoints.meterReadings),
+      billingPeriods: buildApiUrl(apiEndpoints.billingPeriods),
     },
   }
 }
