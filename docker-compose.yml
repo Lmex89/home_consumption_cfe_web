@@ -1,0 +1,35 @@
+name: cfe-web
+
+services:
+  web:
+    container_name: cfe-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_PROTOCOL: ${VITE_BACKEND_PROTOCOL:-http}
+        VITE_BACKEND_HOST: ${VITE_BACKEND_HOST:-localhost}
+        VITE_BACKEND_PORT: ${VITE_BACKEND_PORT}
+        VITE_BACKEND_BASE_PATH: ${VITE_BACKEND_BASE_PATH:-}
+    env_file:
+      - path: ./.env
+        required: false
+    ports:
+      - "3011:3011"
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3011/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
