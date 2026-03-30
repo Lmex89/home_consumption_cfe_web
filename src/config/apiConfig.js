@@ -1,6 +1,6 @@
 const backendProtocol = import.meta.env.VITE_BACKEND_PROTOCOL || 'http'
 const backendHost = import.meta.env.VITE_BACKEND_HOST || 'localhost'
-const backendPort = import.meta.env.VITE_BACKEND_PORT || '8000'
+const backendPort = import.meta.env.VITE_BACKEND_PORT || ''
 const backendBasePath = import.meta.env.VITE_BACKEND_BASE_PATH || ''
 
 const normalizedBasePath = backendBasePath
