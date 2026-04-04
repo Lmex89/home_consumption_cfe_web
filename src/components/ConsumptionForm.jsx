@@ -1,11 +1,84 @@
 import { Alert, Button, Card, Form, Input, InputNumber, Row, Col, Typography } from 'antd'
 
+function isValidDate(year, month, day) {
+  const parsed = new Date(Date.UTC(year, month - 1, day))
+
+  return (
+    parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === day
+  )
+}
+
+function normalizeDateValue(rawDate) {
+  if (!rawDate) return null
+
+  const value = String(rawDate).trim()
+  if (!value) return null
+
+  const isoDateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (isoDateMatch) {
+    const [, year, month, day] = isoDateMatch
+    const yearNumber = Number(year)
+    const monthNumber = Number(month)
+    const dayNumber = Number(day)
+
+    return isValidDate(yearNumber, monthNumber, dayNumber) ? `${year}-${month}-${day}` : null
+  }
+
+  const yearFirstMatch = value.match(/^(\d{4})\/(\d{2})\/(\d{2})$/)
+  if (yearFirstMatch) {
+    const [, year, month, day] = yearFirstMatch
+    const yearNumber = Number(year)
+    const monthNumber = Number(month)
+    const dayNumber = Number(day)
+
+    return isValidDate(yearNumber, monthNumber, dayNumber) ? `${year}-${month}-${day}` : null
+  }
+
+  const dayFirstMatch = value.match(/^(\d{2})[/-](\d{2})[/-](\d{4})$/)
+  if (dayFirstMatch) {
+    const [, day, month, year] = dayFirstMatch
+    const yearNumber = Number(year)
+    const monthNumber = Number(month)
+    const dayNumber = Number(day)
+
+    return isValidDate(yearNumber, monthNumber, dayNumber)
+      ? `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      : null
+  }
+
+  const isoDateTimeMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})T/)
+  if (isoDateTimeMatch) {
+    const [, year, month, day] = isoDateTimeMatch
+    const yearNumber = Number(year)
+    const monthNumber = Number(month)
+    const dayNumber = Number(day)
+
+    return isValidDate(yearNumber, monthNumber, dayNumber) ? `${year}-${month}-${day}` : null
+  }
+
+  return null
+}
+
 function ConsumptionForm({ onSubmit, isSubmitting, successMessage }) {
   const [form] = Form.useForm()
 
   const handleFinish = async (values) => {
+    const normalizedDate = normalizeDateValue(values.fecha)
+
+    if (!normalizedDate) {
+      form.setFields([
+        {
+          name: 'fecha',
+          errors: ['La fecha debe estar en formato YYYY-MM-DD o DD/MM/YYYY.'],
+        },
+      ])
+      return
+    }
+
     const payload = {
-      fecha: values.fecha,
+      fecha: normalizedDate,
       kWh: Number(values.kWh),
       note: values.note?.trim() || '',
     }
