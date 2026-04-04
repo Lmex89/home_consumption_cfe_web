@@ -1,14 +1,18 @@
-import { Card, Statistic, Typography } from 'antd'
+import { Card, Typography } from 'antd'
+import styles from './MetricCard.module.css'
 
-function MetricCard({ label, value, hint }) {
+function MetricCard({ label, value, hint, tone = 'default' }) {
+  const toneClassName = tone === 'accent'
+    ? styles.accent
+    : tone === 'soft'
+      ? styles.soft
+      : ''
+
   return (
-    <Card>
-      <Statistic title={label} value={value} valueStyle={{ fontSize: 28 }} />
-      {hint ? (
-        <Typography.Text type="secondary" style={{ marginTop: 8, display: 'block' }}>
-          {hint}
-        </Typography.Text>
-      ) : null}
+    <Card className={`${styles.card} ${toneClassName}`.trim()}>
+      <Typography.Paragraph className={styles.label}>{label}</Typography.Paragraph>
+      <Typography.Text className={styles.value}>{value}</Typography.Text>
+      {hint ? <Typography.Paragraph className={styles.hint}>{hint}</Typography.Paragraph> : null}
     </Card>
   )
 }

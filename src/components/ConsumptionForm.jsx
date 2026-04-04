@@ -1,4 +1,6 @@
-import { Alert, Button, Card, Form, Input, InputNumber, Row, Col, Typography } from 'antd'
+import { Alert, Button, Card, Checkbox, Form, Input, InputNumber, Row, Col, Typography, Select } from 'antd'
+import { useEffect, useState } from 'react'
+import { listHouseholds } from '../services/consumoService'
 
 function isValidDate(year, month, day) {
   const parsed = new Date(Date.UTC(year, month - 1, day))
@@ -63,6 +65,27 @@ function normalizeDateValue(rawDate) {
 
 function ConsumptionForm({ onSubmit, isSubmitting, successMessage }) {
   const [form] = Form.useForm()
+  const [households, setHouseholds] = useState([])
+  const [loadingHouseholds, setLoadingHouseholds] = useState(true)
+
+  useEffect(() => {
+    const loadHouseholds = async () => {
+      try {
+        setLoadingHouseholds(true)
+        const householdList = await listHouseholds()
+        setHouseholds(householdList)
+        if (householdList.length > 0) {
+          form.setFieldValue('householdId', householdList[0].value)
+        }
+      } catch (error) {
+        console.error('Error loading households:', error)
+      } finally {
+        setLoadingHouseholds(false)
+      }
+    }
+
+    loadHouseholds()
+  }, [form])
 
   const handleFinish = async (values) => {
     const normalizedDate = normalizeDateValue(values.fecha)
@@ -78,14 +101,20 @@ function ConsumptionForm({ onSubmit, isSubmitting, successMessage }) {
     }
 
     const payload = {
+      householdId: values.householdId,
       fecha: normalizedDate,
       kWh: Number(values.kWh),
+      isInitial: Boolean(values.isInitial),
       note: values.note?.trim() || '',
     }
 
     const wasSaved = await onSubmit(payload)
     if (wasSaved) {
       form.resetFields()
+      if (households.length > 0) {
+        form.setFieldValue('householdId', households[0].value)
+      }
+      form.setFieldValue('isInitial', false)
     }
   }
 
@@ -107,8 +136,22 @@ function ConsumptionForm({ onSubmit, isSubmitting, successMessage }) {
         />
       ) : null}
 
-      <Form form={form} layout="vertical" onFinish={handleFinish}>
+      <Form form={form} layout="vertical" onFinish={handleFinish} initialValues={{ isInitial: false }}>
         <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Vivienda"
+              name="householdId"
+              rules={[{ required: true, message: 'La vivienda es obligatoria.' }]}
+            >
+              <Select
+                placeholder="Selecciona una vivienda"
+                disabled={loadingHouseholds}
+                options={households}
+              />
+            </Form.Item>
+          </Col>
+
           <Col xs={24} md={12}>
             <Form.Item
               label="Fecha"
@@ -118,7 +161,9 @@ function ConsumptionForm({ onSubmit, isSubmitting, successMessage }) {
               <Input type="date" />
             </Form.Item>
           </Col>
+        </Row>
 
+        <Row gutter={16}>
           <Col xs={24} md={12}>
             <Form.Item
               label="Cantidad de kWh"
@@ -136,14 +181,25 @@ function ConsumptionForm({ onSubmit, isSubmitting, successMessage }) {
               <InputNumber min={0.1} step={0.1} style={{ width: '100%' }} placeholder="Ej. 46.7" />
             </Form.Item>
           </Col>
+
+          <Col xs={24} md={12}>
+            <Form.Item label="Nota o identificador" name="note">
+              <Input placeholder="Opcional" />
+            </Form.Item>
+          </Col>
         </Row>
 
-        <Form.Item label="Nota o identificador" name="note">
-          <Input placeholder="Opcional" />
+        <Form.Item name="isInitial" valuePropName="checked" style={{ marginBottom: 16 }}>
+          <Checkbox>La lectura es inicial</Checkbox>
         </Form.Item>
 
         <Form.Item style={{ marginBottom: 0 }}>
-          <Button type="primary" htmlType="submit" loading={isSubmitting}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isSubmitting || loadingHouseholds}
+            disabled={loadingHouseholds}
+          >
             Guardar consumo
           </Button>
         </Form.Item>

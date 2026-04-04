@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react'
 import {
   Alert,
-  Card,
   Col,
   Collapse,
   Empty,
+  Flex,
+  Skeleton,
   Row,
   Select,
-  Skeleton,
   Space,
   Typography,
 } from 'antd'
 import ConsumptionTable from '../components/ConsumptionTable'
 import MetricCard from '../components/MetricCard'
-import { getDashboardConsumptions, listHouseholds } from '../services/consumoService'
+import { getDashboardConsumptions, listHouseholds, updateConsumption } from '../services/consumoService'
 import styles from './DashboardPage.module.css'
 
 const currencyFormatter = new Intl.NumberFormat('es-MX', {
@@ -93,133 +93,137 @@ function DashboardPage() {
     await loadDashboard(householdId)
   }
 
+  const handleUpdateReading = async (meterReadingId, values) => {
+    await updateConsumption(meterReadingId, values)
+    await loadDashboard(selectedHouseholdId)
+  }
+
   if (isLoading) {
     return (
-      <Card>
+      <div className={styles.feedback}>
         <Skeleton active paragraph={{ rows: 5 }} />
-      </Card>
+      </div>
     )
   }
 
   if (error) {
-    return <Alert type="error" showIcon message={error} />
+    return <Alert type="error" showIcon message={error} className={styles.error} />
   }
 
   if (!dashboardData) {
-    return <Empty description="No hay datos disponibles" />
+    return <Empty description="No hay datos disponibles" className={styles.feedback} />
   }
 
   const { items, summary, billing } = dashboardData
 
   return (
-    <Space direction="vertical" size={16} style={{ display: 'flex' }}>
-      <Card className={styles.selectorCard}>
-        <Row gutter={[16, 12]} align="middle">
-          <Col xs={24} md={8}>
-            <Typography.Text strong>Household</Typography.Text>
-            <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-              Selecciona el hogar para ver dashboard y staff.
-            </Typography.Paragraph>
-          </Col>
-          <Col xs={24} md={16}>
-            <Select
-              style={{ width: '100%' }}
-              value={selectedHouseholdId}
-              onChange={handleHouseholdChange}
-              options={households}
-              loading={isLoading}
-              placeholder="Selecciona un household"
-            />
-          </Col>
-        </Row>
-      </Card>
-
-      <Card>
-        <Space direction="vertical" size={4} style={{ display: 'flex' }}>
-          <Typography.Text type="secondary">Dashboard principal</Typography.Text>
-          <Typography.Title level={3} style={{ margin: 0 }}>
+    <div className={styles.page}>
+      <section className={styles.hero}>
+        <div className={styles.heroContent}>
+          <p className={styles.eyebrow}>Dashboard principal</p>
+          <Typography.Title level={2} className={styles.title}>
             Seguimiento diario del consumo electrico
           </Typography.Title>
-          <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            Resumen con consumo actual, lectura anterior, promedio y total acumulado desde endpoints reales de FastAPI.
+          <Typography.Paragraph className={styles.description}>
+            Consulta el hogar activo, revisa métricas de consumo y edita lecturas recientes desde una sola vista.
           </Typography.Paragraph>
-          <Typography.Text strong>
-            Costo total estimado: {currencyFormatter.format(billing.totalMxn)}
-          </Typography.Text>
-        </Space>
-      </Card>
 
-      <Row gutter={[16, 16]}>
-        <Col span={24}>
-          <Card className={styles.billingCard}>
-            <Typography.Text className={styles.billingCardLabel}>
-              Total facturado estimado
-            </Typography.Text>
-            <Typography.Title level={2} className={styles.billingCardValue}>
-              {currencyFormatter.format(billing.totalMxn)}
-            </Typography.Title>
-          </Card>
-        </Col>
-        <Col xs={24} md={12} xl={6}>
+          <Row gutter={[16, 12]} align="middle">
+            <Col xs={24} md={9}>
+              <Typography.Text strong>Household activo</Typography.Text>
+              <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                Selecciona el hogar para actualizar el dashboard y la tabla de lecturas.
+              </Typography.Paragraph>
+            </Col>
+            <Col xs={24} md={15}>
+              <Select
+                style={{ width: '100%' }}
+                value={selectedHouseholdId}
+                onChange={handleHouseholdChange}
+                options={households}
+                loading={isLoading}
+                placeholder="Selecciona un household"
+              />
+            </Col>
+          </Row>
+        </div>
+
+        <div className={styles.highlight}>
+          <span>Total estimado del periodo</span>
+          <strong>{currencyFormatter.format(billing.totalMxn)}</strong>
+          <p className={styles.totalCostLabel}>
+            {items.length} lecturas disponibles para el hogar seleccionado.
+          </p>
+        </div>
+      </section>
+
+      <div className={styles.metrics}>
+        <div className={styles.metricItem}>
           <MetricCard
             label="Consumo actual"
             value={`${summary.current.toFixed(1)} kWh`}
             hint={`Fecha de lectura: ${summary.currentDate}`}
+            tone="accent"
           />
-        </Col>
-        <Col xs={24} md={12} xl={6}>
+        </div>
+        <div className={styles.metricItem}>
           <MetricCard
             label="Consumo anterior"
             value={`${summary.previous.toFixed(1)} kWh`}
             hint={`Comparativo inmediato: ${summary.difference >= 0 ? '+' : ''}${summary.difference.toFixed(1)} kWh`}
+            tone="soft"
           />
-        </Col>
-        <Col xs={24} md={12} xl={6}>
+        </div>
+        <div className={styles.metricItem}>
           <MetricCard
             label="Promedio"
             value={`${summary.average.toFixed(1)} kWh`}
             hint={`Basado en ${items.length} mediciones`}
           />
-        </Col>
-        <Col xs={24} md={12} xl={6}>
+        </div>
+        <div className={styles.metricItem}>
           <MetricCard
             label="Maximo registrado"
             value={`${summary.max.toFixed(1)} kWh`}
             hint={`Minimo registrado: ${summary.min.toFixed(1)} kWh`}
+            tone="accent"
           />
-        </Col>
-      </Row>
+        </div>
+      </div>
 
-      <Collapse
-        items={[
-          {
-            key: 'billing-breakdown',
-            label: 'Ver desglose del total en MXN',
-            children: (
-              <Space direction="vertical" style={{ display: 'flex' }}>
-                {billing.breakdown.length > 0 ? (
-                  billing.breakdown.map((line) => (
-                    <Row key={line.concept} justify="space-between">
-                      <Typography.Text type="secondary">{line.concept}</Typography.Text>
-                      <Typography.Text strong>{currencyFormatter.format(line.amount)}</Typography.Text>
-                    </Row>
-                  ))
-                ) : (
-                  <Typography.Text type="secondary">
-                    No hay desglose disponible para el periodo de facturacion actual.
+      <div className={styles.breakdown}>
+        <Collapse
+          bordered={false}
+          items={[
+            {
+              key: 'billing-breakdown',
+              label: 'Ver desglose del total en MXN',
+              children: (
+                <Space direction="vertical" style={{ display: 'flex' }}>
+                  {billing.breakdown.length > 0 ? (
+                    billing.breakdown.map((line) => (
+                      <Flex key={line.concept} justify="space-between" align="center">
+                        <Typography.Text type="secondary">{line.concept}</Typography.Text>
+                        <Typography.Text strong>{currencyFormatter.format(line.amount)}</Typography.Text>
+                      </Flex>
+                    ))
+                  ) : (
+                    <Typography.Text type="secondary">
+                      No hay desglose disponible para el periodo de facturacion actual.
+                    </Typography.Text>
+                  )}
+                  <Typography.Text strong>
+                    Total facturado estimado: {currencyFormatter.format(billing.totalMxn)}
                   </Typography.Text>
-                )}
-                <Typography.Text strong>
-                  Total facturado estimado: {currencyFormatter.format(billing.totalMxn)}
-                </Typography.Text>
-              </Space>
-            ),
-          },
-        ]}
-      />
+                </Space>
+              ),
+            },
+          ]}
+        />
+      </div>
 
-      <ConsumptionTable items={items} />
-    </Space>
+      <ConsumptionTable items={items} onUpdateItem={handleUpdateReading} />
+    </div>
   )
 }
 

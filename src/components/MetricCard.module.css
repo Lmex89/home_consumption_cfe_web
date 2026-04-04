@@ -4,6 +4,7 @@
   border: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.8);
   box-shadow: var(--shadow-soft);
+  height: 100%;
 }
 
 .accent {
@@ -24,10 +25,12 @@
   font-size: clamp(1.6rem, 2vw, 2.4rem);
   line-height: 1;
   color: var(--color-title);
+  overflow-wrap: anywhere;
 }
 
 .hint {
   margin: 10px 0 0;
   color: var(--color-muted);
   font-size: 0.95rem;
+  overflow-wrap: anywhere;
 }
