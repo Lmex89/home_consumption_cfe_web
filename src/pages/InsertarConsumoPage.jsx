@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Alert, Card, Empty, Space, Typography, message } from 'antd'
+import { Alert, Card, Empty, Space, Statistic, Typography, message } from 'antd'
 import ConsumptionForm from '../components/ConsumptionForm'
 import ConsumptionTable from '../components/ConsumptionTable'
 import { createConsumption, getDashboardConsumptions } from '../services/consumoService'
+import styles from './InsertarConsumoPage.module.css'
 
 function InsertarConsumoPage() {
   const [messageApi, contextHolder] = message.useMessage()
@@ -18,7 +19,9 @@ function InsertarConsumoPage() {
 
     try {
       await createConsumption(payload)
-      const updatedData = await getDashboardConsumptions()
+      const updatedData = await getDashboardConsumptions({
+        householdId: payload.householdId,
+      })
 
       setLatestItems(updatedData.items)
       setSuccessMessage('Consumo guardado correctamente en el backend.')
@@ -33,18 +36,35 @@ function InsertarConsumoPage() {
     }
   }
 
+  const totalLatestKwh = latestItems.reduce((accumulator, item) => accumulator + Number(item.kWh || 0), 0)
+  const lastReadingDate = latestItems.at(-1)?.fecha || 'Sin lecturas'
+
   return (
-    <Space direction="vertical" size={16} style={{ display: 'flex' }}>
+    <div className={styles.page}>
       {contextHolder}
-      <Card>
-        <Typography.Text type="secondary">Registro manual</Typography.Text>
-        <Typography.Title level={3} style={{ marginTop: 4 }}>
-          Alta de consumos para personal interno
-        </Typography.Title>
-        <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-          Este flujo registra lecturas reales en FastAPI y refresca el historial disponible.
-        </Typography.Paragraph>
-      </Card>
+      <section className={styles.intro}>
+        <div>
+          <p className={styles.eyebrow}>Registro manual</p>
+          <Typography.Title level={2} className={styles.title}>
+            Alta de lecturas de medidor
+          </Typography.Title>
+          <Typography.Paragraph className={styles.description}>
+            Captura lecturas reales, marca lecturas iniciales y revisa al instante el historial del household seleccionado.
+          </Typography.Paragraph>
+        </div>
+
+        <Space size={12} wrap>
+          <Card size="small">
+            <Statistic title="Lecturas cargadas" value={latestItems.length} />
+          </Card>
+          <Card size="small">
+            <Statistic title="kWh en historial" value={totalLatestKwh.toFixed(1)} suffix="kWh" />
+          </Card>
+          <Card size="small">
+            <Statistic title="Ultima fecha" value={lastReadingDate} />
+          </Card>
+        </Space>
+      </section>
 
       <ConsumptionForm
         onSubmit={handleSubmit}
@@ -57,9 +77,11 @@ function InsertarConsumoPage() {
       {latestItems.length > 0 ? (
         <ConsumptionTable items={latestItems} />
       ) : (
-        <Empty description="Aun no hay historial cargado desde este formulario." />
+        <Card>
+          <Empty description="Aun no hay historial cargado desde este formulario." />
+        </Card>
       )}
-    </Space>
+    </div>
   )
 }
 

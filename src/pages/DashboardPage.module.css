@@ -79,6 +79,10 @@
   gap: 18px;
 }
 
+.metricItem {
+  min-width: 0;
+}
+
 .breakdown {
   padding: 22px 26px;
   border-radius: 24px;

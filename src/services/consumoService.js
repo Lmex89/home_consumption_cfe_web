@@ -210,7 +210,7 @@ export async function getDashboardConsumptions(filters = {}) {
 }
 
 export async function createConsumption(newConsumption) {
-  const householdId = await resolveDefaultHouseholdId()
+  const householdId = newConsumption.householdId || (await resolveDefaultHouseholdId())
 
   const createdReading = await requestApi(apiEndpoints.meterReadings, {
     method: 'POST',
@@ -218,7 +218,7 @@ export async function createConsumption(newConsumption) {
       household_id: householdId,
       reading_date: newConsumption.fecha,
       reading_kwh: Number(newConsumption.kWh),
-      is_initial: false,
+      is_initial: Boolean(newConsumption.isInitial),
     },
   })
 
@@ -227,6 +227,21 @@ export async function createConsumption(newConsumption) {
     endpoint: buildApiUrl(apiEndpoints.meterReadings),
     backend: backendConfig,
     item: normalizeReading(createdReading),
+  }
+}
+
+export async function updateConsumption(meterReadingId, values) {
+  const updatedReading = await requestApi(`${apiEndpoints.meterReadings}/${meterReadingId}`, {
+    method: 'PUT',
+    body: {
+      reading_date: values.fecha,
+      reading_kwh: Number(values.kWh),
+    },
+  })
+
+  return {
+    success: true,
+    item: normalizeReading(updatedReading),
   }
 }
 
