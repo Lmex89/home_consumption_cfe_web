@@ -3,21 +3,29 @@
   gap: 24px;
 }
 
-.intro {
-  display: flex;
-  justify-content: space-between;
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.6fr);
   gap: 20px;
-  align-items: end;
-  padding: 28px;
+}
+
+.heroContent,
+.highlight {
   border-radius: 32px;
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.82);
   box-shadow: var(--shadow-soft);
 }
 
+.heroContent {
+  padding: 32px;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.18), transparent 32%),
+    rgba(255, 255, 255, 0.85);
+}
+
 .eyebrow {
-  margin: 0 0 8px;
-  font-size: 0.78rem;
+  margin: 0 0 10px;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -26,28 +34,82 @@
 
 .title {
   margin: 0;
-  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  font-size: clamp(1.8rem, 3vw, 3.2rem);
+  line-height: 1;
 }
 
 .description {
-  margin: 0;
-  max-width: 38ch;
+  margin: 16px 0 0;
+  max-width: 48ch;
   color: var(--color-muted);
 }
 
+.highlight {
+  display: grid;
+  gap: 8px;
+  align-content: end;
+  padding: 28px;
+  background: linear-gradient(135deg, var(--color-ink), #16324b);
+  color: #f8fbff;
+}
+
+.highlight span {
+  font-size: 0.92rem;
+  color: rgba(248, 251, 255, 0.78);
+}
+
+.highlight strong {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 0.95;
+}
+
+.totalCostLabel {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  color: rgba(248, 251, 255, 0.88);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.metricItem {
+  min-width: 0;
+}
+
+.feedback,
 .error {
-  margin: 0;
-  padding: 16px 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(220, 38, 38, 0.16);
-  background: rgba(254, 242, 242, 0.9);
+  padding: 32px;
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.error {
   color: var(--color-danger);
 }
 
-@media (max-width: 760px) {
-  .intro {
-    flex-direction: column;
-    align-items: start;
+@media (max-width: 1000px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .heroContent,
+  .highlight,
+  .feedback,
+  .error {
     padding: 24px 20px;
+  }
+
+  .metrics {
+    grid-template-columns: 1fr;
   }
 }
