@@ -14,6 +14,10 @@
   align-items: stretch;
 }
 
+.hero > * {
+  min-width: 0;
+}
+
 .heroAmbient {
   position: absolute;
   inset: -20% -8% auto;
@@ -50,15 +54,15 @@
   align-content: start;
   padding: 20px 16px;
   background:
-    radial-gradient(circle at top right, rgba(14, 165, 233, 0.2), transparent 36%),
-    radial-gradient(circle at 30% 120%, rgba(37, 99, 235, 0.16), transparent 45%),
-    rgba(255, 255, 255, 0.88);
+    radial-gradient(circle at top right, var(--color-primary-soft), transparent 36%),
+    radial-gradient(circle at 30% 120%, rgba(37, 99, 235, 0.12), transparent 45%),
+    var(--color-surface);
   backdrop-filter: blur(4px);
 }
 
 .eyebrow {
   margin: 0 0 10px;
-  font-size: 0.8rem;
+  font-size: var(--header-eyebrow-size);
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -67,10 +71,12 @@
 
 .title {
   margin: 0;
-  font-size: clamp(1.75rem, 8vw, 2.4rem);
+  font-size: var(--header-title-size-mobile);
   line-height: 1.02;
   letter-spacing: -0.03em;
   text-wrap: balance;
+  color: var(--color-title);
+  overflow-wrap: anywhere;
 }
 
 .description {
@@ -126,14 +132,10 @@
   align-content: end;
   padding: 20px 16px;
   background:
-    radial-gradient(circle at 16% 18%, rgba(186, 230, 253, 0.58), transparent 50%),
-    radial-gradient(circle at 88% 0%, rgba(125, 211, 252, 0.48), transparent 42%),
-    linear-gradient(155deg, #f6fbff 0%, #e5f2ff 54%, #dff1ff 100%);
-  border-color: rgba(56, 189, 248, 0.35);
-  box-shadow:
-    0 14px 36px rgba(56, 189, 248, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.48);
-  color: #082f49;
+    radial-gradient(circle at 16% 18%, rgba(186, 230, 253, 0.45), transparent 50%),
+    radial-gradient(circle at 88% 0%, rgba(125, 211, 252, 0.32), transparent 42%),
+    var(--color-surface);
+  color: var(--color-text);
 }
 
 .highlight::before,
@@ -184,10 +186,11 @@
 .highlight strong {
   font-size: clamp(1.95rem, 9vw, 2.8rem);
   line-height: 0.95;
-  color: #082f49;
+  color: var(--color-title);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   letter-spacing: -0.02em;
   text-shadow: 0 0 18px rgba(56, 189, 248, 0.32);
+  overflow-wrap: anywhere;
 }
 
 .totalCostLabel {
@@ -252,7 +255,7 @@
   padding: 18px 16px;
   border-radius: 20px;
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-surface);
   box-shadow: var(--shadow-soft);
   overflow: hidden;
 }
@@ -315,7 +318,7 @@
   padding: 20px 16px;
   border-radius: 20px;
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-surface);
 }
 
 .error {
@@ -324,12 +327,12 @@
 
 .selectorCard {
   border-radius: 18px;
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  border: 1px solid var(--color-border);
   background:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 36%),
-    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.12), transparent 40%),
-    #ffffff;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    radial-gradient(circle at top right, var(--color-primary-soft), transparent 36%),
+    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 40%),
+    var(--color-surface-strong);
+  box-shadow: var(--shadow-soft);
 }
 
 .selectorCard :global(.ant-card-body) {
@@ -411,7 +414,7 @@
   }
 }
 
-@media (min-width: 641px) {
+@media (min-width: 768px) {
   .page {
     gap: 20px;
   }
@@ -502,13 +505,11 @@
   }
 }
 
-@media (min-width: 821px) {
+@media (min-width: 1024px) {
   .page {
     gap: 24px;
   }
-}
 
-@media (min-width: 1001px) {
   .hero {
     grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.6fr);
   }
@@ -523,7 +524,7 @@
   }
 
   .title {
-    font-size: clamp(2rem, 4.4vw, 3.9rem);
+    font-size: var(--header-title-size-desktop);
     line-height: 0.95;
   }
 
