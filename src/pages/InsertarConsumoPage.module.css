@@ -9,9 +9,13 @@
   gap: 12px;
 }
 
+.hero > * {
+  min-width: 0;
+}
+
 .heroContent,
 .highlight {
-  border-radius: 32px;
+  border-radius: 20px;
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-soft);
 }
@@ -19,13 +23,13 @@
 .heroContent {
   padding: 24px 20px;
   background:
-    radial-gradient(circle at top right, rgba(14, 165, 233, 0.18), transparent 32%),
-    rgba(255, 255, 255, 0.85);
+    radial-gradient(circle at top right, var(--color-primary-soft), transparent 32%),
+    var(--color-surface);
 }
 
 .eyebrow {
   margin: 0 0 10px;
-  font-size: 0.8rem;
+  font-size: var(--header-eyebrow-size);
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -34,12 +38,15 @@
 
 .title {
   margin: 0;
-  font-size: clamp(1.8rem, 3vw, 3.2rem);
-  line-height: 1;
+  font-size: var(--header-title-size-mobile);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--color-title);
+  overflow-wrap: anywhere;
 }
 
 .description {
-  margin: 16px 0 0;
+  margin: 12px 0 0;
   max-width: 48ch;
   color: var(--color-muted);
 }
@@ -53,24 +60,28 @@
   gap: 8px;
   align-content: end;
   padding: 24px 20px;
-  background: linear-gradient(135deg, var(--color-ink), #16324b);
-  color: #f8fbff;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.18), transparent 36%),
+    var(--color-surface);
+  color: var(--color-text);
 }
 
 .highlight span {
   font-size: 0.92rem;
-  color: rgba(248, 251, 255, 0.78);
+  color: var(--color-muted);
 }
 
 .highlight strong {
-  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-size: clamp(1.95rem, 9vw, 2.8rem);
   line-height: 0.95;
+  color: var(--color-title);
+  overflow-wrap: anywhere;
 }
 
 .totalCostLabel {
   margin: 4px 0 0;
-  font-size: 0.95rem;
-  color: rgba(248, 251, 255, 0.88);
+  font-size: 0.9rem;
+  color: var(--color-muted);
 }
 
 .metrics {
@@ -88,14 +99,14 @@
   padding: 24px 20px;
   border-radius: 20px;
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-surface);
 }
 
 .error {
   color: var(--color-danger);
 }
 
-@media (min-width: 641px) {
+@media (min-width: 768px) {
   .page {
     gap: 20px;
   }
@@ -108,13 +119,18 @@
     border-radius: 24px;
   }
 
+  .title {
+    font-size: clamp(1.9rem, 5.5vw, 2.9rem);
+    line-height: 1;
+  }
+
   .metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
   }
 }
 
-@media (min-width: 1001px) {
+@media (min-width: 1024px) {
   .page {
     gap: 24px;
   }
@@ -130,6 +146,11 @@
 
   .highlight {
     padding: 28px;
+  }
+
+  .title {
+    font-size: var(--header-title-size-desktop);
+    line-height: 0.95;
   }
 
   .metrics {
