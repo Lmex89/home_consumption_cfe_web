@@ -1,6 +1,7 @@
 import { EditOutlined } from '@ant-design/icons'
 import { Button, Card, Form, Input, InputNumber, Modal, Space, Table, Typography, message } from 'antd'
 import { useState } from 'react'
+import styles from './ConsumptionTable.module.css'
 
 function ConsumptionTable({ items, onUpdateItem }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -82,16 +83,23 @@ function ConsumptionTable({ items, onUpdateItem }) {
   return (
     <>
       <Card
-        title="Lecturas recientes"
-        extra={<Typography.Text type="secondary">Ultimos consumos registrados por fecha</Typography.Text>}
+        className={styles.wrapper}
+        title={(
+          <div>
+            <p className={styles.eyebrow}>Historial</p>
+            <h3 className={styles.title}>Lecturas recientes</h3>
+          </div>
+        )}
+        extra={<Typography.Paragraph className={styles.caption}>Ultimos consumos registrados por fecha</Typography.Paragraph>}
       >
         <Table
+          className={styles.table}
           rowKey={(record) => record.id}
           columns={columns}
           dataSource={items}
           pagination={false}
           locale={{ emptyText: 'No hay consumos para mostrar.' }}
-          scroll={{ x: 640 }}
+          scroll={{ x: 720 }}
         />
       </Card>
 

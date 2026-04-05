@@ -173,10 +173,12 @@ function DashboardPage() {
 
           <Row gutter={[16, 12]} align="middle" className={styles.filterRow}>
             <Col xs={24} md={8}>
-              <Typography.Text strong>Household activo</Typography.Text>
-              <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                Selecciona el hogar para actualizar el dashboard y la tabla de lecturas.
-              </Typography.Paragraph>
+              <div className={styles.filterIntro}>
+                <Typography.Text strong>Household activo</Typography.Text>
+                <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                  Selecciona el hogar para actualizar el dashboard y la tabla de lecturas.
+                </Typography.Paragraph>
+              </div>
             </Col>
             <Col xs={24} md={8}>
               <Select
@@ -249,6 +251,7 @@ function DashboardPage() {
 
       <div className={styles.breakdown}>
         <Collapse
+          className={styles.breakdownCollapse}
           bordered={false}
           items={[
             {
