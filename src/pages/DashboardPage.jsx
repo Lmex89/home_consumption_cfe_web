@@ -149,7 +149,7 @@ function DashboardPage() {
         </div>
 
         <div className={styles.highlight}>
-          <span>Total estimado del periodo</span>
+          <span className={styles.highlightLabel}>Total estimado del periodo</span>
           <strong>{currencyFormatter.format(billing.totalMxn)}</strong>
           <p className={styles.totalCostLabel}>
             {items.length} lecturas disponibles para el hogar seleccionado.
