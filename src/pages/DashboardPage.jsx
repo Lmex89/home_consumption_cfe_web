@@ -13,7 +13,12 @@ import {
 } from 'antd'
 import ConsumptionTable from '../components/ConsumptionTable'
 import MetricCard from '../components/MetricCard'
-import { getDashboardConsumptions, listHouseholds, updateConsumption } from '../services/consumoService'
+import {
+  getDashboardConsumptions,
+  listBillingPeriods,
+  listHouseholds,
+  updateConsumption,
+} from '../services/consumoService'
 import styles from './DashboardPage.module.css'
 
 const currencyFormatter = new Intl.NumberFormat('es-MX', {
@@ -24,17 +29,20 @@ const currencyFormatter = new Intl.NumberFormat('es-MX', {
 function DashboardPage() {
   const [dashboardData, setDashboardData] = useState(null)
   const [households, setHouseholds] = useState([])
+  const [billingPeriods, setBillingPeriods] = useState([])
   const [selectedHouseholdId, setSelectedHouseholdId] = useState(1)
+  const [selectedBillingPeriodId, setSelectedBillingPeriodId] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const loadDashboard = async (householdId) => {
+  const loadDashboard = async ({ householdId, billingPeriodId }) => {
     setIsLoading(true)
     setError('')
 
     try {
       const data = await getDashboardConsumptions({
         householdId,
+        billingPeriodId,
       })
       setDashboardData(data)
     } catch {
@@ -64,9 +72,21 @@ function DashboardPage() {
           ? 1
           : (availableHouseholds[0]?.value ?? 1)
 
-        setSelectedHouseholdId(initialHouseholdId)
+        const periods = await listBillingPeriods(initialHouseholdId)
+        const initialBillingPeriodId = periods[0]?.value ?? null
 
-        const data = await getDashboardConsumptions({ householdId: initialHouseholdId })
+        if (!isMounted) {
+          return
+        }
+
+        setSelectedHouseholdId(initialHouseholdId)
+        setBillingPeriods(periods)
+        setSelectedBillingPeriodId(initialBillingPeriodId)
+
+        const data = await getDashboardConsumptions({
+          householdId: initialHouseholdId,
+          billingPeriodId: initialBillingPeriodId,
+        })
         if (isMounted) {
           setDashboardData(data)
         }
@@ -90,12 +110,32 @@ function DashboardPage() {
 
   const handleHouseholdChange = async (householdId) => {
     setSelectedHouseholdId(householdId)
-    await loadDashboard(householdId)
+
+    try {
+      const periods = await listBillingPeriods(householdId)
+      const nextBillingPeriodId = periods[0]?.value ?? null
+
+      setBillingPeriods(periods)
+      setSelectedBillingPeriodId(nextBillingPeriodId)
+      await loadDashboard({ householdId, billingPeriodId: nextBillingPeriodId })
+    } catch {
+      setBillingPeriods([])
+      setSelectedBillingPeriodId(null)
+      await loadDashboard({ householdId, billingPeriodId: null })
+    }
+  }
+
+  const handleBillingPeriodChange = async (billingPeriodId) => {
+    setSelectedBillingPeriodId(billingPeriodId)
+    await loadDashboard({ householdId: selectedHouseholdId, billingPeriodId })
   }
 
   const handleUpdateReading = async (meterReadingId, values) => {
     await updateConsumption(meterReadingId, values)
-    await loadDashboard(selectedHouseholdId)
+    await loadDashboard({
+      householdId: selectedHouseholdId,
+      billingPeriodId: selectedBillingPeriodId,
+    })
   }
 
   if (isLoading) {
@@ -129,13 +169,13 @@ function DashboardPage() {
           </Typography.Paragraph>
 
           <Row gutter={[16, 12]} align="middle">
-            <Col xs={24} md={9}>
+            <Col xs={24} md={8}>
               <Typography.Text strong>Household activo</Typography.Text>
               <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
                 Selecciona el hogar para actualizar el dashboard y la tabla de lecturas.
               </Typography.Paragraph>
             </Col>
-            <Col xs={24} md={15}>
+            <Col xs={24} md={8}>
               <Select
                 style={{ width: '100%' }}
                 value={selectedHouseholdId}
@@ -145,6 +185,17 @@ function DashboardPage() {
                 placeholder="Selecciona un household"
               />
             </Col>
+            <Col xs={24} md={8}>
+              <Select
+                style={{ width: '100%' }}
+                value={selectedBillingPeriodId ?? undefined}
+                onChange={handleBillingPeriodChange}
+                options={billingPeriods}
+                loading={isLoading}
+                placeholder="Selecciona un periodo de facturacion"
+                disabled={billingPeriods.length === 0}
+              />
+            </Col>
           </Row>
         </div>
 
@@ -152,7 +203,7 @@ function DashboardPage() {
           <span className={styles.highlightLabel}>Total estimado del periodo</span>
           <strong>{currencyFormatter.format(billing.totalMxn)}</strong>
           <p className={styles.totalCostLabel}>
-            {items.length} lecturas disponibles para el hogar seleccionado.
+            {items.length} lecturas disponibles para el periodo seleccionado.
           </p>
         </div>
       </section>
