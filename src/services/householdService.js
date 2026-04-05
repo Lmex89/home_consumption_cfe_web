@@ -1,51 +1,5 @@
-
 import { apiEndpoints, backendConfig, buildApiUrl } from '../config/apiConfig'
-
-async function requestApi(endpoint, options = {}) {
-  const { method = 'GET', query, body } = options
-  const url = withQuery(endpoint, query)
-
-  const response = await fetch(url, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  })
-
-  if (!response.ok) {
-    let detail = `Error ${response.status}`
-
-    try {
-      const payload = await response.json()
-      if (typeof payload?.detail === 'string') {
-        detail = payload.detail
-      }
-    } catch {
-      // If error payload is not JSON, keep generic message.
-    }
-
-    throw new Error(detail)
-  }
-
-  if (response.status === 204) {
-    return null
-  }
-
-  return response.json()
-}
-
-function withQuery(endpoint, query = {}) {
-  const url = new URL(buildApiUrl(endpoint))
-
-  Object.entries(query).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      url.searchParams.set(key, String(value))
-    }
-  })
-
-  return url.toString()
-}
+import { requestApi } from '../lib/apiClient'
 
 export async function listHouseholds() {
   const households = await requestApi(apiEndpoints.households, {
