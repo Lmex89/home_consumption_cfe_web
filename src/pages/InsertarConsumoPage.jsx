@@ -1,17 +1,88 @@
 import { useState } from 'react'
-import { Alert, Card, Empty, Typography, message } from 'antd'
+import { Alert, Card, Col, Empty, Row, Select, Skeleton, Typography, message } from 'antd'
 import ConsumptionForm from '../components/ConsumptionForm'
 import ConsumptionTable from '../components/ConsumptionTable'
 import MetricCard from '../components/MetricCard'
-import { createConsumption, getDashboardConsumptions } from '../services/consumoService'
+import { createConsumption, getDashboardConsumptions, listHouseholds } from '../services/consumoService'
 import styles from './InsertarConsumoPage.module.css'
+import { useEffect } from 'react'
 
 function InsertarConsumoPage() {
   const [messageApi, contextHolder] = message.useMessage()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true)
+  const [isLoadingHouseholds, setIsLoadingHouseholds] = useState(true)
   const [successMessage, setSuccessMessage] = useState('')
   const [error, setError] = useState('')
   const [latestItems, setLatestItems] = useState([])
+  const [households, setHouseholds] = useState([])
+  const [selectedHouseholdId, setSelectedHouseholdId] = useState(null)
+
+  const loadHistory = async (householdId) => {
+    setIsLoadingHistory(true)
+    setError('')
+
+    try {
+      const updatedData = await getDashboardConsumptions({ householdId })
+      setLatestItems(updatedData.items)
+    } catch {
+      setError('No fue posible cargar el historial del household seleccionado.')
+      setLatestItems([])
+    } finally {
+      setIsLoadingHistory(false)
+    }
+  }
+
+  useEffect(() => {
+    let isMounted = true
+
+    const initialize = async () => {
+      setIsLoadingHouseholds(true)
+
+      try {
+        const availableHouseholds = await listHouseholds()
+
+        if (!isMounted) {
+          return
+        }
+
+        setHouseholds(availableHouseholds)
+        const initialHouseholdId = availableHouseholds[0]?.value ?? null
+        setSelectedHouseholdId(initialHouseholdId)
+
+        if (initialHouseholdId) {
+          await loadHistory(initialHouseholdId)
+        } else {
+          setLatestItems([])
+          setIsLoadingHistory(false)
+        }
+      } catch {
+        if (!isMounted) {
+          return
+        }
+
+        setError('No fue posible cargar los households.')
+        setLatestItems([])
+        setSelectedHouseholdId(null)
+        setIsLoadingHistory(false)
+      } finally {
+        if (isMounted) {
+          setIsLoadingHouseholds(false)
+        }
+      }
+    }
+
+    initialize()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const handleHouseholdChange = async (householdId) => {
+    setSelectedHouseholdId(householdId)
+    await loadHistory(householdId)
+  }
 
   const handleSubmit = async (payload) => {
     setIsSubmitting(true)
@@ -20,11 +91,7 @@ function InsertarConsumoPage() {
 
     try {
       await createConsumption(payload)
-      const updatedData = await getDashboardConsumptions({
-        householdId: payload.householdId,
-      })
-
-      setLatestItems(updatedData.items)
+      await loadHistory(payload.householdId)
       setSuccessMessage('Consumo guardado correctamente en el backend.')
       messageApi.success('Consumo registrado correctamente.')
       return true
@@ -53,6 +120,26 @@ function InsertarConsumoPage() {
           <Typography.Paragraph className={styles.description}>
             Captura lecturas reales, marca lecturas iniciales y revisa al instante el historial del household seleccionado.
           </Typography.Paragraph>
+
+          <Row gutter={[16, 12]} align="middle" className={styles.filtersRow}>
+            <Col xs={24} md={10}>
+              <Typography.Text strong>Household</Typography.Text>
+              <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                Cambia el household para consultar y registrar lecturas en ese historial.
+              </Typography.Paragraph>
+            </Col>
+            <Col xs={24} md={14}>
+              <Select
+                style={{ width: '100%' }}
+                value={selectedHouseholdId ?? undefined}
+                onChange={handleHouseholdChange}
+                options={households}
+                loading={isLoadingHouseholds}
+                placeholder="Selecciona un household"
+                disabled={households.length === 0}
+              />
+            </Col>
+          </Row>
         </div>
 
         <div className={styles.highlight}>
@@ -94,11 +181,19 @@ function InsertarConsumoPage() {
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
         successMessage={successMessage}
+        households={households}
+        loadingHouseholds={isLoadingHouseholds}
+        selectedHouseholdId={selectedHouseholdId}
+        onHouseholdChange={handleHouseholdChange}
       />
 
       {error ? <Alert type="error" showIcon message={error} className={styles.error} /> : null}
 
-      {latestItems.length > 0 ? (
+      {isLoadingHistory ? (
+        <Card className={styles.feedback}>
+          <Skeleton active paragraph={{ rows: 4 }} />
+        </Card>
+      ) : latestItems.length > 0 ? (
         <ConsumptionTable items={latestItems} />
       ) : (
         <Card className={styles.feedback}>

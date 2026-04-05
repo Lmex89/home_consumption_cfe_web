@@ -159,7 +159,10 @@ function DashboardPage() {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
-        <div className={styles.heroContent}>
+        <div className={styles.heroAmbient} aria-hidden="true" />
+        <div className={styles.heroNoise} aria-hidden="true" />
+
+        <div className={`${styles.heroContent} ${styles.revealUp}`}>
           <p className={styles.eyebrow}>Dashboard principal</p>
           <Typography.Title level={2} className={styles.title}>
             Seguimiento diario del consumo electrico
@@ -168,7 +171,7 @@ function DashboardPage() {
             Consulta el hogar activo, revisa métricas de consumo y edita lecturas recientes desde una sola vista.
           </Typography.Paragraph>
 
-          <Row gutter={[16, 12]} align="middle">
+          <Row gutter={[16, 12]} align="middle" className={styles.filterRow}>
             <Col xs={24} md={8}>
               <Typography.Text strong>Household activo</Typography.Text>
               <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
@@ -177,6 +180,7 @@ function DashboardPage() {
             </Col>
             <Col xs={24} md={8}>
               <Select
+                className={styles.selectField}
                 style={{ width: '100%' }}
                 value={selectedHouseholdId}
                 onChange={handleHouseholdChange}
@@ -187,6 +191,7 @@ function DashboardPage() {
             </Col>
             <Col xs={24} md={8}>
               <Select
+                className={styles.selectField}
                 style={{ width: '100%' }}
                 value={selectedBillingPeriodId ?? undefined}
                 onChange={handleBillingPeriodChange}
@@ -199,7 +204,7 @@ function DashboardPage() {
           </Row>
         </div>
 
-        <div className={styles.highlight}>
+        <div className={`${styles.highlight} ${styles.revealUp} ${styles.revealUpDelay}`}>
           <span className={styles.highlightLabel}>Total estimado del periodo</span>
           <strong>{currencyFormatter.format(billing.totalMxn)}</strong>
           <p className={styles.totalCostLabel}>

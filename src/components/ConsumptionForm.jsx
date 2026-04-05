@@ -1,6 +1,5 @@
 import { Alert, Button, Card, Checkbox, Form, Input, InputNumber, Row, Col, Typography, Select } from 'antd'
-import { useEffect, useState } from 'react'
-import { listHouseholds } from '../services/consumoService'
+import { useEffect } from 'react'
 
 function isValidDate(year, month, day) {
   const parsed = new Date(Date.UTC(year, month - 1, day))
@@ -63,29 +62,22 @@ function normalizeDateValue(rawDate) {
   return null
 }
 
-function ConsumptionForm({ onSubmit, isSubmitting, successMessage }) {
+function ConsumptionForm({
+  onSubmit,
+  isSubmitting,
+  successMessage,
+  households,
+  loadingHouseholds,
+  selectedHouseholdId,
+  onHouseholdChange,
+}) {
   const [form] = Form.useForm()
-  const [households, setHouseholds] = useState([])
-  const [loadingHouseholds, setLoadingHouseholds] = useState(true)
 
   useEffect(() => {
-    const loadHouseholds = async () => {
-      try {
-        setLoadingHouseholds(true)
-        const householdList = await listHouseholds()
-        setHouseholds(householdList)
-        if (householdList.length > 0) {
-          form.setFieldValue('householdId', householdList[0].value)
-        }
-      } catch (error) {
-        console.error('Error loading households:', error)
-      } finally {
-        setLoadingHouseholds(false)
-      }
+    if (selectedHouseholdId !== null && selectedHouseholdId !== undefined) {
+      form.setFieldValue('householdId', selectedHouseholdId)
     }
-
-    loadHouseholds()
-  }, [form])
+  }, [form, selectedHouseholdId])
 
   const handleFinish = async (values) => {
     const normalizedDate = normalizeDateValue(values.fecha)
@@ -111,8 +103,8 @@ function ConsumptionForm({ onSubmit, isSubmitting, successMessage }) {
     const wasSaved = await onSubmit(payload)
     if (wasSaved) {
       form.resetFields()
-      if (households.length > 0) {
-        form.setFieldValue('householdId', households[0].value)
+      if (selectedHouseholdId !== null && selectedHouseholdId !== undefined) {
+        form.setFieldValue('householdId', selectedHouseholdId)
       }
       form.setFieldValue('isInitial', false)
     }
@@ -136,7 +128,15 @@ function ConsumptionForm({ onSubmit, isSubmitting, successMessage }) {
         />
       ) : null}
 
-      <Form form={form} layout="vertical" onFinish={handleFinish} initialValues={{ isInitial: false }}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleFinish}
+        initialValues={{
+          isInitial: false,
+          householdId: selectedHouseholdId ?? undefined,
+        }}
+      >
         <Row gutter={16}>
           <Col xs={24} md={12}>
             <Form.Item
@@ -148,6 +148,7 @@ function ConsumptionForm({ onSubmit, isSubmitting, successMessage }) {
                 placeholder="Selecciona una vivienda"
                 disabled={loadingHouseholds}
                 options={households}
+                onChange={onHouseholdChange}
               />
             </Form.Item>
           </Col>
