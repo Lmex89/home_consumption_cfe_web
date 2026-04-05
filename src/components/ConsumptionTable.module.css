@@ -70,3 +70,14 @@
     align-items: start;
   }
 }
+
+@media (max-width: 640px) {
+  .wrapper {
+    padding: 18px 16px;
+    border-radius: 20px;
+  }
+
+  .header {
+    margin-bottom: 14px;
+  }
+}
