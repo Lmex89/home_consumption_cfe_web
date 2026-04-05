@@ -1,54 +1,9 @@
 import { apiEndpoints, backendConfig, buildApiUrl } from '../config/apiConfig'
+import { requestApi } from '../lib/apiClient'
 
 function toNumber(value) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
-}
-
-function withQuery(endpoint, query = {}) {
-  const url = new URL(buildApiUrl(endpoint))
-
-  Object.entries(query).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      url.searchParams.set(key, String(value))
-    }
-  })
-
-  return url.toString()
-}
-
-async function requestApi(endpoint, options = {}) {
-  const { method = 'GET', query, body } = options
-  const url = withQuery(endpoint, query)
-
-  const response = await fetch(url, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  })
-
-  if (!response.ok) {
-    let detail = `Error ${response.status}`
-
-    try {
-      const payload = await response.json()
-      if (typeof payload?.detail === 'string') {
-        detail = payload.detail
-      }
-    } catch {
-      // If error payload is not JSON, keep generic message.
-    }
-
-    throw new Error(detail)
-  }
-
-  if (response.status === 204) {
-    return null
-  }
-
-  return response.json()
 }
 
 function normalizeReading(reading) {

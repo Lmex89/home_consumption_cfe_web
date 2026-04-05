@@ -1,5 +1,7 @@
-import { Alert, Button, Card, Form, Input, Row, Col, Typography, Space, message } from 'antd'
+import { Button, Card, Form, Input, Row, Col, Typography, message } from 'antd'
 import { useState } from 'react'
+import FormActions from './ui/FormActions'
+import SuccessAlert from './ui/SuccessAlert'
 
 function AddTariffForm({ onSubmit, isSubmitting, successMessage }) {
   const [form] = Form.useForm()
@@ -25,14 +27,7 @@ function AddTariffForm({ onSubmit, isSubmitting, successMessage }) {
         Registro de una nueva tarifa en el backend FastAPI.
       </Typography.Paragraph>
 
-      {successMessage ? (
-        <Alert
-          type="success"
-          showIcon
-          message={successMessage}
-          style={{ marginBottom: 16 }}
-        />
-      ) : null}
+      <SuccessAlert message={successMessage} />
 
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <Row gutter={16}>
@@ -63,20 +58,11 @@ function AddTariffForm({ onSubmit, isSubmitting, successMessage }) {
           </Col>
         </Row>
 
-        <Form.Item style={{ marginBottom: 0 }}>
-          <Space>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={isSubmitting}
-            >
-              Crear tarifa
-            </Button>
-            <Button onClick={() => form.resetFields()}>
-              Limpiar
-            </Button>
-          </Space>
-        </Form.Item>
+        <FormActions
+          submitLabel="Crear tarifa"
+          loading={isSubmitting}
+          onReset={() => form.resetFields()}
+        />
       </Form>
     </Card>
   )

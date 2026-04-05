@@ -1,66 +1,9 @@
-import { Alert, Button, Card, Checkbox, Form, Input, InputNumber, Row, Col, Typography, Select } from 'antd'
+import { Card, Checkbox, Form, Input, InputNumber, Row, Col, Typography, Select } from 'antd'
 import { useEffect } from 'react'
+import { normalizeDateValue } from '../utils/dateUtils'
+import FormActions from './ui/FormActions'
+import SuccessAlert from './ui/SuccessAlert'
 
-function isValidDate(year, month, day) {
-  const parsed = new Date(Date.UTC(year, month - 1, day))
-
-  return (
-    parsed.getUTCFullYear() === year &&
-    parsed.getUTCMonth() === month - 1 &&
-    parsed.getUTCDate() === day
-  )
-}
-
-function normalizeDateValue(rawDate) {
-  if (!rawDate) return null
-
-  const value = String(rawDate).trim()
-  if (!value) return null
-
-  const isoDateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  if (isoDateMatch) {
-    const [, year, month, day] = isoDateMatch
-    const yearNumber = Number(year)
-    const monthNumber = Number(month)
-    const dayNumber = Number(day)
-
-    return isValidDate(yearNumber, monthNumber, dayNumber) ? `${year}-${month}-${day}` : null
-  }
-
-  const yearFirstMatch = value.match(/^(\d{4})\/(\d{2})\/(\d{2})$/)
-  if (yearFirstMatch) {
-    const [, year, month, day] = yearFirstMatch
-    const yearNumber = Number(year)
-    const monthNumber = Number(month)
-    const dayNumber = Number(day)
-
-    return isValidDate(yearNumber, monthNumber, dayNumber) ? `${year}-${month}-${day}` : null
-  }
-
-  const dayFirstMatch = value.match(/^(\d{2})[/-](\d{2})[/-](\d{4})$/)
-  if (dayFirstMatch) {
-    const [, day, month, year] = dayFirstMatch
-    const yearNumber = Number(year)
-    const monthNumber = Number(month)
-    const dayNumber = Number(day)
-
-    return isValidDate(yearNumber, monthNumber, dayNumber)
-      ? `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-      : null
-  }
-
-  const isoDateTimeMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})T/)
-  if (isoDateTimeMatch) {
-    const [, year, month, day] = isoDateTimeMatch
-    const yearNumber = Number(year)
-    const monthNumber = Number(month)
-    const dayNumber = Number(day)
-
-    return isValidDate(yearNumber, monthNumber, dayNumber) ? `${year}-${month}-${day}` : null
-  }
-
-  return null
-}
 
 function ConsumptionForm({
   onSubmit,
@@ -119,14 +62,7 @@ function ConsumptionForm({
         El formulario envia lecturas al backend FastAPI usando el endpoint de meter readings.
       </Typography.Paragraph>
 
-      {successMessage ? (
-        <Alert
-          type="success"
-          showIcon
-          message={successMessage}
-          style={{ marginBottom: 16 }}
-        />
-      ) : null}
+      <SuccessAlert message={successMessage} />
 
       <Form
         form={form}
@@ -194,16 +130,11 @@ function ConsumptionForm({
           <Checkbox>La lectura es inicial</Checkbox>
         </Form.Item>
 
-        <Form.Item style={{ marginBottom: 0 }}>
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={isSubmitting || loadingHouseholds}
-            disabled={loadingHouseholds}
-          >
-            Guardar consumo
-          </Button>
-        </Form.Item>
+        <FormActions
+          submitLabel="Guardar consumo"
+          loading={isSubmitting || loadingHouseholds}
+          disabled={loadingHouseholds}
+        />
       </Form>
     </Card>
   )

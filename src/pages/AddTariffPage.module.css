@@ -5,7 +5,7 @@
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  grid-template-columns: 1fr;
   gap: 18px;
 }
 
@@ -17,14 +17,14 @@
 }
 
 .introCard {
-  padding: 28px;
+  padding: 22px 18px;
   background:
     radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 34%),
     #ffffff;
 }
 
 .statusCard {
-  padding: 24px;
+  padding: 22px 18px;
   background: linear-gradient(145deg, #0b2344 0%, #1b4f91 100%);
   color: #f8fbff;
 }
@@ -75,15 +75,24 @@
   border-style: dashed;
 }
 
-@media (max-width: 920px) {
-  .hero {
-    grid-template-columns: 1fr;
+@media (min-width: 641px) {
+  .introCard,
+  .statusCard {
+    padding: 24px;
   }
 }
 
-@media (max-width: 640px) {
+@media (min-width: 921px) {
+  .hero {
+    grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  }
+
   .introCard,
   .statusCard {
-    padding: 22px 18px;
+    padding: 28px;
+  }
+
+  .statusCard {
+    padding: 24px;
   }
 }

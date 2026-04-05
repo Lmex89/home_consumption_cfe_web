@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Alert, Card, Space, Typography, message } from 'antd'
 import AddHouseholdForm from '../components/AddHouseholdForm'
+import SectionCard from '../components/ui/SectionCard'
 import { createHouseholdWithTariff } from '../services/householdService'
 
 function AddHouseholdPage() {
@@ -42,15 +43,12 @@ function AddHouseholdPage() {
   return (
     <Space direction="vertical" size={16} style={{ display: 'flex' }}>
       {contextHolder}
-      <Card>
-        <Typography.Text type="secondary">Administración</Typography.Text>
-        <Typography.Title level={3} style={{ marginTop: 4 }}>
-          Alta de viviendas con tarifas
-        </Typography.Title>
-        <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-          Este flujo registra nuevas viviendas en FastAPI con tarifas asociadas.
-        </Typography.Paragraph>
-      </Card>
+      <SectionCard
+        eyebrow="Administración"
+        title="Alta de viviendas con tarifas"
+        description="Este flujo registra nuevas viviendas en FastAPI con tarifas asociadas."
+        level={3}
+      />
 
       <AddHouseholdForm
         onSubmit={handleSubmit}

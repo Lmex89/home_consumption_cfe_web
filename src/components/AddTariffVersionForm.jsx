@@ -1,6 +1,8 @@
-import { Alert, Button, Card, Form, Input, Row, Col, Typography, Space, message } from 'antd'
+import { Button, Card, Form, Input, Row, Col, Typography, message } from 'antd'
 import { useState } from 'react'
 import { createTariffVersion } from '../services/householdService'
+import FormActions from './ui/FormActions'
+import SuccessAlert from './ui/SuccessAlert'
 
 function AddTariffVersionForm({ tariffId, tariffCode, onVersionAdded }) {
   const [form] = Form.useForm()
@@ -41,15 +43,7 @@ function AddTariffVersionForm({ tariffId, tariffCode, onVersionAdded }) {
       extra={<Typography.Text type="secondary">Versiones</Typography.Text>}
       size="small"
     >
-      {successMessage ? (
-        <Alert
-          type="success"
-          showIcon
-          message={successMessage}
-          style={{ marginBottom: 16 }}
-          closable
-        />
-      ) : null}
+      <SuccessAlert message={successMessage} />
 
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <Row gutter={16}>
@@ -73,20 +67,11 @@ function AddTariffVersionForm({ tariffId, tariffCode, onVersionAdded }) {
           </Col>
         </Row>
 
-        <Form.Item style={{ marginBottom: 0 }}>
-          <Space>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={isSubmitting}
-            >
-              Crear versión
-            </Button>
-            <Button onClick={() => form.resetFields()}>
-              Limpiar
-            </Button>
-          </Space>
-        </Form.Item>
+        <FormActions
+          submitLabel="Crear versión"
+          loading={isSubmitting}
+          onReset={() => form.resetFields()}
+        />
       </Form>
     </Card>
   )
