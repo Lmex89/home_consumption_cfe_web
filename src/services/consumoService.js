@@ -108,13 +108,7 @@ function buildBilling(costDashboard) {
 }
 
 async function getLatestBillingPeriodId(householdId) {
-  const periods = await requestApi(apiEndpoints.billingPeriods, {
-    query: {
-      household_id: householdId,
-      limit: 200,
-      offset: 0,
-    },
-  })
+  const periods = await fetchBillingPeriods(householdId)
 
   if (!Array.isArray(periods) || periods.length === 0) {
     return null
@@ -125,6 +119,24 @@ async function getLatestBillingPeriodId(householdId) {
   )
 
   return sortedPeriods.at(-1)?.id ?? null
+}
+
+async function fetchBillingPeriods(householdId) {
+  const periods = await requestApi(apiEndpoints.billingPeriods, {
+    query: {
+      household_id: householdId,
+      limit: 200,
+      offset: 0,
+    },
+  })
+
+  return Array.isArray(periods) ? periods : []
+}
+
+function formatPeriodOption(period) {
+  const start = period.start_date || 'N/A'
+  const end = period.end_date || 'N/A'
+  return `${start} - ${end}`
 }
 
 async function resolveDefaultHouseholdId() {
@@ -164,10 +176,12 @@ export async function listHouseholds() {
 
 export async function getDashboardConsumptions(filters = {}) {
   const householdFilter = filters.householdId ? Number(filters.householdId) : undefined
+  const billingPeriodFilter = filters.billingPeriodId ? Number(filters.billingPeriodId) : undefined
 
   const rawReadings = await requestApi(apiEndpoints.meterReadings, {
     query: {
       household_id: householdFilter,
+      billing_period_id: billingPeriodFilter,
       reading_date_from: filters.startDate,
       reading_date_to: filters.endDate,
       limit: 500,
@@ -182,9 +196,12 @@ export async function getDashboardConsumptions(filters = {}) {
   const summary = buildSummary(items)
   const householdId = householdFilter ?? items.at(-1)?.householdId ?? items[0]?.householdId ?? null
   let costDashboard = null
+  let billingPeriodId = billingPeriodFilter ?? null
 
   if (householdId) {
-    const billingPeriodId = await getLatestBillingPeriodId(householdId)
+    if (!billingPeriodId) {
+      billingPeriodId = await getLatestBillingPeriodId(householdId)
+    }
 
     if (billingPeriodId) {
       try {
@@ -209,8 +226,25 @@ export async function getDashboardConsumptions(filters = {}) {
   }
 }
 
+export async function listBillingPeriods(householdId) {
+  if (!householdId) {
+    return []
+  }
+
+  const periods = await fetchBillingPeriods(householdId)
+
+  const sortedPeriods = [...periods].sort(
+    (left, right) => new Date(right.end_date).getTime() - new Date(left.end_date).getTime(),
+  )
+
+  return sortedPeriods.map((period) => ({
+    value: period.id,
+    label: formatPeriodOption(period),
+  }))
+}
+
 export async function createConsumption(newConsumption) {
-  const householdId = await resolveDefaultHouseholdId()
+  const householdId = newConsumption.householdId || (await resolveDefaultHouseholdId())
 
   const createdReading = await requestApi(apiEndpoints.meterReadings, {
     method: 'POST',
@@ -218,7 +252,7 @@ export async function createConsumption(newConsumption) {
       household_id: householdId,
       reading_date: newConsumption.fecha,
       reading_kwh: Number(newConsumption.kWh),
-      is_initial: false,
+      is_initial: Boolean(newConsumption.isInitial),
     },
   })
 
@@ -227,6 +261,21 @@ export async function createConsumption(newConsumption) {
     endpoint: buildApiUrl(apiEndpoints.meterReadings),
     backend: backendConfig,
     item: normalizeReading(createdReading),
+  }
+}
+
+export async function updateConsumption(meterReadingId, values) {
+  const updatedReading = await requestApi(`${apiEndpoints.meterReadings}/${meterReadingId}`, {
+    method: 'PUT',
+    body: {
+      reading_date: values.fecha,
+      reading_kwh: Number(values.kWh),
+    },
+  })
+
+  return {
+    success: true,
+    item: normalizeReading(updatedReading),
   }
 }
 

@@ -20,6 +20,10 @@ export const backendConfig = {
 
 export const apiEndpoints = {
   households: '/households',
+  tariffs: '/tariffs',
+  tariffVersions: '/tariff-versions',
+  tariffRanges: '/tariff-ranges',
+  householdTariffs: '/household-tariffs',
   meterReadings: '/meter-readings',
   billingPeriods: '/billing-periods',
   billingPeriodDashboard: (billingPeriodId) => `/dashboards/billing-period/${billingPeriodId}`,

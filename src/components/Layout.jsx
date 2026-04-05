@@ -1,4 +1,4 @@
-import { FormOutlined, MenuOutlined, ThunderboltOutlined } from '@ant-design/icons'
+import { FormOutlined, MenuOutlined, ThunderboltOutlined, HomeOutlined, TagOutlined } from '@ant-design/icons'
 import { Button, Drawer, Grid, Layout as AntLayout, Menu, Space, Typography } from 'antd'
 import { useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -8,7 +8,9 @@ const { useBreakpoint } = Grid
 
 const navItems = [
   { key: '/', icon: <ThunderboltOutlined />, label: 'Dashboard' },
-  { key: '/insertar-consumo', icon: <FormOutlined />, label: 'Staff' },
+  { key: '/insertar-consumo', icon: <FormOutlined />, label: 'Lecturas de Medidor' },
+  { key: '/agregar-vivienda', icon: <HomeOutlined />, label: 'Alta Viviendas' },
+  { key: '/agregar-tarifa', icon: <TagOutlined />, label: 'Alta Tarifas' },
 ]
 
 function Layout() {
@@ -18,9 +20,14 @@ function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const isMobile = !screens.lg
 
-  const selectedKey = location.pathname.startsWith('/insertar-consumo')
-    ? '/insertar-consumo'
-    : '/'
+  const getSelectedKey = () => {
+    if (location.pathname.startsWith('/insertar-consumo')) return '/insertar-consumo'
+    if (location.pathname.startsWith('/agregar-vivienda')) return '/agregar-vivienda'
+    if (location.pathname.startsWith('/agregar-tarifa')) return '/agregar-tarifa'
+    return '/'
+  }
+
+  const selectedKey = getSelectedKey()
 
   const handleNavigate = (key) => {
     navigate(key)
