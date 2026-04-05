@@ -372,12 +372,23 @@
 }
 
 @media (max-width: 640px) {
+  .page {
+    gap: 16px;
+  }
+
+  .hero {
+    gap: 12px;
+  }
+
   .heroContent,
   .highlight {
-    padding: 24px 20px;
+    padding: 20px 16px;
+    border-radius: 20px;
   }
 
   .filterRow {
+    margin-top: 16px;
+    padding-top: 14px;
     margin-left: 0 !important;
     margin-right: 0 !important;
   }
@@ -385,6 +396,7 @@
   .filterRow :global(.ant-col) {
     padding-left: 0 !important;
     padding-right: 0 !important;
+    margin-bottom: 8px;
   }
 
   .selectorCard :global(.ant-card-body) {
@@ -393,9 +405,17 @@
 
   .metrics {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .breakdown {
+    padding: 18px 16px;
+    border-radius: 20px;
+  }
+
+  .feedback,
+  .error {
     padding: 20px 16px;
+    border-radius: 20px;
   }
 }

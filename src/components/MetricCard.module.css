@@ -34,3 +34,18 @@
   font-size: 0.95rem;
   overflow-wrap: anywhere;
 }
+
+@media (max-width: 640px) {
+  .card {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .label {
+    margin-bottom: 6px;
+  }
+
+  .hint {
+    margin-top: 6px;
+  }
+}
