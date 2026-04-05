@@ -377,6 +377,16 @@
     padding: 24px 20px;
   }
 
+  .filterRow {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .filterRow :global(.ant-col) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
   .selectorCard :global(.ant-card-body) {
     padding: 16px;
   }
