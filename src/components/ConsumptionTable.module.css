@@ -4,6 +4,13 @@
   background: rgba(255, 255, 255, 0.8);
   box-shadow: var(--shadow-soft);
   overflow: hidden;
+  max-width: 100%;
+}
+
+.wrapper,
+.wrapper :global(.ant-card),
+.wrapper :global(.ant-card-body) {
+  min-width: 0;
 }
 
 .wrapper :global(.ant-card-head) {
@@ -52,6 +59,8 @@
   color: var(--color-muted);
   max-width: 24rem;
   text-align: right;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .tableContainer {
@@ -60,6 +69,19 @@
 
 .table :global(.ant-table) {
   background: transparent;
+  max-width: 100%;
+}
+
+.table :global(.ant-table-wrapper),
+.table :global(.ant-table-container),
+.table :global(.ant-table-content) {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.table :global(.ant-table-content) {
+  overflow-x: auto !important;
+  overflow-y: hidden;
 }
 
 .table :global(.ant-table-container) {
@@ -82,6 +104,8 @@
 
 .table :global(.ant-table-cell) {
   padding: 14px 14px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .table :global(.ant-btn) {
@@ -121,5 +145,37 @@
 
   .table :global(.ant-table-cell) {
     padding: 12px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wrapper {
+    border-radius: 16px;
+  }
+
+  .wrapper :global(.ant-card-head) {
+    padding: 14px 12px 0;
+  }
+
+  .wrapper :global(.ant-card-body) {
+    padding: 12px 12px 12px;
+  }
+
+  .caption {
+    max-width: 100%;
+    font-size: 0.86rem;
+  }
+
+  .table :global(.ant-table-container) {
+    border-radius: 12px;
+  }
+
+  .table :global(.ant-table-cell) {
+    padding: 10px 10px;
+    font-size: 0.86rem;
+  }
+
+  .table :global(.ant-btn) {
+    width: 100%;
   }
 }

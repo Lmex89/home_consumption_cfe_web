@@ -165,8 +165,8 @@ function DashboardPage() {
             Consulta el hogar activo, revisa métricas de consumo y edita lecturas recientes desde una sola vista.
           </Typography.Paragraph>
 
-          <Row gutter={[16, 12]} align="middle" className={styles.filterRow}>
-            <Col xs={24} md={8}>
+          <Row gutter={[12, 12]} align="middle" className={styles.filterRow}>
+            <Col xs={24} sm={24} md={8}>
               <div className={styles.filterIntro}>
                 <Typography.Text strong>Household activo</Typography.Text>
                 <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
@@ -174,7 +174,7 @@ function DashboardPage() {
                 </Typography.Paragraph>
               </div>
             </Col>
-            <Col xs={24} md={8}>
+            <Col xs={24} sm={24} md={8}>
               <Select
                 className={styles.selectField}
                 style={{ width: '100%' }}
@@ -185,7 +185,7 @@ function DashboardPage() {
                 placeholder="Selecciona un household"
               />
             </Col>
-            <Col xs={24} md={8}>
+            <Col xs={24} sm={24} md={8}>
               <Select
                 className={styles.selectField}
                 style={{ width: '100%' }}
@@ -209,39 +209,39 @@ function DashboardPage() {
         </div>
       </section>
 
-      <div className={styles.metrics}>
-        <div className={styles.metricItem}>
+      <Row gutter={[12, 12]} className={styles.metricsRow}>
+        <Col xs={24} sm={12} lg={6} className={styles.metricItem}>
           <MetricCard
             label="Consumo actual"
             value={`${summary.current.toFixed(1)} kWh`}
             hint={`Fecha de lectura: ${summary.currentDate}`}
             tone="accent"
           />
-        </div>
-        <div className={styles.metricItem}>
+        </Col>
+        <Col xs={24} sm={12} lg={6} className={styles.metricItem}>
           <MetricCard
             label="Consumo anterior"
             value={`${summary.previous.toFixed(1)} kWh`}
             hint={`Comparativo inmediato: ${summary.difference >= 0 ? '+' : ''}${summary.difference.toFixed(1)} kWh`}
             tone="soft"
           />
-        </div>
-        <div className={styles.metricItem}>
+        </Col>
+        <Col xs={24} sm={12} lg={6} className={styles.metricItem}>
           <MetricCard
             label="Promedio"
             value={`${summary.average.toFixed(1)} kWh`}
             hint={`Basado en ${items.length} mediciones`}
           />
-        </div>
-        <div className={styles.metricItem}>
+        </Col>
+        <Col xs={24} sm={12} lg={6} className={styles.metricItem}>
           <MetricCard
             label="Maximo registrado"
             value={`${summary.max.toFixed(1)} kWh`}
             hint={`Minimo registrado: ${summary.min.toFixed(1)} kWh`}
             tone="accent"
           />
-        </div>
-      </div>
+        </Col>
+      </Row>
 
       <div className={styles.breakdown}>
         <Collapse

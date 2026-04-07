@@ -4,6 +4,26 @@
   width: 100%;
 }
 
+.page > * {
+  min-width: 0;
+}
+
+.page :global(.ant-typography),
+.page p,
+.page h1,
+.page h2,
+.page h3,
+.page h4 {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.page :global(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 .hero {
   position: relative;
   isolation: isolate;
@@ -211,10 +231,12 @@
   color: #fff;
 }
 
-.metrics {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+.metricsRow {
+  margin: 0;
+}
+
+.metricsRow :global(.ant-col) {
+  min-width: 0;
 }
 
 .metricItem {
@@ -311,6 +333,14 @@
 .breakdownTotal {
   margin: 0;
   color: var(--color-text);
+}
+
+.breakdown :global(.ant-collapse),
+.breakdown :global(.ant-collapse-item),
+.breakdown :global(.ant-collapse-header),
+.breakdown :global(.ant-collapse-content),
+.breakdown :global(.ant-collapse-content-box) {
+  min-width: 0;
 }
 
 .feedback,
@@ -482,11 +512,6 @@
     font-size: 0.95rem;
   }
 
-  .metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-  }
-
   .breakdown {
     padding: 22px 26px;
   }
@@ -532,7 +557,73 @@
     padding: 28px;
   }
 
-  .metrics {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+@media (max-width: 480px) {
+  .page {
+    gap: 12px;
+  }
+
+  .hero {
+    gap: 10px;
+  }
+
+  .heroContent,
+  .highlight,
+  .breakdown,
+  .feedback,
+  .error {
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  .title {
+    font-size: clamp(1.5rem, 8.5vw, 1.95rem);
+    line-height: 1.05;
+  }
+
+  .filterRow {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .filterRow :global(.ant-col) {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-bottom: 6px;
+  }
+
+  .selectField :global(.ant-select-selector) {
+    min-height: 40px !important;
+  }
+
+  .selectField :global(.ant-select-selection-item),
+  .selectField :global(.ant-select-selection-placeholder) {
+    line-height: 38px !important;
+  }
+
+  .highlightLabel,
+  .totalCostLabel {
+    max-width: 100%;
+  }
+
+  .highlight strong {
+    font-size: clamp(1.7rem, 9vw, 2.2rem);
+  }
+
+  .metricsRow {
+    margin: 0;
+  }
+
+  .metricsRow :global(.ant-col) {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .breakdownCollapse :global(.ant-collapse-header-text) {
+    font-size: 0.95rem;
+    line-height: 1.35;
   }
 }
