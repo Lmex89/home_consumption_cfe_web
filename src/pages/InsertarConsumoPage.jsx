@@ -1,22 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Alert, Card, Col, Empty, Row, Select, Skeleton, Typography, message } from 'antd'
 import ConsumptionForm from '../components/ConsumptionForm'
 import ConsumptionTable from '../components/ConsumptionTable'
 import MetricCard from '../components/MetricCard'
-import { createConsumption, getDashboardConsumptions, listHouseholds } from '../services/consumoService'
+import { useHouseholds } from '../hooks/useHouseholds'
+import { createConsumption, getDashboardConsumptions } from '../services/consumoService'
 import styles from './InsertarConsumoPage.module.css'
-import { useEffect } from 'react'
 
 function InsertarConsumoPage() {
   const [messageApi, contextHolder] = message.useMessage()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
-  const [isLoadingHouseholds, setIsLoadingHouseholds] = useState(true)
   const [successMessage, setSuccessMessage] = useState('')
   const [error, setError] = useState('')
   const [latestItems, setLatestItems] = useState([])
-  const [households, setHouseholds] = useState([])
   const [selectedHouseholdId, setSelectedHouseholdId] = useState(null)
+
+  const { households, isLoading: isLoadingHouseholds, error: householdsError } = useHouseholds()
 
   const loadHistory = async (householdId) => {
     setIsLoadingHistory(true)
@@ -33,51 +33,22 @@ function InsertarConsumoPage() {
     }
   }
 
+  // Auto-select the first household and load its history once households are ready.
   useEffect(() => {
-    let isMounted = true
-
-    const initialize = async () => {
-      setIsLoadingHouseholds(true)
-
-      try {
-        const availableHouseholds = await listHouseholds()
-
-        if (!isMounted) {
-          return
-        }
-
-        setHouseholds(availableHouseholds)
-        const initialHouseholdId = availableHouseholds[0]?.value ?? null
-        setSelectedHouseholdId(initialHouseholdId)
-
-        if (initialHouseholdId) {
-          await loadHistory(initialHouseholdId)
-        } else {
-          setLatestItems([])
-          setIsLoadingHistory(false)
-        }
-      } catch {
-        if (!isMounted) {
-          return
-        }
-
-        setError('No fue posible cargar los households.')
-        setLatestItems([])
-        setSelectedHouseholdId(null)
-        setIsLoadingHistory(false)
-      } finally {
-        if (isMounted) {
-          setIsLoadingHouseholds(false)
-        }
-      }
+    if (!isLoadingHouseholds && households.length > 0 && selectedHouseholdId === null) {
+      const initialId = households[0].value
+      setSelectedHouseholdId(initialId)
+      loadHistory(initialId)
     }
-
-    initialize()
-
-    return () => {
-      isMounted = false
+    if (!isLoadingHouseholds && households.length === 0) {
+      setIsLoadingHistory(false)
     }
-  }, [])
+    if (householdsError) {
+      setError(householdsError)
+      setIsLoadingHistory(false)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingHouseholds])
 
   const handleHouseholdChange = async (householdId) => {
     setSelectedHouseholdId(householdId)
@@ -121,14 +92,18 @@ function InsertarConsumoPage() {
             Captura lecturas reales, marca lecturas iniciales y revisa al instante el historial del household seleccionado.
           </Typography.Paragraph>
 
-          <Row gutter={[16, 12]} align="middle" className={styles.filtersRow}>
-            <Col xs={24} md={10}>
+          <Row
+            gutter={[{ xs: 0, sm: 0, md: 12, lg: 12 }, 12]}
+            align="middle"
+            className={styles.filtersRow}
+          >
+            <Col xs={24} sm={24} md={10}>
               <Typography.Text strong>Household</Typography.Text>
               <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
                 Cambia el household para consultar y registrar lecturas en ese historial.
               </Typography.Paragraph>
             </Col>
-            <Col xs={24} md={14}>
+            <Col xs={24} sm={24} md={14}>
               <Select
                 style={{ width: '100%' }}
                 value={selectedHouseholdId ?? undefined}
@@ -151,31 +126,34 @@ function InsertarConsumoPage() {
         </div>
       </section>
 
-      <div className={styles.metrics}>
-        <div className={styles.metricItem}>
+      <Row
+        gutter={[{ xs: 0, sm: 0, md: 12, lg: 12 }, 12]}
+        className={styles.metricsRow}
+      >
+        <Col xs={24} sm={12} lg={8} className={styles.metricItem}>
           <MetricCard
             label="Lecturas cargadas"
             value={String(latestItems.length)}
             hint="Historial refrescado despues de cada registro"
             tone="accent"
           />
-        </div>
-        <div className={styles.metricItem}>
+        </Col>
+        <Col xs={24} sm={12} lg={8} className={styles.metricItem}>
           <MetricCard
             label="kWh en historial"
             value={`${totalLatestKwh.toFixed(1)} kWh`}
             hint="Suma de lecturas visibles del household actual"
           />
-        </div>
-        <div className={styles.metricItem}>
+        </Col>
+        <Col xs={24} sm={12} lg={8} className={styles.metricItem}>
           <MetricCard
             label="Lecturas iniciales"
             value={String(initialReadingsCount)}
             hint="Marcadas manualmente desde el formulario"
             tone="soft"
           />
-        </div>
-      </div>
+        </Col>
+      </Row>
 
       <ConsumptionForm
         onSubmit={handleSubmit}

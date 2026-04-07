@@ -1,0 +1,48 @@
+.page {
+  display: grid;
+  gap: 16px;
+}
+
+.page > * {
+  min-width: 0;
+}
+
+.page :global(.ant-typography),
+.page p,
+.page h1,
+.page h2,
+.page h3,
+.page h4 {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.createdCard :global(.ant-space),
+.createdCard :global(.ant-space-item) {
+  min-width: 0;
+}
+
+.createdCard :global(.ant-typography) {
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .page {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    gap: 12px;
+  }
+
+  .page :global(.ant-card),
+  .page :global(.ant-alert) {
+    border-radius: 16px;
+  }
+
+  .createdCard :global(.ant-card-body) {
+    padding: 14px 12px;
+  }
+}

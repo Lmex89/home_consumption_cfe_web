@@ -1,6 +1,27 @@
 .page {
   display: grid;
-  gap: 24px;
+  gap: 16px;
+  width: 100%;
+}
+
+.page > * {
+  min-width: 0;
+}
+
+.page :global(.ant-typography),
+.page p,
+.page h1,
+.page h2,
+.page h3,
+.page h4 {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.page :global(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 .hero {
@@ -8,8 +29,13 @@
   isolation: isolate;
   overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.6fr);
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.hero > * {
+  min-width: 0;
 }
 
 .heroAmbient {
@@ -38,23 +64,25 @@
 
 .heroContent,
 .highlight {
-  border-radius: 32px;
+  border-radius: 20px;
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-soft);
 }
 
 .heroContent {
-  padding: 32px;
+  display: grid;
+  align-content: start;
+  padding: 20px 16px;
   background:
-    radial-gradient(circle at top right, rgba(14, 165, 233, 0.2), transparent 36%),
-    radial-gradient(circle at 30% 120%, rgba(37, 99, 235, 0.16), transparent 45%),
-    rgba(255, 255, 255, 0.88);
+    radial-gradient(circle at top right, var(--color-primary-soft), transparent 36%),
+    radial-gradient(circle at 30% 120%, rgba(37, 99, 235, 0.12), transparent 45%),
+    var(--color-surface);
   backdrop-filter: blur(4px);
 }
 
 .eyebrow {
   margin: 0 0 10px;
-  font-size: 0.8rem;
+  font-size: var(--header-eyebrow-size);
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -63,51 +91,71 @@
 
 .title {
   margin: 0;
-  font-size: clamp(2rem, 4.4vw, 3.9rem);
-  line-height: 0.95;
+  font-size: var(--header-title-size-mobile);
+  line-height: 1.02;
   letter-spacing: -0.03em;
   text-wrap: balance;
+  color: var(--color-title);
+  overflow-wrap: anywhere;
 }
 
 .description {
-  margin: 16px 0 0;
+  margin: 12px 0 0;
   max-width: 48ch;
   color: var(--color-muted);
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .filterRow {
-  margin-top: 22px;
-  padding-top: 18px;
+  margin-top: 16px;
+  padding-top: 14px;
   border-top: 1px solid rgba(148, 163, 184, 0.26);
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.filterRow :global(.ant-col) {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-bottom: 8px;
+}
+
+.filterIntro {
+  display: grid;
+  gap: 4px;
+  max-width: 28rem;
 }
 
 .selectField :global(.ant-select-selector) {
   border-radius: 14px !important;
   border-color: rgba(96, 165, 250, 0.4) !important;
   box-shadow: none !important;
+  min-height: 42px !important;
+  padding-inline: 12px !important;
+  align-items: center;
 }
 
 .selectField :global(.ant-select-selector:hover) {
   border-color: rgba(37, 99, 235, 0.62) !important;
 }
 
+.selectField :global(.ant-select-selection-item),
+.selectField :global(.ant-select-selection-placeholder) {
+  line-height: 40px !important;
+}
+
 .highlight {
   position: relative;
   overflow: hidden;
   display: grid;
-  gap: 10px;
+  gap: 8px;
   align-content: end;
-  padding: 28px;
+  padding: 20px 16px;
   background:
-    radial-gradient(circle at 16% 18%, rgba(186, 230, 253, 0.58), transparent 50%),
-    radial-gradient(circle at 88% 0%, rgba(125, 211, 252, 0.48), transparent 42%),
-    linear-gradient(155deg, #f6fbff 0%, #e5f2ff 54%, #dff1ff 100%);
-  border-color: rgba(56, 189, 248, 0.35);
-  box-shadow:
-    0 14px 36px rgba(56, 189, 248, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.48);
-  color: #082f49;
+    radial-gradient(circle at 16% 18%, rgba(186, 230, 253, 0.45), transparent 50%),
+    radial-gradient(circle at 88% 0%, rgba(125, 211, 252, 0.32), transparent 42%),
+    var(--color-surface);
+  color: var(--color-text);
 }
 
 .highlight::before,
@@ -156,12 +204,13 @@
 }
 
 .highlight strong {
-  font-size: clamp(2.15rem, 4vw, 3.8rem);
+  font-size: clamp(1.95rem, 9vw, 2.8rem);
   line-height: 0.95;
-  color: #082f49;
+  color: var(--color-title);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   letter-spacing: -0.02em;
   text-shadow: 0 0 18px rgba(56, 189, 248, 0.32);
+  overflow-wrap: anywhere;
 }
 
 .totalCostLabel {
@@ -173,7 +222,7 @@
   background: linear-gradient(135deg, rgba(14, 165, 233, 0.9), rgba(56, 189, 248, 0.9));
   border: 1px solid rgba(125, 211, 252, 0.88);
   box-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   color: #f8fbff;
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
@@ -182,14 +231,21 @@
   color: #fff;
 }
 
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+.metricsRow {
+  margin: 0;
+}
+
+.metricsRow :global(.ant-col) {
+  min-width: 0;
+}
+
+.metricItem :global(.ant-card) {
+  width: 100%;
 }
 
 .metricItem {
   min-width: 0;
+  height: 100%;
   transition: transform 220ms ease, box-shadow 220ms ease;
 }
 
@@ -222,11 +278,30 @@
 }
 
 .breakdown {
-  padding: 22px 26px;
-  border-radius: 24px;
+  padding: 18px 16px;
+  border-radius: 20px;
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-surface);
   box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.breakdownCollapse :global(.ant-collapse-header) {
+  padding: 0 !important;
+  align-items: center !important;
+}
+
+.breakdownCollapse :global(.ant-collapse-header-text) {
+  font-weight: 700;
+  color: var(--color-title);
+}
+
+.breakdownCollapse :global(.ant-collapse-content-box) {
+  padding: 14px 0 0 !important;
+}
+
+.breakdownCollapse :global(.ant-collapse-expand-icon) {
+  padding-inline-end: 10px !important;
 }
 
 .breakdown summary {
@@ -264,12 +339,20 @@
   color: var(--color-text);
 }
 
+.breakdown :global(.ant-collapse),
+.breakdown :global(.ant-collapse-item),
+.breakdown :global(.ant-collapse-header),
+.breakdown :global(.ant-collapse-content),
+.breakdown :global(.ant-collapse-content-box) {
+  min-width: 0;
+}
+
 .feedback,
 .error {
-  padding: 32px;
-  border-radius: 24px;
+  padding: 20px 16px;
+  border-radius: 20px;
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-surface);
 }
 
 .error {
@@ -278,12 +361,16 @@
 
 .selectorCard {
   border-radius: 18px;
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  border: 1px solid var(--color-border);
   background:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 36%),
-    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.12), transparent 40%),
-    #ffffff;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    radial-gradient(circle at top right, var(--color-primary-soft), transparent 36%),
+    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 40%),
+    var(--color-surface-strong);
+  box-shadow: var(--shadow-soft);
+}
+
+.selectorCard :global(.ant-card-body) {
+  padding: 16px;
 }
 
 .billingCard {
@@ -361,31 +448,201 @@
   }
 }
 
-@media (max-width: 1000px) {
+@media (min-width: 768px) {
+  .page {
+    gap: 20px;
+  }
+
   .hero {
-    grid-template-columns: 1fr;
+    gap: 20px;
   }
 
-  .metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .heroContent,
+  .highlight,
+  .breakdown,
+  .feedback,
+  .error {
+    border-radius: 24px;
   }
-}
 
-@media (max-width: 640px) {
   .heroContent,
   .highlight {
-    padding: 24px 20px;
+    padding: 24px;
   }
 
-  .selectorCard :global(.ant-card-body) {
-    padding: 16px;
+  .title {
+    font-size: clamp(1.9rem, 6vw, 3.1rem);
+    line-height: 1;
   }
 
-  .metrics {
-    grid-template-columns: 1fr;
+  .description {
+    margin-top: 16px;
+    font-size: 1rem;
+  }
+
+  .filterRow {
+    margin-top: 22px;
+    padding-top: 18px;
+  }
+
+  .filterRow :global(.ant-col) {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    margin-bottom: 0;
+  }
+
+  .filterIntro {
+    gap: 6px;
+  }
+
+  .selectField :global(.ant-select-selector) {
+    min-height: 46px !important;
+  }
+
+  .selectField :global(.ant-select-selection-item),
+  .selectField :global(.ant-select-selection-placeholder) {
+    line-height: 44px !important;
+  }
+
+  .highlight {
+    gap: 10px;
+  }
+
+  .highlight strong {
+    font-size: clamp(2.15rem, 4vw, 3.8rem);
+  }
+
+  .totalCostLabel {
+    font-size: 0.95rem;
   }
 
   .breakdown {
-    padding: 20px 16px;
+    padding: 22px 26px;
+  }
+
+  .breakdownCollapse :global(.ant-collapse-content-box) {
+    padding-top: 18px !important;
+  }
+
+  .feedback,
+  .error {
+    padding: 32px;
+  }
+
+  .selectorCard :global(.ant-card-body) {
+    padding: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page {
+    gap: 24px;
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.6fr);
+  }
+
+  .heroContent,
+  .highlight {
+    border-radius: 32px;
+  }
+
+  .heroContent {
+    padding: 32px;
+  }
+
+  .title {
+    font-size: var(--header-title-size-desktop);
+    line-height: 0.95;
+  }
+
+  .highlight {
+    padding: 28px;
+  }
+
+}
+
+@media (max-width: 480px) {
+  .page {
+    gap: 12px;
+  }
+
+  .hero {
+    gap: 10px;
+  }
+
+  .heroContent,
+  .highlight,
+  .breakdown,
+  .feedback,
+  .error {
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  .title {
+    font-size: clamp(1.5rem, 8.5vw, 1.95rem);
+    line-height: 1.05;
+  }
+
+  .filterRow {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .filterRow :global(.ant-col) {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-bottom: 6px;
+  }
+
+  .selectField :global(.ant-select-selector) {
+    min-height: 40px !important;
+  }
+
+  .selectField :global(.ant-select-selection-item),
+  .selectField :global(.ant-select-selection-placeholder) {
+    line-height: 38px !important;
+  }
+
+  .highlightLabel,
+  .totalCostLabel {
+    max-width: 100%;
+  }
+
+  .highlight strong {
+    font-size: clamp(1.7rem, 9vw, 2.2rem);
+  }
+
+  .metricsRow {
+    display: block;
+    margin: 0 !important;
+  }
+
+  .metricsRow :global(.ant-col) {
+    display: block;
+    width: 100%;
+    flex: none;
+    max-width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 0 12px 0;
+  }
+
+  .metricsRow :global(.ant-col:last-child) {
+    margin-bottom: 0;
+  }
+
+  .metricItem {
+    height: auto;
+    margin-bottom: 0;
+  }
+
+  .breakdownCollapse :global(.ant-collapse-header-text) {
+    font-size: 0.95rem;
+    line-height: 1.35;
   }
 }

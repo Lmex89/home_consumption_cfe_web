@@ -1,9 +1,35 @@
 .wrapper {
-  padding: 28px;
   border-radius: 32px;
   border: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.8);
   box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.wrapper,
+.wrapper :global(.ant-card),
+.wrapper :global(.ant-card-body) {
+  min-width: 0;
+}
+
+.wrapper :global(.ant-card-head) {
+  min-height: 0;
+  padding: 24px 28px 0;
+  border-bottom: 0;
+}
+
+.wrapper :global(.ant-card-head-title) {
+  padding: 0;
+  white-space: normal;
+}
+
+.wrapper :global(.ant-card-extra) {
+  padding: 0;
+}
+
+.wrapper :global(.ant-card-body) {
+  padding: 18px 28px 28px;
 }
 
 .header {
@@ -31,42 +57,125 @@
 .caption {
   margin: 0;
   color: var(--color-muted);
+  max-width: 24rem;
+  text-align: right;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .tableContainer {
   overflow-x: auto;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
+.table :global(.ant-table) {
+  background: transparent;
+  max-width: 100%;
 }
 
-.table th,
-.table td {
-  padding: 16px 14px;
-  text-align: left;
-  border-bottom: 1px solid var(--color-border);
+.table :global(.ant-table-wrapper),
+.table :global(.ant-table-container),
+.table :global(.ant-table-content) {
+  max-width: 100%;
+  min-width: 0;
 }
 
-.table th {
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+.table :global(.ant-table-content) {
+  overflow-x: auto !important;
+  overflow-y: hidden;
+}
+
+.table :global(.ant-table-container) {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.table :global(.ant-table-thead > tr > th) {
+  background: rgba(248, 250, 252, 0.92);
   color: var(--color-muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.table tbody tr:last-child td {
-  border-bottom: none;
+.table :global(.ant-table-tbody > tr > td) {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.table :global(.ant-table-cell) {
+  padding: 14px 14px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.table :global(.ant-btn) {
+  border-radius: 12px;
 }
 
 @media (max-width: 700px) {
-  .wrapper {
-    padding: 22px 18px;
+  .wrapper :global(.ant-card-head) {
+    padding: 20px 18px 0;
   }
 
-  .header {
-    flex-direction: column;
-    align-items: start;
+  .wrapper :global(.ant-card-body) {
+    padding: 16px 18px 20px;
+  }
+
+  .caption {
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .wrapper {
+    border-radius: 20px;
+  }
+
+  .wrapper :global(.ant-card-head) {
+    padding: 18px 16px 0;
+  }
+
+  .wrapper :global(.ant-card-body) {
+    padding: 14px 16px 16px;
+  }
+
+  .table :global(.ant-table-container) {
+    border-radius: 14px;
+  }
+
+  .table :global(.ant-table-cell) {
+    padding: 12px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wrapper {
+    border-radius: 16px;
+  }
+
+  .wrapper :global(.ant-card-head) {
+    padding: 14px 12px 0;
+  }
+
+  .wrapper :global(.ant-card-body) {
+    padding: 12px 12px 12px;
+  }
+
+  .caption {
+    max-width: 100%;
+    font-size: 0.86rem;
+  }
+
+  .table :global(.ant-table-container) {
+    border-radius: 12px;
+  }
+
+  .table :global(.ant-table-cell) {
+    padding: 10px 10px;
+    font-size: 0.86rem;
+  }
+
+  .table :global(.ant-btn) {
+    width: 100%;
   }
 }

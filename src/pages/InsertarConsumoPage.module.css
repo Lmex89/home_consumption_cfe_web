@@ -1,31 +1,49 @@
 .page {
   display: grid;
-  gap: 24px;
+  gap: 16px;
+}
+
+.page > * {
+  min-width: 0;
+}
+
+.page :global(.ant-typography),
+.page p,
+.page h1,
+.page h2,
+.page h3,
+.page h4 {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.6fr);
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.hero > * {
+  min-width: 0;
 }
 
 .heroContent,
 .highlight {
-  border-radius: 32px;
+  border-radius: 20px;
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-soft);
 }
 
 .heroContent {
-  padding: 32px;
+  padding: 24px 20px;
   background:
-    radial-gradient(circle at top right, rgba(14, 165, 233, 0.18), transparent 32%),
-    rgba(255, 255, 255, 0.85);
+    radial-gradient(circle at top right, var(--color-primary-soft), transparent 32%),
+    var(--color-surface);
 }
 
 .eyebrow {
   margin: 0 0 10px;
-  font-size: 0.8rem;
+  font-size: var(--header-eyebrow-size);
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -34,12 +52,15 @@
 
 .title {
   margin: 0;
-  font-size: clamp(1.8rem, 3vw, 3.2rem);
-  line-height: 1;
+  font-size: var(--header-title-size-mobile);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--color-title);
+  overflow-wrap: anywhere;
 }
 
 .description {
-  margin: 16px 0 0;
+  margin: 12px 0 0;
   max-width: 48ch;
   color: var(--color-muted);
 }
@@ -48,72 +69,169 @@
   margin-top: 18px;
 }
 
+.filtersRow :global(.ant-col) {
+  min-width: 0;
+}
+
 .highlight {
   display: grid;
   gap: 8px;
   align-content: end;
-  padding: 28px;
-  background: linear-gradient(135deg, var(--color-ink), #16324b);
-  color: #f8fbff;
+  padding: 24px 20px;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.18), transparent 36%),
+    var(--color-surface);
+  color: var(--color-text);
 }
 
 .highlight span {
   font-size: 0.92rem;
-  color: rgba(248, 251, 255, 0.78);
+  color: var(--color-muted);
 }
 
 .highlight strong {
-  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-size: clamp(1.95rem, 9vw, 2.8rem);
   line-height: 0.95;
+  color: var(--color-title);
+  overflow-wrap: anywhere;
 }
 
 .totalCostLabel {
   margin: 4px 0 0;
-  font-size: 0.95rem;
-  color: rgba(248, 251, 255, 0.88);
+  font-size: 0.9rem;
+  color: var(--color-muted);
 }
 
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+.metricsRow {
+  margin: 0;
+}
+
+.metricsRow :global(.ant-col) {
+  min-width: 0;
 }
 
 .metricItem {
   min-width: 0;
 }
 
+.metricItem :global(.ant-card) {
+  width: 100%;
+}
+
 .feedback,
 .error {
-  padding: 32px;
-  border-radius: 24px;
+  padding: 24px 20px;
+  border-radius: 20px;
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-surface);
 }
 
 .error {
   color: var(--color-danger);
 }
 
-@media (max-width: 1000px) {
-  .hero {
-    grid-template-columns: 1fr;
+@media (min-width: 768px) {
+  .page {
+    gap: 20px;
   }
 
-  .metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 640px) {
   .heroContent,
   .highlight,
   .feedback,
   .error {
-    padding: 24px 20px;
+    padding: 28px 24px;
+    border-radius: 24px;
   }
 
-  .metrics {
-    grid-template-columns: 1fr;
+  .title {
+    font-size: clamp(1.9rem, 5.5vw, 2.9rem);
+    line-height: 1;
+  }
+
+  .metricsRow {
+    margin: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page {
+    gap: 24px;
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.6fr);
+    gap: 20px;
+  }
+
+  .heroContent {
+    padding: 32px;
+  }
+
+  .highlight {
+    padding: 28px;
+  }
+
+  .title {
+    font-size: var(--header-title-size-desktop);
+    line-height: 0.95;
+  }
+
+}
+
+@media (max-width: 480px) {
+  .page {
+    gap: 12px;
+  }
+
+  .hero {
+    gap: 10px;
+  }
+
+  .heroContent,
+  .highlight,
+  .feedback,
+  .error {
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  .title {
+    font-size: clamp(1.5rem, 8.5vw, 1.95rem);
+    line-height: 1.05;
+  }
+
+  .filtersRow {
+    margin-top: 12px;
+  }
+
+  .filtersRow :global(.ant-col) {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-bottom: 6px;
+  }
+
+  .highlight strong {
+    font-size: clamp(1.7rem, 9vw, 2.2rem);
+  }
+
+  .metricsRow {
+    display: block;
+    margin: 0 !important;
+  }
+
+  .metricsRow :global(.ant-col) {
+    display: block;
+    width: 100%;
+    flex: none;
+    max-width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 0 12px 0;
+  }
+
+  .metricsRow :global(.ant-col:last-child) {
+    margin-bottom: 0;
   }
 }

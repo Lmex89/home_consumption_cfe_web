@@ -3,68 +3,108 @@
   gap: 20px;
 }
 
+.page > * {
+  min-width: 0;
+}
+
+.page :global(.ant-typography),
+.page p,
+.page h1,
+.page h2,
+.page h3,
+.page h4 {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  grid-template-columns: 1fr;
   gap: 18px;
+}
+
+.hero > * {
+  min-width: 0;
 }
 
 .introCard,
 .statusCard {
-  border-radius: 24px;
-  border: 1px solid rgba(59, 130, 246, 0.16);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
 }
 
 .introCard {
-  padding: 28px;
+  padding: 22px 18px;
   background:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 34%),
-    #ffffff;
+    radial-gradient(circle at top right, var(--color-primary-soft), transparent 34%),
+    var(--color-surface-strong);
 }
 
 .statusCard {
-  padding: 24px;
-  background: linear-gradient(145deg, #0b2344 0%, #1b4f91 100%);
-  color: #f8fbff;
+  padding: 22px 18px;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.18), transparent 36%),
+    var(--color-surface);
+  color: var(--color-text);
 }
 
 .eyebrow {
   margin: 0 0 8px;
-  font-size: 0.78rem;
+  font-size: var(--header-eyebrow-size);
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #3b82f6;
+  color: var(--color-primary);
 }
 
 .statusCard .eyebrow {
-  color: rgba(191, 219, 254, 0.95);
+  color: var(--color-primary);
 }
 
 .title {
   margin: 0 !important;
+  color: var(--color-title);
+  font-size: var(--header-title-size-mobile) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
 }
 
 .description {
   margin: 12px 0 0 !important;
   max-width: 56ch;
+  color: var(--color-muted) !important;
 }
 
 .statusValue {
   margin: 8px 0 0;
-  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-size: clamp(1.8rem, 7vw, 2.65rem);
   font-weight: 700;
   line-height: 1;
+  color: var(--color-title);
+  overflow-wrap: anywhere;
 }
 
 .statusHint {
   margin: 10px 0 0;
-  color: rgba(226, 232, 240, 0.88);
+  color: var(--color-muted);
 }
 
 .statsRow {
   margin: 0;
+}
+
+.statsCol {
+  min-width: 0;
+}
+
+.statsCol :global(.ant-card) {
+  width: 100%;
+}
+
+.selectorRow :global(.ant-col) {
+  min-width: 0;
 }
 
 .sectionCard :global(.ant-card-head) {
@@ -75,15 +115,88 @@
   border-style: dashed;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 480px) {
+  .page {
+    gap: 12px;
+  }
+
   .hero {
-    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .introCard,
+  .statusCard {
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  .title {
+    font-size: clamp(1.5rem, 8.5vw, 1.95rem) !important;
+    line-height: 1.05 !important;
+  }
+
+  .statsRow {
+    display: block;
+    margin: 0 !important;
+  }
+
+  .statsRow :global(.ant-col) {
+    display: block;
+    width: 100%;
+    flex: none;
+    max-width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 0 12px 0;
+  }
+
+  .statsRow :global(.ant-col:last-child) {
+    margin-bottom: 0;
+  }
+
+  .selectorRow {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .selectorRow :global(.ant-col) {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 }
 
-@media (max-width: 640px) {
+@media (min-width: 768px) {
   .introCard,
   .statusCard {
-    padding: 22px 18px;
+    padding: 24px;
+    border-radius: 24px;
+  }
+
+  .title {
+    font-size: clamp(1.9rem, 5.5vw, 2.9rem) !important;
+    line-height: 1 !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  }
+
+  .introCard,
+  .statusCard {
+    padding: 28px;
+    border-radius: 28px;
+  }
+
+  .statusCard {
+    padding: 24px;
+  }
+
+  .title {
+    font-size: var(--header-title-size-desktop) !important;
+    line-height: 0.95 !important;
   }
 }

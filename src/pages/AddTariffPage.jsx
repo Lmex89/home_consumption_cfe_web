@@ -177,18 +177,21 @@ function AddTariffPage() {
         </div>
       </section>
 
-      <Row gutter={[16, 16]} className={styles.statsRow}>
-        <Col xs={24} md={8}>
+      <Row
+        gutter={[{ xs: 0, sm: 0, md: 12, lg: 12 }, 12]}
+        className={styles.statsRow}
+      >
+        <Col xs={24} sm={24} md={8} className={styles.statsCol}>
           <Card>
             <Statistic title="Tarifas disponibles" value={tariffs.length} loading={loadingTariffs} />
           </Card>
         </Col>
-        <Col xs={24} md={8}>
+        <Col xs={24} sm={24} md={8} className={styles.statsCol}>
           <Card>
             <Statistic title="Versiones cargadas" value={versions.length} loading={loadingVersions} />
           </Card>
         </Col>
-        <Col xs={24} md={8}>
+        <Col xs={24} sm={24} md={8} className={styles.statsCol}>
           <Card>
             <Statistic title="Rangos activos" value={ranges.length} loading={loadingRanges} />
           </Card>
@@ -241,8 +244,12 @@ function AddTariffPage() {
           Selecciona una tarifa para gestionar sus versiones.
         </Typography.Paragraph>
 
-        <Row gutter={16} style={{ marginBottom: 16 }}>
-          <Col xs={24} md={12}>
+        <Row
+          gutter={[{ xs: 0, sm: 0, md: 12, lg: 12 }, 12]}
+          className={styles.selectorRow}
+          style={{ marginBottom: 16 }}
+        >
+          <Col xs={24} sm={24} md={12}>
             <Select
               placeholder="Selecciona una tarifa"
               value={selectedTariffId}

@@ -1,6 +1,8 @@
-import { Alert, Button, Card, Form, Input, Row, Col, Typography, Select, Space, message } from 'antd'
+import { Button, Card, Form, Input, Row, Col, Typography, Select, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { listTariffs } from '../services/householdService'
+import FormActions from './ui/FormActions'
+import SuccessAlert from './ui/SuccessAlert'
 
 function AddHouseholdForm({ onSubmit, isSubmitting, successMessage }) {
   const [form] = Form.useForm()
@@ -47,14 +49,7 @@ function AddHouseholdForm({ onSubmit, isSubmitting, successMessage }) {
         Registro de una nueva vivienda con tafifa asociado en el backend FastAPI.
       </Typography.Paragraph>
 
-      {successMessage ? (
-        <Alert
-          type="success"
-          showIcon
-          message={successMessage}
-          style={{ marginBottom: 16 }}
-        />
-      ) : null}
+      <SuccessAlert message={successMessage} />
 
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <Row gutter={16}>
@@ -107,21 +102,12 @@ function AddHouseholdForm({ onSubmit, isSubmitting, successMessage }) {
           </Col>
         </Row>
 
-        <Form.Item style={{ marginBottom: 0 }}>
-          <Space>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={isSubmitting || loadingTariffs}
-              disabled={loadingTariffs}
-            >
-              Crear vivienda con Tarifa
-            </Button>
-            <Button onClick={() => form.resetFields()}>
-              Limpiar
-            </Button>
-          </Space>
-        </Form.Item>
+        <FormActions
+          submitLabel="Crear vivienda con Tarifa"
+          loading={isSubmitting || loadingTariffs}
+          disabled={loadingTariffs}
+          onReset={() => form.resetFields()}
+        />
       </Form>
     </Card>
   )

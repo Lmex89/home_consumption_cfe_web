@@ -13,10 +13,10 @@ import {
 } from 'antd'
 import ConsumptionTable from '../components/ConsumptionTable'
 import MetricCard from '../components/MetricCard'
+import { useHouseholds } from '../hooks/useHouseholds'
 import {
   getDashboardConsumptions,
   listBillingPeriods,
-  listHouseholds,
   updateConsumption,
 } from '../services/consumoService'
 import styles from './DashboardPage.module.css'
@@ -28,12 +28,13 @@ const currencyFormatter = new Intl.NumberFormat('es-MX', {
 
 function DashboardPage() {
   const [dashboardData, setDashboardData] = useState(null)
-  const [households, setHouseholds] = useState([])
   const [billingPeriods, setBillingPeriods] = useState([])
-  const [selectedHouseholdId, setSelectedHouseholdId] = useState(1)
+  const [selectedHouseholdId, setSelectedHouseholdId] = useState(null)
   const [selectedBillingPeriodId, setSelectedBillingPeriodId] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+
+  const { households, isLoading: isLoadingHouseholds } = useHouseholds()
 
   const loadDashboard = async ({ householdId, billingPeriodId }) => {
     setIsLoading(true)
@@ -52,7 +53,10 @@ function DashboardPage() {
     }
   }
 
+  // Initialize billing periods and first dashboard load once households are ready.
   useEffect(() => {
+    if (isLoadingHouseholds || households.length === 0) return
+
     let isMounted = true
 
     const initialize = async () => {
@@ -60,24 +64,13 @@ function DashboardPage() {
       setError('')
 
       try {
-        const availableHouseholds = await listHouseholds()
-        if (!isMounted) {
-          return
-        }
-
-        setHouseholds(availableHouseholds)
-
-        const hasDefaultHousehold = availableHouseholds.some((household) => household.value === 1)
-        const initialHouseholdId = hasDefaultHousehold
-          ? 1
-          : (availableHouseholds[0]?.value ?? 1)
+        const hasDefaultHousehold = households.some((h) => h.value === 1)
+        const initialHouseholdId = hasDefaultHousehold ? 1 : (households[0]?.value ?? 1)
 
         const periods = await listBillingPeriods(initialHouseholdId)
         const initialBillingPeriodId = periods[0]?.value ?? null
 
-        if (!isMounted) {
-          return
-        }
+        if (!isMounted) return
 
         setSelectedHouseholdId(initialHouseholdId)
         setBillingPeriods(periods)
@@ -106,7 +99,8 @@ function DashboardPage() {
     return () => {
       isMounted = false
     }
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingHouseholds])
 
   const handleHouseholdChange = async (householdId) => {
     setSelectedHouseholdId(householdId)
@@ -171,14 +165,20 @@ function DashboardPage() {
             Consulta el hogar activo, revisa métricas de consumo y edita lecturas recientes desde una sola vista.
           </Typography.Paragraph>
 
-          <Row gutter={[16, 12]} align="middle" className={styles.filterRow}>
-            <Col xs={24} md={8}>
-              <Typography.Text strong>Household activo</Typography.Text>
-              <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                Selecciona el hogar para actualizar el dashboard y la tabla de lecturas.
-              </Typography.Paragraph>
+          <Row
+            gutter={[{ xs: 0, sm: 0, md: 12, lg: 12 }, 12]}
+            align="middle"
+            className={styles.filterRow}
+          >
+            <Col xs={24} sm={24} md={8}>
+              <div className={styles.filterIntro}>
+                <Typography.Text strong>Household activo</Typography.Text>
+                <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                  Selecciona el hogar para actualizar el dashboard y la tabla de lecturas.
+                </Typography.Paragraph>
+              </div>
             </Col>
-            <Col xs={24} md={8}>
+            <Col xs={24} sm={24} md={8}>
               <Select
                 className={styles.selectField}
                 style={{ width: '100%' }}
@@ -189,7 +189,7 @@ function DashboardPage() {
                 placeholder="Selecciona un household"
               />
             </Col>
-            <Col xs={24} md={8}>
+            <Col xs={24} sm={24} md={8}>
               <Select
                 className={styles.selectField}
                 style={{ width: '100%' }}
@@ -213,42 +213,46 @@ function DashboardPage() {
         </div>
       </section>
 
-      <div className={styles.metrics}>
-        <div className={styles.metricItem}>
+      <Row
+        gutter={[{ xs: 0, sm: 0, md: 12, lg: 12 }, 12]}
+        className={styles.metricsRow}
+      >
+        <Col xs={24} sm={12} lg={6} className={styles.metricItem}>
           <MetricCard
             label="Consumo actual"
             value={`${summary.current.toFixed(1)} kWh`}
             hint={`Fecha de lectura: ${summary.currentDate}`}
             tone="accent"
           />
-        </div>
-        <div className={styles.metricItem}>
+        </Col>
+        <Col xs={24} sm={12} lg={6} className={styles.metricItem}>
           <MetricCard
             label="Consumo anterior"
             value={`${summary.previous.toFixed(1)} kWh`}
             hint={`Comparativo inmediato: ${summary.difference >= 0 ? '+' : ''}${summary.difference.toFixed(1)} kWh`}
             tone="soft"
           />
-        </div>
-        <div className={styles.metricItem}>
+        </Col>
+        <Col xs={24} sm={12} lg={6} className={styles.metricItem}>
           <MetricCard
             label="Promedio"
             value={`${summary.average.toFixed(1)} kWh`}
             hint={`Basado en ${items.length} mediciones`}
           />
-        </div>
-        <div className={styles.metricItem}>
+        </Col>
+        <Col xs={24} sm={12} lg={6} className={styles.metricItem}>
           <MetricCard
             label="Maximo registrado"
             value={`${summary.max.toFixed(1)} kWh`}
             hint={`Minimo registrado: ${summary.min.toFixed(1)} kWh`}
             tone="accent"
           />
-        </div>
-      </div>
+        </Col>
+      </Row>
 
       <div className={styles.breakdown}>
         <Collapse
+          className={styles.breakdownCollapse}
           bordered={false}
           items={[
             {
