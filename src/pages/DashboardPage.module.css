@@ -239,6 +239,10 @@
   min-width: 0;
 }
 
+.metricItem :global(.ant-card) {
+  width: 100%;
+}
+
 .metricItem {
   min-width: 0;
   height: 100%;
@@ -614,12 +618,19 @@
   }
 
   .metricsRow {
-    margin: 0;
+    margin: 0 !important;
+    row-gap: 12px;
   }
 
   .metricsRow :global(.ant-col) {
     flex: 0 0 100%;
     max-width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .metricItem {
+    margin-bottom: 0;
   }
 
   .breakdownCollapse :global(.ant-collapse-header-text) {

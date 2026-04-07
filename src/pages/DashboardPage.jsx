@@ -165,7 +165,11 @@ function DashboardPage() {
             Consulta el hogar activo, revisa métricas de consumo y edita lecturas recientes desde una sola vista.
           </Typography.Paragraph>
 
-          <Row gutter={[12, 12]} align="middle" className={styles.filterRow}>
+          <Row
+            gutter={[{ xs: 0, sm: 0, md: 12, lg: 12 }, 12]}
+            align="middle"
+            className={styles.filterRow}
+          >
             <Col xs={24} sm={24} md={8}>
               <div className={styles.filterIntro}>
                 <Typography.Text strong>Household activo</Typography.Text>
@@ -209,7 +213,10 @@ function DashboardPage() {
         </div>
       </section>
 
-      <Row gutter={[12, 12]} className={styles.metricsRow}>
+      <Row
+        gutter={[{ xs: 0, sm: 0, md: 12, lg: 12 }, 12]}
+        className={styles.metricsRow}
+      >
         <Col xs={24} sm={12} lg={6} className={styles.metricItem}>
           <MetricCard
             label="Consumo actual"
