@@ -92,14 +92,18 @@ function InsertarConsumoPage() {
             Captura lecturas reales, marca lecturas iniciales y revisa al instante el historial del household seleccionado.
           </Typography.Paragraph>
 
-          <Row gutter={[16, 12]} align="middle" className={styles.filtersRow}>
-            <Col xs={24} md={10}>
+          <Row
+            gutter={[{ xs: 0, sm: 0, md: 12, lg: 12 }, 12]}
+            align="middle"
+            className={styles.filtersRow}
+          >
+            <Col xs={24} sm={24} md={10}>
               <Typography.Text strong>Household</Typography.Text>
               <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
                 Cambia el household para consultar y registrar lecturas en ese historial.
               </Typography.Paragraph>
             </Col>
-            <Col xs={24} md={14}>
+            <Col xs={24} sm={24} md={14}>
               <Select
                 style={{ width: '100%' }}
                 value={selectedHouseholdId ?? undefined}
@@ -122,31 +126,34 @@ function InsertarConsumoPage() {
         </div>
       </section>
 
-      <div className={styles.metrics}>
-        <div className={styles.metricItem}>
+      <Row
+        gutter={[{ xs: 0, sm: 0, md: 12, lg: 12 }, 12]}
+        className={styles.metricsRow}
+      >
+        <Col xs={24} sm={12} lg={8} className={styles.metricItem}>
           <MetricCard
             label="Lecturas cargadas"
             value={String(latestItems.length)}
             hint="Historial refrescado despues de cada registro"
             tone="accent"
           />
-        </div>
-        <div className={styles.metricItem}>
+        </Col>
+        <Col xs={24} sm={12} lg={8} className={styles.metricItem}>
           <MetricCard
             label="kWh en historial"
             value={`${totalLatestKwh.toFixed(1)} kWh`}
             hint="Suma de lecturas visibles del household actual"
           />
-        </div>
-        <div className={styles.metricItem}>
+        </Col>
+        <Col xs={24} sm={12} lg={8} className={styles.metricItem}>
           <MetricCard
             label="Lecturas iniciales"
             value={String(initialReadingsCount)}
             hint="Marcadas manualmente desde el formulario"
             tone="soft"
           />
-        </div>
-      </div>
+        </Col>
+      </Row>
 
       <ConsumptionForm
         onSubmit={handleSubmit}
