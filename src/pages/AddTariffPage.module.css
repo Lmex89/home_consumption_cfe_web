@@ -3,6 +3,20 @@
   gap: 20px;
 }
 
+.page > * {
+  min-width: 0;
+}
+
+.page :global(.ant-typography),
+.page p,
+.page h1,
+.page h2,
+.page h3,
+.page h4 {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .hero {
   display: grid;
   grid-template-columns: 1fr;
@@ -81,12 +95,76 @@
   margin: 0;
 }
 
+.statsCol {
+  min-width: 0;
+}
+
+.statsCol :global(.ant-card) {
+  width: 100%;
+}
+
+.selectorRow :global(.ant-col) {
+  min-width: 0;
+}
+
 .sectionCard :global(.ant-card-head) {
   border-bottom: none;
 }
 
 .helperCard {
   border-style: dashed;
+}
+
+@media (max-width: 480px) {
+  .page {
+    gap: 12px;
+  }
+
+  .hero {
+    gap: 10px;
+  }
+
+  .introCard,
+  .statusCard {
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  .title {
+    font-size: clamp(1.5rem, 8.5vw, 1.95rem) !important;
+    line-height: 1.05 !important;
+  }
+
+  .statsRow {
+    display: block;
+    margin: 0 !important;
+  }
+
+  .statsRow :global(.ant-col) {
+    display: block;
+    width: 100%;
+    flex: none;
+    max-width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 0 12px 0;
+  }
+
+  .statsRow :global(.ant-col:last-child) {
+    margin-bottom: 0;
+  }
+
+  .selectorRow {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .selectorRow :global(.ant-col) {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
 }
 
 @media (min-width: 768px) {

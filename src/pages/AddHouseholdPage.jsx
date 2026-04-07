@@ -3,6 +3,7 @@ import { Alert, Card, Space, Typography, message } from 'antd'
 import AddHouseholdForm from '../components/AddHouseholdForm'
 import SectionCard from '../components/ui/SectionCard'
 import { createHouseholdWithTariff } from '../services/householdService'
+import styles from './AddHouseholdPage.module.css'
 
 function AddHouseholdPage() {
   const [messageApi, contextHolder] = message.useMessage()
@@ -41,7 +42,7 @@ function AddHouseholdPage() {
   }
 
   return (
-    <Space direction="vertical" size={16} style={{ display: 'flex' }}>
+    <Space direction="vertical" size={16} style={{ display: 'flex' }} className={styles.page}>
       {contextHolder}
       <SectionCard
         eyebrow="Administración"
@@ -62,6 +63,7 @@ function AddHouseholdPage() {
         <Card
           title="Vivienda creada"
           type="inner"
+          className={styles.createdCard}
         >
           <Space direction="vertical" style={{ width: '100%' }}>
             <Typography.Text>
