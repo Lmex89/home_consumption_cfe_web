@@ -618,18 +618,26 @@
   }
 
   .metricsRow {
+    display: block;
     margin: 0 !important;
-    row-gap: 12px;
   }
 
   .metricsRow :global(.ant-col) {
-    flex: 0 0 100%;
+    display: block;
+    width: 100%;
+    flex: none;
     max-width: 100%;
     padding-left: 0 !important;
     padding-right: 0 !important;
+    margin: 0 0 12px 0;
+  }
+
+  .metricsRow :global(.ant-col:last-child) {
+    margin-bottom: 0;
   }
 
   .metricItem {
+    height: auto;
     margin-bottom: 0;
   }
 
