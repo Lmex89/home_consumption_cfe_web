@@ -1,7 +1,15 @@
-import { FormOutlined, MenuOutlined, ThunderboltOutlined, HomeOutlined, TagOutlined } from '@ant-design/icons'
+import {
+  FormOutlined,
+  LogoutOutlined,
+  MenuOutlined,
+  ThunderboltOutlined,
+  HomeOutlined,
+  TagOutlined,
+} from '@ant-design/icons'
 import { Button, Drawer, Grid, Layout as AntLayout, Menu, Space, Typography } from 'antd'
 import { useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { logout } from '../services/authService'
 
 const { Header, Sider, Content } = AntLayout
 const { useBreakpoint } = Grid
@@ -34,6 +42,11 @@ function Layout() {
     if (isMobile) {
       setIsMobileMenuOpen(false)
     }
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login', { replace: true })
   }
 
   return (
@@ -78,12 +91,27 @@ function Layout() {
               </Typography.Text>
             </Space>
             {isMobile ? (
-              <Button
-                type="text"
-                icon={<MenuOutlined />}
-                aria-label="Abrir menu"
-                onClick={() => setIsMobileMenuOpen(true)}
-              />
+              <Space>
+                <Button
+                  type="text"
+                  icon={<LogoutOutlined />}
+                  aria-label="Cerrar sesion"
+                  onClick={handleLogout}
+                >
+                  Salir
+                </Button>
+                <Button
+                  type="text"
+                  icon={<MenuOutlined />}
+                  aria-label="Abrir menu"
+                  onClick={() => setIsMobileMenuOpen(true)}
+                />
+              </Space>
+            ) : null}
+            {!isMobile ? (
+              <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>
+                Cerrar sesion
+              </Button>
             ) : null}
           </Space>
         </Header>

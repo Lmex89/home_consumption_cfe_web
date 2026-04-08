@@ -1,4 +1,5 @@
 import { buildApiUrl } from '../config/apiConfig'
+import { getAccessToken } from './authStorage'
 
 /**
  * Appends query parameters to an API endpoint URL.
@@ -22,15 +23,47 @@ export function withQuery(endpoint, query = {}) {
  * Returns null for 204 No Content.
  */
 export async function requestApi(endpoint, options = {}) {
-  const { method = 'GET', query, body } = options
+  const {
+    method = 'GET',
+    query,
+    body,
+    headers = {},
+    requiresAuth = true,
+    token,
+    bodyType = 'json',
+  } = options
   const url = withQuery(endpoint, query)
+
+  const requestHeaders = { ...headers }
+  let requestBody
+
+  if (requiresAuth) {
+    const accessToken = token || getAccessToken()
+    if (accessToken) {
+      requestHeaders.Authorization = `Bearer ${accessToken}`
+    }
+  }
+
+  if (body !== undefined) {
+    if (bodyType === 'form') {
+      const formBody = new URLSearchParams()
+      Object.entries(body).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formBody.set(key, String(value))
+        }
+      })
+      requestHeaders['Content-Type'] = 'application/x-www-form-urlencoded'
+      requestBody = formBody.toString()
+    } else {
+      requestHeaders['Content-Type'] = 'application/json'
+      requestBody = JSON.stringify(body)
+    }
+  }
 
   const response = await fetch(url, {
     method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
+    headers: requestHeaders,
+    body: requestBody,
   })
 
   if (!response.ok) {
