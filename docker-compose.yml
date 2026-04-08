@@ -11,6 +11,7 @@ services:
         VITE_BACKEND_HOST: ${VITE_BACKEND_HOST:-localhost}
         VITE_BACKEND_PORT: ${VITE_BACKEND_PORT}
         VITE_BACKEND_BASE_PATH: ${VITE_BACKEND_BASE_PATH}
+        VITE_REGISTER_API_KEY: ${VITE_REGISTER_API_KEY}
     env_file:
       - path: ./.env
         required: false
