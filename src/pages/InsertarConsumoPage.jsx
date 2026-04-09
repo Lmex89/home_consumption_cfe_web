@@ -79,6 +79,7 @@ function InsertarConsumoPage() {
   const averageLatestKwh = latestItems.length > 0 ? totalLatestKwh / latestItems.length : 0
   const lastReadingDate = latestItems.at(-1)?.fecha || 'Sin lecturas'
   const initialReadingsCount = latestItems.filter((item) => item.isInitial).length
+  const OffsetReadings = latestItems.filter((item) => item.isInitial)
 
   return (
     <div className={styles.page}>
@@ -141,11 +142,9 @@ function InsertarConsumoPage() {
         </Col>
         <Col xs={24} sm={12} lg={8} className={styles.metricItem}>
           <MetricCard
-            label="Suma de kWh en historial"
-            value={`Suma: ${totalLatestKwh.toFixed(1)} kWh`}
-            secondaryLabel="Promedio del historial"
-            secondaryValue={`${averageLatestKwh.toFixed(1)} kWh`}
-            hint="Suma y promedio de lecturas visibles del household actual"
+            label="Promedio del historial"
+            value={`${(averageLatestKwh - OffsetReadings[0]?.kWh || 0).toFixed(1)} kWh`}
+            hint="Promedio de lecturas visibles del household actual"
           />
         </Col>
         <Col xs={24} sm={12} lg={8} className={styles.metricItem}>
