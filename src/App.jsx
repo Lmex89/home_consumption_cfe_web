@@ -28,7 +28,6 @@ function App() {
         <Route path="/agregar-periodo" element={<AddBillingPeriodPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
