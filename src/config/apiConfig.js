@@ -24,6 +24,7 @@ export const authConfig = {
 
 export const apiEndpoints = {
   authLogin: '/auth/login',
+  authRefresh: import.meta.env.VITE_AUTH_REFRESH_ENDPOINT || '/auth/refresh',
   authRegister: '/auth/register',
   authMe: '/auth/me',
   households: '/households',
