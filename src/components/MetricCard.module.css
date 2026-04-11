@@ -35,6 +35,28 @@
   overflow-wrap: anywhere;
 }
 
+.secondaryMetric {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.secondaryLabel {
+  margin: 0 0 4px;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.secondaryValue {
+  display: block;
+  font-size: clamp(1.1rem, 1.4vw, 1.35rem);
+  line-height: 1.2;
+  color: var(--color-title);
+  overflow-wrap: anywhere;
+}
+
 .hint {
   margin: 10px 0 0;
   color: var(--color-muted);
@@ -53,6 +75,11 @@
 
   .label {
     margin-bottom: 6px;
+  }
+
+  .secondaryMetric {
+    margin-top: 10px;
+    padding-top: 10px;
   }
 
   .hint {

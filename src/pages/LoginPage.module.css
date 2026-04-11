@@ -1,0 +1,29 @@
+.wrapper {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.18), transparent 40%),
+    radial-gradient(circle at 85% 20%, rgba(16, 185, 129, 0.16), transparent 38%),
+    #f6f8fc;
+}
+
+.card {
+  width: min(440px, 100%);
+  border-radius: 18px;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.12);
+}
+
+.title {
+  margin: 0;
+}
+
+.alert {
+  margin: 16px 0;
+}
+
+.footerText {
+  margin: 20px 0 0;
+  color: #475569;
+}

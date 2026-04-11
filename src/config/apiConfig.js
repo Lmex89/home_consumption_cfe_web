@@ -18,7 +18,15 @@ export const backendConfig = {
   baseUrl: `${backendProtocol}://${hostWithPort}${normalizedBasePath}`,
 }
 
+export const authConfig = {
+  registerApiKey: import.meta.env.VITE_REGISTER_API_KEY || '',
+}
+
 export const apiEndpoints = {
+  authLogin: '/auth/login',
+  authRefresh: import.meta.env.VITE_AUTH_REFRESH_ENDPOINT || '/auth/refresh',
+  authRegister: '/auth/register',
+  authMe: '/auth/me',
   households: '/households',
   tariffs: '/tariffs',
   tariffVersions: '/tariff-versions',
