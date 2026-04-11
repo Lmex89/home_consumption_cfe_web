@@ -1,6 +1,11 @@
 import { apiEndpoints, authConfig } from '../config/apiConfig'
 import { requestApi } from '../lib/apiClient'
-import { clearAccessToken, getAccessToken, setAccessToken } from '../lib/authStorage'
+import {
+  clearAuthSession,
+  getAccessToken,
+  setAccessToken,
+  setRefreshToken,
+} from '../lib/authStorage'
 
 export async function login(username, password) {
   const payload = await requestApi(apiEndpoints.authLogin, {
@@ -16,6 +21,8 @@ export async function login(username, password) {
   if (payload?.access_token) {
     setAccessToken(payload.access_token)
   }
+
+  setRefreshToken(payload?.refresh_token || '')
 
   return payload
 }
@@ -46,7 +53,7 @@ export async function getCurrentUser() {
 }
 
 export function logout() {
-  clearAccessToken()
+  clearAuthSession()
 }
 
 export function hasToken() {
