@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage'
 import InsertarConsumoPage from './pages/InsertarConsumoPage'
 import AddHouseholdPage from './pages/AddHouseholdPage'
 import AddTariffPage from './pages/AddTariffPage'
+import AddBillingPeriodPage from './pages/AddBillingPeriodPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 
@@ -24,6 +25,8 @@ function App() {
         <Route path="/insertar-consumo" element={<InsertarConsumoPage />} />
         <Route path="/agregar-vivienda" element={<AddHouseholdPage />} />
         <Route path="/agregar-tarifa" element={<AddTariffPage />} />
+        <Route path="/agregar-periodo" element={<AddBillingPeriodPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
