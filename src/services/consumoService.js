@@ -219,6 +219,19 @@ export async function createConsumption(newConsumption) {
   }
 }
 
+export async function createBillingPeriod(householdId, startDate, endDate) {
+  const createdPeriod = await requestApi(apiEndpoints.billingPeriods, {
+    method: 'POST',
+    body: {
+      household_id: Number(householdId),
+      start_date: startDate,
+      end_date: endDate,
+    },
+  })
+
+  return createdPeriod
+}
+
 export async function updateConsumption(meterReadingId, values) {
   const updatedReading = await requestApi(`${apiEndpoints.meterReadings}/${meterReadingId}`, {
     method: 'PUT',

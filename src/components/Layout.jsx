@@ -1,4 +1,4 @@
-import { FormOutlined, MenuOutlined, ThunderboltOutlined, HomeOutlined, TagOutlined } from '@ant-design/icons'
+import { FormOutlined, MenuOutlined, ThunderboltOutlined, HomeOutlined, TagOutlined, CalendarOutlined } from '@ant-design/icons'
 import { Button, Drawer, Grid, Layout as AntLayout, Menu, Space, Typography } from 'antd'
 import { useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -11,6 +11,7 @@ const navItems = [
   { key: '/insertar-consumo', icon: <FormOutlined />, label: 'Lecturas de Medidor' },
   { key: '/agregar-vivienda', icon: <HomeOutlined />, label: 'Alta Viviendas' },
   { key: '/agregar-tarifa', icon: <TagOutlined />, label: 'Alta Tarifas' },
+  { key: '/agregar-periodo', icon: <CalendarOutlined />, label: 'Alta Periodos' },
 ]
 
 function Layout() {
@@ -24,6 +25,7 @@ function Layout() {
     if (location.pathname.startsWith('/insertar-consumo')) return '/insertar-consumo'
     if (location.pathname.startsWith('/agregar-vivienda')) return '/agregar-vivienda'
     if (location.pathname.startsWith('/agregar-tarifa')) return '/agregar-tarifa'
+    if (location.pathname.startsWith('/agregar-periodo')) return '/agregar-periodo'
     return '/'
   }
 
