@@ -25,10 +25,13 @@ function normalizeReading(reading) {
 }
 
 function buildSummary(items) {
+  const nonInitialItems = items.filter((item) => !item.isInitial)
   const total = items.reduce((accumulator, item) => accumulator + item.kWh, 0)
   const current = items.at(-1)?.kWh ?? 0
   const previous = items.at(-2)?.kWh ?? 0
-  const average = items.length > 0 ? total / items.length : 0
+  const average = nonInitialItems.length > 0
+    ? nonInitialItems.reduce((acc, item) => acc + item.kWh, 0) / nonInitialItems.length
+    : 0
   const values = items.map((item) => item.kWh)
 
   return {
