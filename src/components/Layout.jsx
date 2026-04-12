@@ -128,8 +128,8 @@ function Layout() {
         width={240}
         open={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
-        title={null}
-        closable={false}
+        title="Menu de navegacion"
+        closable
         styles={{
           body: {
             padding: 0,
