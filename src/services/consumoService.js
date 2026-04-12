@@ -44,10 +44,10 @@ function buildSummary(items) {
 
 function calculateAverageExcludingLast(items) {
   // Remove the last reading, then average the rest (excluding initial readings)
-  const itemsMinusLast = items.slice(0, -1)
-  const nonInitialItems = itemsMinusLast.filter((item) => !item.isInitial)
+  const nonInitialItems = items.filter((item) => !item.isInitial)
   if (nonInitialItems.length === 0) return 0
-  return nonInitialItems.reduce((acc, item) => acc + item.kWh, 0) / nonInitialItems.length
+  const sum = nonInitialItems.reduce((acc, item) => acc + item.kWh, 0)
+  return sum / nonInitialItems.length - items.at(0)?.kWh ?? 0
 }
 
 function buildBilling(costDashboard) {
