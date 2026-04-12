@@ -76,7 +76,7 @@ async function getLatestBillingPeriodId(householdId) {
   return sortedPeriods.at(-1)?.id ?? null
 }
 
-async function fetchBillingPeriods(householdId) {
+export async function fetchBillingPeriods(householdId) {
   const periods = await requestApi(apiEndpoints.billingPeriods, {
     query: {
       household_id: householdId,

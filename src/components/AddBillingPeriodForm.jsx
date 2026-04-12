@@ -1,13 +1,25 @@
 import { Card, Col, Form, Input, Row, Select, Typography, message } from 'antd'
 import { useEffect, useState } from 'react'
-import { listHouseholds } from '../services/consumoService'
+import { fetchBillingPeriods, listHouseholds } from '../services/consumoService'
 import FormActions from './ui/FormActions'
 import SuccessAlert from './ui/SuccessAlert'
+
+function periodsOverlap(newStart, newEnd, existingPeriods) {
+  const newStartMs = new Date(newStart).getTime()
+  const newEndMs = new Date(newEnd).getTime()
+
+  return existingPeriods.some((period) => {
+    const existingStart = new Date(period.start_date).getTime()
+    const existingEnd = new Date(period.end_date).getTime()
+    return newStartMs <= existingEnd && newEndMs >= existingStart
+  })
+}
 
 function AddBillingPeriodForm({ onSubmit, isSubmitting, successMessage }) {
   const [form] = Form.useForm()
   const [households, setHouseholds] = useState([])
   const [loadingHouseholds, setLoadingHouseholds] = useState(true)
+  const [existingPeriods, setExistingPeriods] = useState([])
 
   useEffect(() => {
     let isMounted = true
@@ -38,6 +50,19 @@ function AddBillingPeriodForm({ onSubmit, isSubmitting, successMessage }) {
     }
   }, [])
 
+  const handleHouseholdChange = async (householdId) => {
+    setExistingPeriods([])
+    if (!householdId) return
+
+    try {
+      const periods = await fetchBillingPeriods(householdId)
+      setExistingPeriods(Array.isArray(periods) ? periods : [])
+    } catch (error) {
+      console.error('Error fetching billing periods:', error)
+      setExistingPeriods([])
+    }
+  }
+
   const handleFinish = async (values) => {
     const payload = {
       householdId: values.householdId,
@@ -45,9 +70,19 @@ function AddBillingPeriodForm({ onSubmit, isSubmitting, successMessage }) {
       endDate: values.endDate || null,
     }
 
+    if (payload.startDate && payload.endDate) {
+      if (periodsOverlap(payload.startDate, payload.endDate, existingPeriods)) {
+        message.error(
+          'Ya existe un periodo de facturación que se superpone con las fechas seleccionadas.',
+        )
+        return false
+      }
+    }
+
     const wasSaved = await onSubmit(payload)
     if (wasSaved) {
       form.resetFields()
+      handleHouseholdChange(values.householdId)
     }
   }
 
@@ -72,6 +107,7 @@ function AddBillingPeriodForm({ onSubmit, isSubmitting, successMessage }) {
                 disabled={loadingHouseholds}
                 loading={loadingHouseholds}
                 options={households}
+                onChange={handleHouseholdChange}
               />
             </Form.Item>
           </Col>
