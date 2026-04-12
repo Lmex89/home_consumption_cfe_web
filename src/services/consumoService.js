@@ -242,6 +242,20 @@ export async function listBillingPeriods(householdId) {
   }))
 }
 
+export async function fetchAllMeterReadings(householdId) {
+  const rawReadings = await requestApi(apiEndpoints.meterReadings, {
+    query: {
+      household_id: householdId,
+      limit: 10000,
+      offset: 0,
+    },
+  })
+
+  return (Array.isArray(rawReadings) ? rawReadings : [])
+    .map(normalizeReading)
+    .sort((left, right) => left.fecha.localeCompare(right.fecha))
+}
+
 export async function createConsumption(newConsumption) {
   const householdId = newConsumption.householdId || (await resolveDefaultHouseholdId())
 

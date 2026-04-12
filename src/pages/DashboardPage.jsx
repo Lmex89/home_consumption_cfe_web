@@ -15,6 +15,7 @@ import ConsumptionTable from '../components/ConsumptionTable'
 import MetricCard from '../components/MetricCard'
 import { useHouseholds } from '../hooks/useHouseholds'
 import {
+  fetchAllMeterReadings,
   getDashboardConsumptions,
   listBillingPeriods,
   updateConsumption,
@@ -33,6 +34,8 @@ function DashboardPage() {
   const [selectedBillingPeriodId, setSelectedBillingPeriodId] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [allItems, setAllItems] = useState(null)
+  const [isLoadingAll, setIsLoadingAll] = useState(false)
 
   const { households, isLoading: isLoadingHouseholds } = useHouseholds()
 
@@ -104,6 +107,7 @@ function DashboardPage() {
 
   const handleHouseholdChange = async (householdId) => {
     setSelectedHouseholdId(householdId)
+    setAllItems(null) // Reset all items when household changes
 
     try {
       const periods = await listBillingPeriods(householdId)
@@ -121,6 +125,7 @@ function DashboardPage() {
 
   const handleBillingPeriodChange = async (billingPeriodId) => {
     setSelectedBillingPeriodId(billingPeriodId)
+    setAllItems(null) // Reset all items when billing period changes
     await loadDashboard({ householdId: selectedHouseholdId, billingPeriodId })
   }
 
@@ -130,6 +135,24 @@ function DashboardPage() {
       householdId: selectedHouseholdId,
       billingPeriodId: selectedBillingPeriodId,
     })
+    // Reload all items if they are being displayed
+    if (allItems) {
+      await handleLoadAllItems()
+    }
+  }
+
+  const handleLoadAllItems = async () => {
+    if (!selectedHouseholdId) return
+
+    setIsLoadingAll(true)
+    try {
+      const readings = await fetchAllMeterReadings(selectedHouseholdId)
+      setAllItems(readings)
+    } catch {
+      setError('No fue posible cargar todas las lecturas.')
+    } finally {
+      setIsLoadingAll(false)
+    }
   }
 
   if (isLoading) {
@@ -282,7 +305,13 @@ function DashboardPage() {
         />
       </div>
 
-      <ConsumptionTable items={items} onUpdateItem={handleUpdateReading} />
+      <ConsumptionTable
+        items={items}
+        allItems={allItems}
+        onUpdateItem={handleUpdateReading}
+        onLoadAllItems={handleLoadAllItems}
+        isLoadingAll={isLoadingAll}
+      />
     </div>
   )
 }

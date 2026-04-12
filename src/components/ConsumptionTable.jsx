@@ -1,13 +1,16 @@
 import { EditOutlined } from '@ant-design/icons'
-import { Button, Card, Form, Input, InputNumber, Modal, Space, Table, Typography, message } from 'antd'
+import { Button, Card, Form, Input, InputNumber, Modal, Select, Space, Spin, Table, Typography, message } from 'antd'
 import { useState } from 'react'
 import styles from './ConsumptionTable.module.css'
 
-function ConsumptionTable({ items, onUpdateItem }) {
+function ConsumptionTable({ items, allItems, onUpdateItem, onLoadAllItems, isLoadingAll }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [form] = Form.useForm()
+  const [showAll, setShowAll] = useState(false)
+  const [pageSize, setPageSize] = useState(10)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const handleEdit = (record) => {
     setEditingItem(record)
@@ -46,6 +49,38 @@ function ConsumptionTable({ items, onUpdateItem }) {
       setIsSubmitting(false)
     }
   }
+
+  const handleToggleShowAll = async () => {
+    const newShowAll = !showAll
+    setShowAll(newShowAll)
+    setCurrentPage(1)
+
+    // Fetch all items if switching to "show all" and not already loaded
+    if (newShowAll && !allItems && onLoadAllItems) {
+      await onLoadAllItems()
+    }
+  }
+
+  const handlePageSizeChange = (newPageSize) => {
+    setPageSize(newPageSize)
+    setCurrentPage(1)
+  }
+
+  const displayItems = showAll ? (allItems || items) : items
+
+  const paginationConfig = showAll
+    ? false
+    : {
+        current: currentPage,
+        pageSize,
+        onChange: (page) => setCurrentPage(page),
+        onShowSizeChange: (_, newPageSize) => handlePageSizeChange(newPageSize),
+        showSizeChanger: true,
+        pageSizeOptions: ['10', '50', '100'],
+        defaultPageSize: 10,
+        showTotal: (total) => `Total ${total} lecturas`,
+        showQuickJumper: true,
+      }
 
   const columns = [
     {
@@ -90,14 +125,44 @@ function ConsumptionTable({ items, onUpdateItem }) {
             <h3 className={styles.title}>Lecturas recientes</h3>
           </div>
         )}
-        extra={<Typography.Paragraph className={styles.caption}>Ultimos consumos registrados por fecha</Typography.Paragraph>}
+        extra={
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <Typography.Paragraph className={styles.caption} style={{ margin: 0 }}>
+              Ultimos consumos registrados por fecha
+            </Typography.Paragraph>
+            {!showAll && items.length > 10 && (
+              <Select
+                value={pageSize}
+                onChange={handlePageSizeChange}
+                options={[
+                  { value: 10, label: '10 por página' },
+                  { value: 50, label: '50 por página' },
+                  { value: 100, label: '100 por página' },
+                ]}
+                style={{ width: 140 }}
+                size="small"
+              />
+            )}
+            {isLoadingAll ? (
+              <Spin size="small" />
+            ) : (
+              <Button
+                type={showAll ? 'primary' : 'default'}
+                size="small"
+                onClick={handleToggleShowAll}
+              >
+                {showAll ? 'Mostrar por periodo' : 'Mostrar todo'}
+              </Button>
+            )}
+          </div>
+        }
       >
         <Table
           className={styles.table}
           rowKey={(record) => record.id}
           columns={columns}
-          dataSource={items}
-          pagination={false}
+          dataSource={displayItems}
+          pagination={paginationConfig}
           locale={{ emptyText: 'No hay consumos para mostrar.' }}
           scroll={{ x: 720 }}
         />
