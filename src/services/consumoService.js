@@ -1,6 +1,13 @@
 import { apiEndpoints, backendConfig, buildApiUrl } from '../config/apiConfig'
 import { requestApi } from '../lib/apiClient'
 
+const LIMITS = {
+  households: 500,
+  billingPeriods: 200,
+  default: 1,
+  dashboardReadings: 500,
+}
+
 function toNumber(value) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
@@ -50,6 +57,7 @@ function buildBilling(costDashboard) {
     totalMxn: toNumber(costDashboard.total_cost),
     breakdown: [
       {
+        // Note: "witout" is a typo in the backend API; kept to match backend field name.
         concept: 'Subtotal sin impuestos',
         amount: toNumber(costDashboard.total_cost_witout_taxes),
       },
@@ -80,7 +88,7 @@ export async function fetchBillingPeriods(householdId) {
   const periods = await requestApi(apiEndpoints.billingPeriods, {
     query: {
       household_id: householdId,
-      limit: 200,
+      limit: LIMITS.billingPeriods,
       offset: 0,
     },
   })
@@ -96,7 +104,7 @@ function formatPeriodOption(period) {
 
 async function resolveDefaultHouseholdId() {
   const households = await requestApi(apiEndpoints.households, {
-    query: { limit: 1, offset: 0 },
+    query: { limit: LIMITS.default, offset: 0 },
   })
 
   if (Array.isArray(households) && households.length > 0) {
@@ -104,7 +112,7 @@ async function resolveDefaultHouseholdId() {
   }
 
   const readings = await requestApi(apiEndpoints.meterReadings, {
-    query: { limit: 1, offset: 0 },
+    query: { limit: LIMITS.default, offset: 0 },
   })
 
   if (Array.isArray(readings) && readings.length > 0) {
@@ -116,7 +124,7 @@ async function resolveDefaultHouseholdId() {
 
 export async function listHouseholds() {
   const households = await requestApi(apiEndpoints.households, {
-    query: { limit: 500, offset: 0 },
+    query: { limit: LIMITS.households, offset: 0 },
   })
 
   if (!Array.isArray(households)) {
@@ -139,7 +147,7 @@ export async function getDashboardConsumptions(filters = {}) {
       billing_period_id: billingPeriodFilter,
       reading_date_from: filters.startDate,
       reading_date_to: filters.endDate,
-      limit: 500,
+      limit: LIMITS.dashboardReadings,
       offset: 0,
     },
   })
