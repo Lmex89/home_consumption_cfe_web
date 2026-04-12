@@ -14,8 +14,8 @@ import {
 import ConsumptionTable from '../components/ConsumptionTable'
 import MetricCard from '../components/MetricCard'
 import { useHouseholds } from '../hooks/useHouseholds'
+import { useMeterReadingsPagination } from '../hooks/useMeterReadingsPagination'
 import {
-  fetchAllMeterReadings,
   getDashboardConsumptions,
   listBillingPeriods,
   updateConsumption,
@@ -34,10 +34,23 @@ function DashboardPage() {
   const [selectedBillingPeriodId, setSelectedBillingPeriodId] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [allItems, setAllItems] = useState(null)
-  const [isLoadingAll, setIsLoadingAll] = useState(false)
 
   const { households, isLoading: isLoadingHouseholds } = useHouseholds()
+
+  const {
+    displayItems,
+    showAll,
+    isLoadingAll,
+    paginationConfig,
+    handleToggleShowAll,
+    handlePageSizeChange,
+    resetPagination,
+    pageSize,
+  } = useMeterReadingsPagination({
+    periodItems: dashboardData?.items,
+    householdId: selectedHouseholdId,
+    enableShowAll: true,
+  })
 
   const loadDashboard = async ({ householdId, billingPeriodId }) => {
     setIsLoading(true)
@@ -107,7 +120,7 @@ function DashboardPage() {
 
   const handleHouseholdChange = async (householdId) => {
     setSelectedHouseholdId(householdId)
-    setAllItems(null) // Reset all items when household changes
+    resetPagination()
 
     try {
       const periods = await listBillingPeriods(householdId)
@@ -125,7 +138,7 @@ function DashboardPage() {
 
   const handleBillingPeriodChange = async (billingPeriodId) => {
     setSelectedBillingPeriodId(billingPeriodId)
-    setAllItems(null) // Reset all items when billing period changes
+    resetPagination()
     await loadDashboard({ householdId: selectedHouseholdId, billingPeriodId })
   }
 
@@ -135,24 +148,6 @@ function DashboardPage() {
       householdId: selectedHouseholdId,
       billingPeriodId: selectedBillingPeriodId,
     })
-    // Reload all items if they are being displayed
-    if (allItems) {
-      await handleLoadAllItems()
-    }
-  }
-
-  const handleLoadAllItems = async () => {
-    if (!selectedHouseholdId) return
-
-    setIsLoadingAll(true)
-    try {
-      const readings = await fetchAllMeterReadings(selectedHouseholdId)
-      setAllItems(readings)
-    } catch {
-      setError('No fue posible cargar todas las lecturas.')
-    } finally {
-      setIsLoadingAll(false)
-    }
   }
 
   if (isLoading) {
@@ -306,11 +301,15 @@ function DashboardPage() {
       </div>
 
       <ConsumptionTable
-        items={items}
-        allItems={allItems}
-        onUpdateItem={handleUpdateReading}
-        onLoadAllItems={handleLoadAllItems}
+        items={dashboardData?.items}
+        displayItems={displayItems}
+        paginationConfig={paginationConfig}
+        showAll={showAll}
         isLoadingAll={isLoadingAll}
+        onUpdateItem={handleUpdateReading}
+        onToggleShowAll={handleToggleShowAll}
+        onPageSizeChange={handlePageSizeChange}
+        pageSize={pageSize}
       />
     </div>
   )

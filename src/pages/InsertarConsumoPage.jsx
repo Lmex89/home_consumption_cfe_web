@@ -4,6 +4,7 @@ import ConsumptionForm from '../components/ConsumptionForm'
 import ConsumptionTable from '../components/ConsumptionTable'
 import MetricCard from '../components/MetricCard'
 import { useHouseholds } from '../hooks/useHouseholds'
+import { useMeterReadingsPagination } from '../hooks/useMeterReadingsPagination'
 import { createConsumption, getDashboardConsumptions } from '../services/consumoService'
 import styles from './InsertarConsumoPage.module.css'
 
@@ -17,6 +18,21 @@ function InsertarConsumoPage() {
   const [selectedHouseholdId, setSelectedHouseholdId] = useState(null)
 
   const { households, isLoading: isLoadingHouseholds, error: householdsError } = useHouseholds()
+
+  const {
+    displayItems,
+    showAll,
+    isLoadingAll,
+    paginationConfig,
+    handleToggleShowAll,
+    handlePageSizeChange,
+    resetPagination,
+    pageSize,
+  } = useMeterReadingsPagination({
+    periodItems: latestItems,
+    householdId: selectedHouseholdId,
+    enableShowAll: true,
+  })
 
   const loadHistory = async (householdId) => {
     setIsLoadingHistory(true)
@@ -52,6 +68,7 @@ function InsertarConsumoPage() {
 
   const handleHouseholdChange = async (householdId) => {
     setSelectedHouseholdId(householdId)
+    resetPagination()
     await loadHistory(householdId)
   }
 
@@ -174,7 +191,17 @@ function InsertarConsumoPage() {
           <Skeleton active paragraph={{ rows: 4 }} />
         </Card>
       ) : latestItems.length > 0 ? (
-        <ConsumptionTable items={latestItems} />
+        <ConsumptionTable
+          items={latestItems}
+          displayItems={displayItems}
+          paginationConfig={paginationConfig}
+          showAll={showAll}
+          isLoadingAll={isLoadingAll}
+          onUpdateItem={null}
+          onToggleShowAll={handleToggleShowAll}
+          onPageSizeChange={handlePageSizeChange}
+          pageSize={pageSize}
+        />
       ) : (
         <Card className={styles.feedback}>
           <Empty description="Aun no hay historial cargado desde este formulario." />

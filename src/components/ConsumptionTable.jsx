@@ -3,14 +3,23 @@ import { Button, Card, Form, Input, InputNumber, Modal, Select, Space, Spin, Tab
 import { useState } from 'react'
 import styles from './ConsumptionTable.module.css'
 
-function ConsumptionTable({ items, allItems, onUpdateItem, onLoadAllItems, isLoadingAll }) {
+function ConsumptionTable({
+  items,
+  paginationConfig,
+  displayItems,
+  showAll,
+  isLoadingAll,
+  onUpdateItem,
+  onToggleShowAll,
+  onPageSizeChange,
+  pageSize,
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [form] = Form.useForm()
-  const [showAll, setShowAll] = useState(false)
-  const [pageSize, setPageSize] = useState(10)
-  const [currentPage, setCurrentPage] = useState(1)
+
+  const effectiveItems = displayItems || items
 
   const handleEdit = (record) => {
     setEditingItem(record)
@@ -50,37 +59,8 @@ function ConsumptionTable({ items, allItems, onUpdateItem, onLoadAllItems, isLoa
     }
   }
 
-  const handleToggleShowAll = async () => {
-    const newShowAll = !showAll
-    setShowAll(newShowAll)
-    setCurrentPage(1)
-
-    // Fetch all items if switching to "show all" and not already loaded
-    if (newShowAll && !allItems && onLoadAllItems) {
-      await onLoadAllItems()
-    }
-  }
-
-  const handlePageSizeChange = (newPageSize) => {
-    setPageSize(newPageSize)
-    setCurrentPage(1)
-  }
-
-  const displayItems = showAll ? (allItems || items) : items
-
-  const paginationConfig = showAll
-    ? false
-    : {
-        current: currentPage,
-        pageSize,
-        onChange: (page) => setCurrentPage(page),
-        onShowSizeChange: (_, newPageSize) => handlePageSizeChange(newPageSize),
-        showSizeChanger: true,
-        pageSizeOptions: ['10', '50', '100'],
-        defaultPageSize: 10,
-        showTotal: (total) => `Total ${total} lecturas`,
-        showQuickJumper: true,
-      }
+  const effectivePageSize = pageSize || 10
+  const showPageSizeSelector = !showAll && effectiveItems.length > 10
 
   const columns = [
     {
@@ -130,10 +110,10 @@ function ConsumptionTable({ items, allItems, onUpdateItem, onLoadAllItems, isLoa
             <Typography.Paragraph className={styles.caption} style={{ margin: 0 }}>
               Ultimos consumos registrados por fecha
             </Typography.Paragraph>
-            {!showAll && items.length > 10 && (
+            {showPageSizeSelector && onPageSizeChange && (
               <Select
-                value={pageSize}
-                onChange={handlePageSizeChange}
+                value={effectivePageSize}
+                onChange={onPageSizeChange}
                 options={[
                   { value: 10, label: '10 por página' },
                   { value: 50, label: '50 por página' },
@@ -145,15 +125,15 @@ function ConsumptionTable({ items, allItems, onUpdateItem, onLoadAllItems, isLoa
             )}
             {isLoadingAll ? (
               <Spin size="small" />
-            ) : (
+            ) : onToggleShowAll ? (
               <Button
                 type={showAll ? 'primary' : 'default'}
                 size="small"
-                onClick={handleToggleShowAll}
+                onClick={onToggleShowAll}
               >
                 {showAll ? 'Mostrar por periodo' : 'Mostrar todo'}
               </Button>
-            )}
+            ) : null}
           </div>
         }
       >
@@ -161,8 +141,8 @@ function ConsumptionTable({ items, allItems, onUpdateItem, onLoadAllItems, isLoa
           className={styles.table}
           rowKey={(record) => record.id}
           columns={columns}
-          dataSource={displayItems}
-          pagination={paginationConfig}
+          dataSource={effectiveItems}
+          pagination={paginationConfig || false}
           locale={{ emptyText: 'No hay consumos para mostrar.' }}
           scroll={{ x: 720 }}
         />
