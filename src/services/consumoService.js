@@ -43,11 +43,12 @@ function buildSummary(items) {
 }
 
 function calculateAverageExcludingLast(items) {
-  // Remove the last reading, then average the rest (excluding initial readings)
-  const nonInitialItems = items.filter((item) => !item.isInitial)
+  // Use the period baseline and exclude the latest reading from the displayed average.
+  const baseline = items[0]?.kWh ?? 0
+  const nonInitialItems = items.slice(0, -1).filter((item) => !item.isInitial)
   if (nonInitialItems.length === 0) return 0
   const sum = nonInitialItems.reduce((acc, item) => acc + item.kWh, 0)
-  return sum / nonInitialItems.length - items.at(0)?.kWh ?? 0
+  return sum / nonInitialItems.length - baseline
 }
 
 function buildBilling(costDashboard) {
@@ -73,7 +74,6 @@ function buildBilling(costDashboard) {
     ],
     periodId: costDashboard.billing_period_id,
     tariffCode: costDashboard.tariff_code,
-    averageDailyKwh: toNumber(costDashboard.average_daily_kwh),
   }
 }
 
@@ -195,7 +195,7 @@ export async function getDashboardConsumptions(filters = {}) {
 
   // Fetch all readings for the household within the billing period date range
   // to calculate the average excluding the last reading
-  let averageFromPeriodReadings = summary.average
+  let averageFromPeriodReadings = calculateAverageExcludingLast(items)
   if (householdId && billingPeriodDates) {
     const periodReadingsRaw = await requestApi(apiEndpoints.meterReadings, {
       query: {
@@ -219,10 +219,7 @@ export async function getDashboardConsumptions(filters = {}) {
     items,
     summary: {
       ...summary,
-      average:
-        costDashboard && Number.isFinite(Number(costDashboard.average_daily_kwh))
-          ? toNumber(costDashboard.average_daily_kwh)
-          : averageFromPeriodReadings,
+      average: averageFromPeriodReadings,
     },
     billing: buildBilling(costDashboard),
   }
