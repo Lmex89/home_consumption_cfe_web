@@ -1,9 +1,23 @@
 import { EditOutlined } from '@ant-design/icons'
-import { Button, Card, Form, Input, InputNumber, Modal, Space, Table, Typography, message } from 'antd'
-import { useState } from 'react'
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Space,
+  Table,
+  Tabs,
+  Typography,
+  message,
+} from 'antd'
+import { Suspense, lazy, useMemo, useState } from 'react'
 import styles from './ConsumptionTable.module.css'
 
-function ConsumptionTable({ items, onUpdateItem }) {
+const MeterReadingsChart = lazy(() => import('./MeterReadingsChart'))
+
+function ConsumptionTable({ items, chartReadings = [], onUpdateItem }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
@@ -80,6 +94,43 @@ function ConsumptionTable({ items, onUpdateItem }) {
     })
   }
 
+  const tabItems = useMemo(
+    () => [
+      {
+        key: 'table',
+        label: 'Tabla',
+        children: (
+          <Table
+            className={styles.table}
+            rowKey={(record) => record.id}
+            columns={columns}
+            dataSource={items}
+            pagination={false}
+            locale={{ emptyText: 'No hay consumos para mostrar.' }}
+            scroll={{ x: 720 }}
+          />
+        ),
+      },
+      {
+        key: 'chart',
+        label: 'Grafica',
+        forceRender: true,
+        children: (
+          <Suspense
+            fallback={
+              <div className={styles.chartLoader}>
+                <Typography.Text type="secondary">Cargando grafica...</Typography.Text>
+              </div>
+            }
+          >
+            <MeterReadingsChart chartReadings={chartReadings} />
+          </Suspense>
+        ),
+      },
+    ],
+    [chartReadings, columns, items],
+  )
+
   return (
     <>
       <Card
@@ -92,14 +143,9 @@ function ConsumptionTable({ items, onUpdateItem }) {
         )}
         extra={<Typography.Paragraph className={styles.caption}>Ultimos consumos registrados por fecha</Typography.Paragraph>}
       >
-        <Table
-          className={styles.table}
-          rowKey={(record) => record.id}
-          columns={columns}
-          dataSource={items}
-          pagination={false}
-          locale={{ emptyText: 'No hay consumos para mostrar.' }}
-          scroll={{ x: 720 }}
+        <Tabs
+          defaultActiveKey="table"
+          items={tabItems}
         />
       </Card>
 

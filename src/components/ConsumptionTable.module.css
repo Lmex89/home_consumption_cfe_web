@@ -112,6 +112,31 @@
   border-radius: 12px;
 }
 
+.wrapper :global(.ant-tabs-nav) {
+  margin-bottom: 14px;
+}
+
+.wrapper :global(.ant-tabs-tab-btn) {
+  font-weight: 600;
+}
+
+.chartArea {
+  width: 100%;
+  min-height: 320px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.chartLoader {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  border-radius: 16px;
+}
+
 @media (max-width: 700px) {
   .wrapper :global(.ant-card-head) {
     padding: 20px 18px 0;
@@ -141,6 +166,12 @@
 
   .table :global(.ant-table-container) {
     border-radius: 14px;
+  }
+
+  .chartArea {
+    min-height: 280px;
+    border-radius: 14px;
+    padding: 12px;
   }
 
   .table :global(.ant-table-cell) {
@@ -177,5 +208,11 @@
 
   .table :global(.ant-btn) {
     width: 100%;
+  }
+
+  .chartArea {
+    min-height: 240px;
+    border-radius: 12px;
+    padding: 10px;
   }
 }

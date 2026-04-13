@@ -24,6 +24,23 @@ function normalizeReading(reading) {
   }
 }
 
+function normalizeDashboardReading(reading) {
+  return {
+    id: reading.id,
+    date: reading.reading_date,
+    readingKwh: toNumber(reading.reading_kwh),
+    consumptionSinceLast:
+      reading.consumption_since_last === null || reading.consumption_since_last === undefined
+        ? null
+        : toNumber(reading.consumption_since_last),
+    estimatedCost:
+      reading.billing_period_cost?.total_cost === null ||
+      reading.billing_period_cost?.total_cost === undefined
+        ? null
+        : toNumber(reading.billing_period_cost.total_cost),
+  }
+}
+
 function buildSummary(items) {
   const total = items.reduce((accumulator, item) => accumulator + item.kWh, 0)
   const current = items.at(-1)?.kWh ?? 0
@@ -196,6 +213,7 @@ export async function getDashboardConsumptions(filters = {}) {
   // Fetch all readings for the household within the billing period date range
   // to calculate the average excluding the last reading
   let averageFromPeriodReadings = calculateAverageExcludingLast(items)
+  let dashboardHistoryReadings = []
   if (householdId && billingPeriodDates) {
     const periodReadingsRaw = await requestApi(apiEndpoints.meterReadings, {
       query: {
@@ -214,6 +232,23 @@ export async function getDashboardConsumptions(filters = {}) {
     averageFromPeriodReadings = calculateAverageExcludingLast(periodReadings)
   }
 
+  if (householdId && billingPeriodId) {
+    try {
+      const historyDashboard = await requestApi(apiEndpoints.meterReadingsDashboard(householdId), {
+        query: {
+          billing_period_id: billingPeriodId,
+        },
+      })
+      dashboardHistoryReadings = (Array.isArray(historyDashboard?.readings)
+        ? historyDashboard.readings
+        : [])
+        .map(normalizeDashboardReading)
+        .sort((left, right) => left.date.localeCompare(right.date))
+    } catch {
+      dashboardHistoryReadings = []
+    }
+  }
+
   return {
     endpoint: buildApiUrl(apiEndpoints.meterReadings),
     items,
@@ -222,6 +257,9 @@ export async function getDashboardConsumptions(filters = {}) {
       average: averageFromPeriodReadings,
     },
     billing: buildBilling(costDashboard),
+    chart: {
+      readings: dashboardHistoryReadings,
+    },
   }
 }
 

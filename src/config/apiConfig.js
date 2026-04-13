@@ -35,6 +35,7 @@ export const apiEndpoints = {
   meterReadings: '/meter-readings',
   billingPeriods: '/billing-periods',
   billingPeriodDashboard: (billingPeriodId) => `/dashboards/billing-period/${billingPeriodId}`,
+  meterReadingsDashboard: (householdId) => `/dashboards/household/${householdId}/meter-readings`,
 }
 
 export function buildApiUrl(endpoint) {

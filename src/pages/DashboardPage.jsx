@@ -282,7 +282,11 @@ function DashboardPage() {
         />
       </div>
 
-      <ConsumptionTable items={items} onUpdateItem={handleUpdateReading} />
+      <ConsumptionTable
+        items={items}
+        chartReadings={dashboardData.chart?.readings ?? []}
+        onUpdateItem={handleUpdateReading}
+      />
     </div>
   )
 }
