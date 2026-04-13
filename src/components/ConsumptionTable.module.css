@@ -129,6 +129,12 @@
   background: rgba(255, 255, 255, 0.88);
 }
 
+.chartControls {
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .chartLoader {
   min-height: 240px;
   display: grid;
@@ -174,6 +180,10 @@
     padding: 12px;
   }
 
+  .chartControls {
+    justify-content: flex-start;
+  }
+
   .table :global(.ant-table-cell) {
     padding: 12px 12px;
   }
@@ -214,5 +224,9 @@
     min-height: 240px;
     border-radius: 12px;
     padding: 10px;
+  }
+
+  .chartControls :global(.ant-segmented) {
+    width: 100%;
   }
 }

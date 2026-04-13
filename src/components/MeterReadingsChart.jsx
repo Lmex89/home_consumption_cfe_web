@@ -1,5 +1,6 @@
-import { Line } from '@ant-design/charts'
-import { Empty } from 'antd'
+import { DualAxes } from '@ant-design/charts'
+import { useMemo, useState } from 'react'
+import { Empty, Segmented } from 'antd'
 import styles from './ConsumptionTable.module.css'
 
 const currencyFormatter = new Intl.NumberFormat('es-MX', {
@@ -19,43 +20,85 @@ function formatFullDate(value) {
 }
 
 function MeterReadingsChart({ chartReadings }) {
-  const lineData = chartReadings.flatMap((reading) => {
-    const points = [
-      {
-        date: reading.date,
-        value: Number(reading.readingKwh),
-        series: 'Lectura (kWh)',
-        estimatedCost: reading.estimatedCost,
-      },
-    ]
+  const seriesOptions = [
+    {
+      label: 'Consumo entre lecturas',
+      value: 'consumption',
+    },
+    {
+      label: 'Lectura acumulada',
+      value: 'reading',
+    },
+  ]
+  const [visibleSeries, setVisibleSeries] = useState('consumption')
 
-    if (reading.consumptionSinceLast !== null && reading.consumptionSinceLast !== undefined) {
-      points.push({
-        date: reading.date,
-        value: Number(reading.consumptionSinceLast),
-        series: 'Consumo entre lecturas (kWh)',
-        estimatedCost: reading.estimatedCost,
-      })
+  const readingSeriesData = chartReadings
+    .map((reading) => ({
+      date: reading.date,
+      value: Number(reading.readingKwh),
+      series: 'Lectura acumulada (kWh)',
+      estimatedCost: reading.estimatedCost,
+    }))
+    .filter((point) => Number.isFinite(point.value))
+
+  const consumptionSeriesData = chartReadings
+    .filter((reading) => reading.consumptionSinceLast !== null && reading.consumptionSinceLast !== undefined)
+    .map((reading) => ({
+      date: reading.date,
+      value: Number(reading.consumptionSinceLast),
+      series: 'Consumo entre lecturas (kWh)',
+      estimatedCost: reading.estimatedCost,
+    }))
+    .filter((point) => Number.isFinite(point.value))
+
+  const chartData = useMemo(() => {
+    if (visibleSeries === 'reading') {
+      return [readingSeriesData, []]
     }
 
-    return points
-  })
+    if (visibleSeries === 'consumption') {
+      return [[], consumptionSeriesData]
+    }
 
-  if (lineData.length === 0) {
+    return [readingSeriesData, consumptionSeriesData]
+  }, [consumptionSeriesData, readingSeriesData, visibleSeries])
+
+  if (readingSeriesData.length === 0 && consumptionSeriesData.length === 0) {
     return <Empty description="No hay lecturas para graficar." />
   }
 
   const chartConfig = {
-    data: lineData,
+    data: chartData,
     xField: 'date',
-    yField: 'value',
-    seriesField: 'series',
+    yField: ['value', 'value'],
     autoFit: true,
     smooth: false,
-    point: {
-      size: 3,
-      shape: 'circle',
-    },
+    geometryOptions: [
+      {
+        geometry: 'line',
+        seriesField: 'series',
+        color: '#2563eb',
+        lineStyle: {
+          lineWidth: 2.8,
+        },
+        point: {
+          size: 3.5,
+          shape: 'circle',
+        },
+      },
+      {
+        geometry: 'line',
+        seriesField: 'series',
+        color: '#f59e0b',
+        lineStyle: {
+          lineWidth: 2.8,
+        },
+        point: {
+          size: 3.5,
+          shape: 'circle',
+        },
+      },
+    ],
     legend: {
       position: 'top',
     },
@@ -68,11 +111,24 @@ function MeterReadingsChart({ chartReadings }) {
           }),
       },
     },
-    yAxis: {
-      label: {
-        formatter: (value) => `${Number(value).toFixed(1)} kWh`,
+    yAxis: [
+      {
+        title: {
+          text: 'Lectura acumulada',
+        },
+        label: {
+          formatter: (value) => `${Number(value).toFixed(1)} kWh`,
+        },
       },
-    },
+      {
+        title: {
+          text: 'Consumo entre lecturas',
+        },
+        label: {
+          formatter: (value) => `${Number(value).toFixed(1)} kWh`,
+        },
+      },
+    ],
     tooltip: {
       title: (title) => formatFullDate(title),
       formatter: (datum) => ({
@@ -88,7 +144,10 @@ function MeterReadingsChart({ chartReadings }) {
 
   return (
     <div className={styles.chartArea}>
-      <Line {...chartConfig} />
+      <div className={styles.chartControls}>
+        <Segmented options={seriesOptions} value={visibleSeries} onChange={setVisibleSeries} />
+      </div>
+      <DualAxes {...chartConfig} />
     </div>
   )
 }
