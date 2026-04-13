@@ -6,7 +6,9 @@ import {
   Input,
   InputNumber,
   Modal,
+  Select,
   Space,
+  Spin,
   Table,
   Tabs,
   Typography,
@@ -17,11 +19,24 @@ import styles from './ConsumptionTable.module.css'
 
 const MeterReadingsChart = lazy(() => import('./MeterReadingsChart'))
 
-function ConsumptionTable({ items, chartReadings = [], onUpdateItem }) {
+function ConsumptionTable({
+  items,
+  displayItems,
+  paginationConfig,
+  showAll,
+  isLoadingAll,
+  onUpdateItem,
+  onToggleShowAll,
+  onPageSizeChange,
+  pageSize,
+  chartReadings = [],
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [form] = Form.useForm()
+
+  const effectiveItems = displayItems || items
 
   const handleEdit = (record) => {
     setEditingItem(record)
@@ -61,38 +76,45 @@ function ConsumptionTable({ items, chartReadings = [], onUpdateItem }) {
     }
   }
 
-  const columns = [
-    {
-      title: 'Fecha',
-      dataIndex: 'fecha',
-      key: 'fecha',
-    },
-    {
-      title: 'kWh consumidos',
-      dataIndex: 'kWh',
-      key: 'kWh',
-      render: (value) => Number(value).toFixed(1),
-    },
-    {
-      title: 'Nota',
-      dataIndex: 'note',
-      key: 'note',
-      render: (value) => value || 'Sin observaciones',
-    },
-  ]
+  const effectivePageSize = pageSize || 10
+  const showPageSizeSelector = !showAll && effectiveItems?.length > 10
 
-  if (onUpdateItem) {
-    columns.push({
-      title: 'Acciones',
-      key: 'actions',
-      width: 120,
-      render: (_, record) => (
-        <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
-          Editar
-        </Button>
-      ),
-    })
-  }
+  const columns = useMemo(() => {
+    const baseColumns = [
+      {
+        title: 'Fecha',
+        dataIndex: 'fecha',
+        key: 'fecha',
+      },
+      {
+        title: 'kWh consumidos',
+        dataIndex: 'kWh',
+        key: 'kWh',
+        render: (value) => Number(value).toFixed(1),
+      },
+      {
+        title: 'Nota',
+        dataIndex: 'note',
+        key: 'note',
+        render: (value) => value || 'Sin observaciones',
+      },
+    ]
+
+    if (onUpdateItem) {
+      baseColumns.push({
+        title: 'Acciones',
+        key: 'actions',
+        width: 120,
+        render: (_, record) => (
+          <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
+            Editar
+          </Button>
+        ),
+      })
+    }
+
+    return baseColumns
+  }, [onUpdateItem])
 
   const tabItems = useMemo(
     () => [
@@ -104,8 +126,8 @@ function ConsumptionTable({ items, chartReadings = [], onUpdateItem }) {
             className={styles.table}
             rowKey={(record) => record.id}
             columns={columns}
-            dataSource={items}
-            pagination={false}
+            dataSource={effectiveItems}
+            pagination={paginationConfig || false}
             locale={{ emptyText: 'No hay consumos para mostrar.' }}
             scroll={{ x: 720 }}
           />
@@ -128,7 +150,7 @@ function ConsumptionTable({ items, chartReadings = [], onUpdateItem }) {
         ),
       },
     ],
-    [chartReadings, columns, items],
+    [chartReadings, columns, effectiveItems, paginationConfig],
   )
 
   return (
@@ -141,7 +163,37 @@ function ConsumptionTable({ items, chartReadings = [], onUpdateItem }) {
             <h3 className={styles.title}>Lecturas recientes</h3>
           </div>
         )}
-        extra={<Typography.Paragraph className={styles.caption}>Ultimos consumos registrados por fecha</Typography.Paragraph>}
+        extra={
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <Typography.Paragraph className={styles.caption} style={{ margin: 0 }}>
+              Ultimos consumos registrados por fecha
+            </Typography.Paragraph>
+            {showPageSizeSelector && onPageSizeChange && (
+              <Select
+                value={effectivePageSize}
+                onChange={onPageSizeChange}
+                options={[
+                  { value: 10, label: '10 por página' },
+                  { value: 50, label: '50 por página' },
+                  { value: 100, label: '100 por página' },
+                ]}
+                style={{ width: 140 }}
+                size="small"
+              />
+            )}
+            {isLoadingAll ? (
+              <Spin size="small" />
+            ) : onToggleShowAll ? (
+              <Button
+                type={showAll ? 'primary' : 'default'}
+                size="small"
+                onClick={onToggleShowAll}
+              >
+                {showAll ? 'Mostrar por periodo' : 'Mostrar todo'}
+              </Button>
+            ) : null}
+          </div>
+        }
       >
         <Tabs
           defaultActiveKey="table"
