@@ -24,6 +24,23 @@ function normalizeReading(reading) {
   }
 }
 
+function normalizeDashboardReading(reading) {
+  return {
+    id: reading.id,
+    date: reading.reading_date,
+    readingKwh: toNumber(reading.reading_kwh),
+    consumptionSinceLast:
+      reading.consumption_since_last === null || reading.consumption_since_last === undefined
+        ? null
+        : toNumber(reading.consumption_since_last),
+    estimatedCost:
+      reading.billing_period_cost?.total_cost === null ||
+      reading.billing_period_cost?.total_cost === undefined
+        ? null
+        : toNumber(reading.billing_period_cost.total_cost),
+  }
+}
+
 function buildSummary(items) {
   const total = items.reduce((accumulator, item) => accumulator + item.kWh, 0)
   const current = items.at(-1)?.kWh ?? 0
@@ -167,7 +184,7 @@ export async function getDashboardConsumptions(filters = {}) {
 
   console.log('[getDashboardConsumptions] Initial readings:', items.length, 'items')
 
-  const summary = buildSummary(items)
+  let summary = buildSummary(items)
   const householdId = householdFilter ?? items.at(-1)?.householdId ?? items[0]?.householdId ?? null
   let costDashboard = null
   let billingPeriodId = billingPeriodFilter ?? null
@@ -197,6 +214,9 @@ export async function getDashboardConsumptions(filters = {}) {
     }
   }
 
+  // Fetch all readings for the household within the billing period date range
+  // to calculate the average excluding the last reading
+  let dashboardHistoryReadings = []
   // If we have a billing period, filter readings by date range
   // since the backend may not support billing_period_id filtering
   if (householdId && billingPeriodDates) {
@@ -218,14 +238,25 @@ export async function getDashboardConsumptions(filters = {}) {
 
     // Use period-filtered readings for display and calculations
     items = periodReadings
-    summary.current = items.at(-1)?.kWh ?? 0
-    summary.previous = items.at(-2)?.kWh ?? 0
-    summary.difference = summary.current - summary.previous
-    summary.currentDate = items.at(-1)?.fecha ?? 'Sin fecha'
-    summary.max = items.length > 0 ? Math.max(...items.map((i) => i.kWh)) : 0
-    summary.min = items.length > 0 ? Math.min(...items.map((i) => i.kWh)) : 0
+    summary = buildSummary(items)
   }
 
+  if (householdId && billingPeriodId) {
+    try {
+      const historyDashboard = await requestApi(apiEndpoints.meterReadingsDashboard(householdId), {
+        query: {
+          billing_period_id: billingPeriodId,
+        },
+      })
+      dashboardHistoryReadings = (Array.isArray(historyDashboard?.readings)
+        ? historyDashboard.readings
+        : [])
+        .map(normalizeDashboardReading)
+        .sort((left, right) => left.date.localeCompare(right.date))
+    } catch {
+      dashboardHistoryReadings = []
+    }
+  }
   // Calculate average excluding the last reading
   const averageFromPeriodReadings = calculateAverageExcludingLast(items)
 
@@ -237,6 +268,9 @@ export async function getDashboardConsumptions(filters = {}) {
       average: averageFromPeriodReadings,
     },
     billing: buildBilling(costDashboard),
+    chart: {
+      readings: dashboardHistoryReadings,
+    },
   }
 }
 

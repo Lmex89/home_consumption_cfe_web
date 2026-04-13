@@ -1,18 +1,35 @@
 import { EditOutlined } from '@ant-design/icons'
-import { Button, Card, Form, Input, InputNumber, Modal, Select, Space, Spin, Table, Typography, message } from 'antd'
-import { useState } from 'react'
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Tabs,
+  Typography,
+  message,
+} from 'antd'
+import { Suspense, lazy, useMemo, useState } from 'react'
 import styles from './ConsumptionTable.module.css'
+
+const MeterReadingsChart = lazy(() => import('./MeterReadingsChart'))
 
 function ConsumptionTable({
   items,
-  paginationConfig,
   displayItems,
+  paginationConfig,
   showAll,
   isLoadingAll,
   onUpdateItem,
   onToggleShowAll,
   onPageSizeChange,
   pageSize,
+  chartReadings = [],
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -60,40 +77,81 @@ function ConsumptionTable({
   }
 
   const effectivePageSize = pageSize || 10
-  const showPageSizeSelector = !showAll && effectiveItems.length > 10
+  const showPageSizeSelector = !showAll && effectiveItems?.length > 10
 
-  const columns = [
-    {
-      title: 'Fecha',
-      dataIndex: 'fecha',
-      key: 'fecha',
-    },
-    {
-      title: 'kWh consumidos',
-      dataIndex: 'kWh',
-      key: 'kWh',
-      render: (value) => Number(value).toFixed(1),
-    },
-    {
-      title: 'Nota',
-      dataIndex: 'note',
-      key: 'note',
-      render: (value) => value || 'Sin observaciones',
-    },
-  ]
+  const columns = useMemo(() => {
+    const baseColumns = [
+      {
+        title: 'Fecha',
+        dataIndex: 'fecha',
+        key: 'fecha',
+      },
+      {
+        title: 'kWh consumidos',
+        dataIndex: 'kWh',
+        key: 'kWh',
+        render: (value) => Number(value).toFixed(1),
+      },
+      {
+        title: 'Nota',
+        dataIndex: 'note',
+        key: 'note',
+        render: (value) => value || 'Sin observaciones',
+      },
+    ]
 
-  if (onUpdateItem) {
-    columns.push({
-      title: 'Acciones',
-      key: 'actions',
-      width: 120,
-      render: (_, record) => (
-        <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
-          Editar
-        </Button>
-      ),
-    })
-  }
+    if (onUpdateItem) {
+      baseColumns.push({
+        title: 'Acciones',
+        key: 'actions',
+        width: 120,
+        render: (_, record) => (
+          <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
+            Editar
+          </Button>
+        ),
+      })
+    }
+
+    return baseColumns
+  }, [onUpdateItem])
+
+  const tabItems = useMemo(
+    () => [
+      {
+        key: 'table',
+        label: 'Tabla',
+        children: (
+          <Table
+            className={styles.table}
+            rowKey={(record) => record.id}
+            columns={columns}
+            dataSource={effectiveItems}
+            pagination={paginationConfig || false}
+            locale={{ emptyText: 'No hay consumos para mostrar.' }}
+            scroll={{ x: 720 }}
+          />
+        ),
+      },
+      {
+        key: 'chart',
+        label: 'Grafica',
+        forceRender: true,
+        children: (
+          <Suspense
+            fallback={
+              <div className={styles.chartLoader}>
+                <Typography.Text type="secondary">Cargando grafica...</Typography.Text>
+              </div>
+            }
+          >
+            <MeterReadingsChart chartReadings={chartReadings} />
+          </Suspense>
+        ),
+      },
+    ],
+    [chartReadings, columns, effectiveItems, paginationConfig],
+  )
 
   return (
     <>
@@ -137,14 +195,9 @@ function ConsumptionTable({
           </div>
         }
       >
-        <Table
-          className={styles.table}
-          rowKey={(record) => record.id}
-          columns={columns}
-          dataSource={effectiveItems}
-          pagination={paginationConfig || false}
-          locale={{ emptyText: 'No hay consumos para mostrar.' }}
-          scroll={{ x: 720 }}
+        <Tabs
+          defaultActiveKey="table"
+          items={tabItems}
         />
       </Card>
 
