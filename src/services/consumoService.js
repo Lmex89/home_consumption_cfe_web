@@ -150,10 +150,10 @@ export async function getDashboardConsumptions(filters = {}) {
 
   console.log('[getDashboardConsumptions] Filters received:', { householdFilter, billingPeriodFilter })
 
+  // First, fetch all readings with basic filters
   const rawReadings = await requestApi(apiEndpoints.meterReadings, {
     query: {
       household_id: householdFilter,
-      billing_period_id: billingPeriodFilter,
       reading_date_from: filters.startDate,
       reading_date_to: filters.endDate,
       limit: LIMITS.dashboardReadings,
@@ -161,13 +161,11 @@ export async function getDashboardConsumptions(filters = {}) {
     },
   })
 
-  console.log('[getDashboardConsumptions] Raw readings from API:', rawReadings.length, 'readings')
-
-  const items = (Array.isArray(rawReadings) ? rawReadings : [])
+  let items = (Array.isArray(rawReadings) ? rawReadings : [])
     .map(normalizeReading)
     .sort((left, right) => left.fecha.localeCompare(right.fecha))
 
-  console.log('[getDashboardConsumptions] Items after normalization:', items.length, 'items')
+  console.log('[getDashboardConsumptions] Initial readings:', items.length, 'items')
 
   const summary = buildSummary(items)
   const householdId = householdFilter ?? items.at(-1)?.householdId ?? items[0]?.householdId ?? null
@@ -187,7 +185,7 @@ export async function getDashboardConsumptions(filters = {}) {
         costDashboard = null
       }
 
-      // Fetch billing period dates to get all readings within the period range
+      // Fetch billing period dates to filter readings within the period range
       const periods = await fetchBillingPeriods(householdId)
       const period = periods.find((p) => p.id === billingPeriodId)
       if (period) {
@@ -199,9 +197,8 @@ export async function getDashboardConsumptions(filters = {}) {
     }
   }
 
-  // Fetch all readings for the household within the billing period date range
-  // to calculate the average excluding the last reading
-  let averageFromPeriodReadings = calculateAverageExcludingLast(items)
+  // If we have a billing period, filter readings by date range
+  // since the backend may not support billing_period_id filtering
   if (householdId && billingPeriodDates) {
     const periodReadingsRaw = await requestApi(apiEndpoints.meterReadings, {
       query: {
@@ -217,8 +214,20 @@ export async function getDashboardConsumptions(filters = {}) {
       .map(normalizeReading)
       .sort((left, right) => left.fecha.localeCompare(right.fecha))
 
-    averageFromPeriodReadings = calculateAverageExcludingLast(periodReadings)
+    console.log('[getDashboardConsumptions] Filtered by billing period date range:', periodReadings.length, 'items')
+
+    // Use period-filtered readings for display and calculations
+    items = periodReadings
+    summary.current = items.at(-1)?.kWh ?? 0
+    summary.previous = items.at(-2)?.kWh ?? 0
+    summary.difference = summary.current - summary.previous
+    summary.currentDate = items.at(-1)?.fecha ?? 'Sin fecha'
+    summary.max = items.length > 0 ? Math.max(...items.map((i) => i.kWh)) : 0
+    summary.min = items.length > 0 ? Math.min(...items.map((i) => i.kWh)) : 0
   }
+
+  // Calculate average excluding the last reading
+  const averageFromPeriodReadings = calculateAverageExcludingLast(items)
 
   return {
     endpoint: buildApiUrl(apiEndpoints.meterReadings),
