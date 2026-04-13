@@ -14,7 +14,7 @@ import {
   Typography,
   message,
 } from 'antd'
-import { Suspense, lazy, useMemo, useState } from 'react'
+import { Suspense, lazy, useCallback, useMemo, useState } from 'react'
 import styles from './ConsumptionTable.module.css'
 
 const MeterReadingsChart = lazy(() => import('./MeterReadingsChart'))
@@ -38,14 +38,14 @@ function ConsumptionTable({
 
   const effectiveItems = displayItems || items
 
-  const handleEdit = (record) => {
+  const handleEdit = useCallback((record) => {
     setEditingItem(record)
     form.setFieldsValue({
       fecha: record.fecha,
       kWh: Number(record.kWh),
     })
     setIsModalOpen(true)
-  }
+  }, [form])
 
   const handleCancel = () => {
     setIsModalOpen(false)
@@ -114,7 +114,7 @@ function ConsumptionTable({
     }
 
     return baseColumns
-  }, [onUpdateItem])
+  }, [handleEdit, onUpdateItem])
 
   const tabItems = useMemo(
     () => [

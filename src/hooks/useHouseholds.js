@@ -13,9 +13,6 @@ export function useHouseholds() {
   useEffect(() => {
     let isMounted = true
 
-    setIsLoading(true)
-    setError('')
-
     listHouseholds()
       .then((list) => {
         if (isMounted) setHouseholds(list)
