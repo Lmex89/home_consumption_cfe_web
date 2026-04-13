@@ -148,6 +148,12 @@ function AddBillingPeriodForm({ onSubmit, isSubmitting, successMessage }) {
           </Col>
         </Row>
 
+        {loadingPeriods ? (
+          <div style={{ marginBottom: 16 }}>
+            <Spin size="small" />
+          </div>
+        ) : null}
+
         <FormActions loading={isSubmitting} onReset={() => form.resetFields()} />
       </Form>
     </Card>
