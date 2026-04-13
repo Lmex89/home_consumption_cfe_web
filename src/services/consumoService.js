@@ -148,6 +148,8 @@ export async function getDashboardConsumptions(filters = {}) {
   const householdFilter = filters.householdId ? Number(filters.householdId) : undefined
   const billingPeriodFilter = filters.billingPeriodId ? Number(filters.billingPeriodId) : undefined
 
+  console.log('[getDashboardConsumptions] Filters received:', { householdFilter, billingPeriodFilter })
+
   const rawReadings = await requestApi(apiEndpoints.meterReadings, {
     query: {
       household_id: householdFilter,
@@ -159,9 +161,13 @@ export async function getDashboardConsumptions(filters = {}) {
     },
   })
 
+  console.log('[getDashboardConsumptions] Raw readings from API:', rawReadings.length, 'readings')
+
   const items = (Array.isArray(rawReadings) ? rawReadings : [])
     .map(normalizeReading)
     .sort((left, right) => left.fecha.localeCompare(right.fecha))
+
+  console.log('[getDashboardConsumptions] Items after normalization:', items.length, 'items')
 
   const summary = buildSummary(items)
   const householdId = householdFilter ?? items.at(-1)?.householdId ?? items[0]?.householdId ?? null

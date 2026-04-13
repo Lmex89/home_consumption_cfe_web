@@ -56,10 +56,17 @@ function DashboardPage() {
     setIsLoading(true)
     setError('')
 
+    console.log('[DashboardPage] loadDashboard called with:', { householdId, billingPeriodId })
+
     try {
       const data = await getDashboardConsumptions({
         householdId,
         billingPeriodId,
+      })
+      console.log('[DashboardPage] loadDashboard received data:', { 
+        itemsCount: data?.items?.length,
+        firstItem: data?.items?.[0],
+        lastItem: data?.items?.[data?.items?.length - 1]
       })
       setDashboardData(data)
     } catch {
