@@ -301,6 +301,7 @@ function DashboardPage() {
       </div>
 
       <ConsumptionTable
+        key={`${selectedHouseholdId}-${selectedBillingPeriodId}`}
         items={dashboardData?.items}
         displayItems={displayItems}
         paginationConfig={paginationConfig}
