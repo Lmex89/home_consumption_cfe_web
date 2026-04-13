@@ -94,6 +94,7 @@ function DashboardPage({
       <ConsumptionTable
         key={`${selectedHouseholdId}-${selectedBillingPeriodId}`}
         items={dashboardData?.items}
+        chartReadings={dashboardData?.chart?.readings ?? []}
         displayItems={displayItems}
         paginationConfig={paginationConfig}
         showAll={showAll}
