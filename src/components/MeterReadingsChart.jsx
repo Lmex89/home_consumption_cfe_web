@@ -1,4 +1,4 @@
-import { DualAxes } from '@ant-design/charts'
+import { Line } from '@ant-design/charts'
 import { useMemo, useState } from 'react'
 import { Empty, Segmented } from 'antd'
 import styles from './ConsumptionTable.module.css'
@@ -53,14 +53,14 @@ function MeterReadingsChart({ chartReadings }) {
 
   const chartData = useMemo(() => {
     if (visibleSeries === 'reading') {
-      return [readingSeriesData, []]
+      return readingSeriesData
     }
 
     if (visibleSeries === 'consumption') {
-      return [[], consumptionSeriesData]
+      return consumptionSeriesData
     }
 
-    return [readingSeriesData, consumptionSeriesData]
+    return [...readingSeriesData, ...consumptionSeriesData]
   }, [consumptionSeriesData, readingSeriesData, visibleSeries])
 
   if (readingSeriesData.length === 0 && consumptionSeriesData.length === 0) {
@@ -70,35 +70,22 @@ function MeterReadingsChart({ chartReadings }) {
   const chartConfig = {
     data: chartData,
     xField: 'date',
-    yField: ['value', 'value'],
+    yField: 'value',
+    seriesField: 'series',
     autoFit: true,
     smooth: false,
-    geometryOptions: [
-      {
-        geometry: 'line',
-        seriesField: 'series',
-        color: '#2563eb',
-        lineStyle: {
-          lineWidth: 2.8,
-        },
-        point: {
-          size: 3.5,
-          shape: 'circle',
-        },
-      },
-      {
-        geometry: 'line',
-        seriesField: 'series',
-        color: '#f59e0b',
-        lineStyle: {
-          lineWidth: 2.8,
-        },
-        point: {
-          size: 3.5,
-          shape: 'circle',
-        },
-      },
-    ],
+    color: ({ series }) => {
+      if (series === 'Lectura acumulada (kWh)') return '#2563eb'
+      if (series === 'Consumo entre lecturas (kWh)') return '#f59e0b'
+      return '#999'
+    },
+    lineStyle: {
+      lineWidth: 2.8,
+    },
+    point: {
+      size: 3.5,
+      shape: 'circle',
+    },
     legend: {
       position: 'top',
     },
@@ -111,24 +98,11 @@ function MeterReadingsChart({ chartReadings }) {
           }),
       },
     },
-    yAxis: [
-      {
-        title: {
-          text: 'Lectura acumulada',
-        },
-        label: {
-          formatter: (value) => `${Number(value).toFixed(1)} kWh`,
-        },
+    yAxis: {
+      label: {
+        formatter: (value) => `${Number(value).toFixed(1)} kWh`,
       },
-      {
-        title: {
-          text: 'Consumo entre lecturas',
-        },
-        label: {
-          formatter: (value) => `${Number(value).toFixed(1)} kWh`,
-        },
-      },
-    ],
+    },
     tooltip: {
       title: (title) => formatFullDate(title),
       formatter: (datum) => ({
@@ -147,7 +121,7 @@ function MeterReadingsChart({ chartReadings }) {
       <div className={styles.chartControls}>
         <Segmented options={seriesOptions} value={visibleSeries} onChange={setVisibleSeries} />
       </div>
-      <DualAxes {...chartConfig} />
+      <Line {...chartConfig} />
     </div>
   )
 }
