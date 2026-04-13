@@ -1,12 +1,12 @@
 import { Collapse, Flex, Space, Typography } from 'antd'
 import styles from './DashboardBillingBreakdown.module.css'
 
-function DashboardBillingBreakdown({ billing }) {
-  const currencyFormatter = new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-  })
+const currencyFormatter = new Intl.NumberFormat('es-MX', {
+  style: 'currency',
+  currency: 'MXN',
+})
 
+function DashboardBillingBreakdown({ billing }) {
   return (
     <section 
       className={styles.breakdown}

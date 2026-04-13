@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { fetchAllMeterReadings } from '../services/consumoService'
 
 /**
@@ -19,14 +19,16 @@ export function useMeterReadingsPagination({ periodItems, householdId, enableSho
   const [isLoadingAll, setIsLoadingAll] = useState(false)
 
   // Sort period items in descending order (newest first)
-  const sortedPeriodItems = [...(periodItems || [])].sort(
-    (a, b) => b.fecha.localeCompare(a.fecha)
+  const sortedPeriodItems = useMemo(
+    () => [...(periodItems || [])].sort((a, b) => b.fecha.localeCompare(a.fecha)),
+    [periodItems],
   )
 
   // Sort all items in descending order when available
-  const sortedAllItems = allItems
-    ? [...allItems].sort((a, b) => b.fecha.localeCompare(a.fecha))
-    : null
+  const sortedAllItems = useMemo(
+    () => (allItems ? [...allItems].sort((a, b) => b.fecha.localeCompare(a.fecha)) : null),
+    [allItems],
+  )
 
   const displayItems = showAll ? (sortedAllItems || sortedPeriodItems) : sortedPeriodItems
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   getDashboardConsumptions,
   listBillingPeriods,
@@ -20,6 +20,7 @@ function DashboardPageContainer() {
   const [selectedBillingPeriodId, setSelectedBillingPeriodId] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const latestRequestIdRef = useRef(0)
 
   const { households, isLoading: isLoadingHouseholds } = useHouseholds()
 
@@ -41,7 +42,8 @@ function DashboardPageContainer() {
   /**
    * Load dashboard data for a specific household and billing period
    */
-  const loadDashboard = async ({ householdId, billingPeriodId }) => {
+  const loadDashboard = useCallback(async ({ householdId, billingPeriodId }) => {
+    const requestId = ++latestRequestIdRef.current
     setIsLoading(true)
     setError('')
 
@@ -50,13 +52,17 @@ function DashboardPageContainer() {
         householdId,
         billingPeriodId,
       })
+      if (latestRequestIdRef.current !== requestId) return
       setDashboardData(data)
     } catch {
+      if (latestRequestIdRef.current !== requestId) return
       setError('No fue posible cargar los datos del dashboard.')
     } finally {
-      setIsLoading(false)
+      if (latestRequestIdRef.current === requestId) {
+        setIsLoading(false)
+      }
     }
-  }
+  }, [])
 
   /**
    * Initialize dashboard on mount and when households load
@@ -106,8 +112,7 @@ function DashboardPageContainer() {
     return () => {
       isMounted = false
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoadingHouseholds])
+  }, [households, isLoadingHouseholds])
 
   /**
    * Handle household selection change

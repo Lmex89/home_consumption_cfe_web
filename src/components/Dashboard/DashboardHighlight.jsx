@@ -1,12 +1,12 @@
 import { Typography } from 'antd'
 import styles from './DashboardHighlight.module.css'
 
-function DashboardHighlight({ totalCost, totalReadings }) {
-  const currencyFormatter = new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-  })
+const currencyFormatter = new Intl.NumberFormat('es-MX', {
+  style: 'currency',
+  currency: 'MXN',
+})
 
+function DashboardHighlight({ totalCost, totalReadings }) {
   return (
     <div 
       className={`${styles.highlight} ${styles.revealUp} ${styles.revealUpDelay}`}
