@@ -1,4 +1,5 @@
 import { Alert, Empty, Skeleton } from 'antd'
+import BillingPeriodCostChart from './BillingPeriodCostChart'
 import DashboardBillingBreakdown from './DashboardBillingBreakdown'
 import DashboardHighlight from './DashboardHighlight'
 import DashboardHero from './DashboardHero'
@@ -88,6 +89,8 @@ function DashboardPage({
         summary={summary}
         itemsCount={items.length}
       />
+
+      <BillingPeriodCostChart readings={dashboardData?.chart?.readings ?? []} />
 
       <DashboardBillingBreakdown billing={billing} />
 

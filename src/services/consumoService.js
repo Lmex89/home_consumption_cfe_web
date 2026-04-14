@@ -38,6 +38,7 @@ function normalizeDashboardReading(reading) {
       reading.billing_period_cost?.total_cost === undefined
         ? null
         : toNumber(reading.billing_period_cost.total_cost),
+    billing_period_cost: reading.billing_period_cost,
   }
 }
 
