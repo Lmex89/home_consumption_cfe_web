@@ -5,6 +5,8 @@
   box-shadow: var(--shadow-soft);
   padding: 24px 28px 28px;
   overflow: hidden;
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
 }
 
