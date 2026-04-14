@@ -41,8 +41,8 @@
 }
 
 .eyebrow {
-  margin: 0 0 8px;
-  font-size: 0.78rem;
+  margin: 0 0 4px;
+  font-size: clamp(0.65rem, 2vw, 0.78rem);
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -51,7 +51,8 @@
 
 .title {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: clamp(1.1rem, 4vw, 1.4rem);
+  line-height: 1.2;
 }
 
 .caption {
@@ -195,11 +196,30 @@
   }
 
   .wrapper :global(.ant-card-head) {
-    padding: 14px 12px 0;
+    padding: 12px 12px 0;
+    min-height: auto;
+  }
+
+  .wrapper :global(.ant-card-head-title) {
+    padding: 0;
+  }
+
+  .wrapper :global(.ant-card-extra) {
+    margin-top: 8px;
   }
 
   .wrapper :global(.ant-card-body) {
     padding: 12px 12px 12px;
+  }
+
+  .eyebrow {
+    margin: 0 0 2px;
+    font-size: 0.65rem;
+  }
+
+  .title {
+    font-size: 1.1rem;
+    margin: 0;
   }
 
   .caption {
