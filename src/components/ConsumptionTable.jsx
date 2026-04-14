@@ -18,6 +18,7 @@ import { Suspense, lazy, useCallback, useMemo, useState } from 'react'
 import styles from './ConsumptionTable.module.css'
 
 const MeterReadingsChart = lazy(() => import('./MeterReadingsChart'))
+const BillingPeriodCostChart = lazy(() => import('./Dashboard/BillingPeriodCostChart'))
 
 function ConsumptionTable({
   items,
@@ -146,6 +147,22 @@ function ConsumptionTable({
             }
           >
             <MeterReadingsChart chartReadings={chartReadings} />
+          </Suspense>
+        ),
+      },
+      {
+        key: 'cost-chart',
+        label: 'Costo del período',
+        forceRender: true,
+        children: (
+          <Suspense
+            fallback={
+              <div className={styles.chartLoader}>
+                <Typography.Text type="secondary">Cargando grafica de costos...</Typography.Text>
+              </div>
+            }
+          >
+            <BillingPeriodCostChart readings={chartReadings} />
           </Suspense>
         ),
       },
