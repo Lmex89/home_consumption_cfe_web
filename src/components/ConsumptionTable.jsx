@@ -37,6 +37,8 @@ function ConsumptionTable({
   const [editingItem, setEditingItem] = useState(null)
   const [form] = Form.useForm()
 
+  const [activeTab, setActiveTab] = useState('table')
+
   const effectiveItems = displayItems || items
 
   const handleEdit = useCallback((record) => {
@@ -137,7 +139,6 @@ function ConsumptionTable({
       {
         key: 'chart',
         label: 'Grafica',
-        forceRender: true,
         children: (
           <Suspense
             fallback={
@@ -146,14 +147,16 @@ function ConsumptionTable({
               </div>
             }
           >
-            <MeterReadingsChart chartReadings={chartReadings} />
+            <MeterReadingsChart 
+              key={activeTab === 'chart' ? 'visible' : 'hidden'} 
+              chartReadings={chartReadings} 
+            />
           </Suspense>
         ),
       },
       {
         key: 'cost-chart',
         label: 'Costo del período',
-        forceRender: true,
         children: (
           <Suspense
             fallback={
@@ -162,12 +165,15 @@ function ConsumptionTable({
               </div>
             }
           >
-            <BillingPeriodCostChart readings={chartReadings} />
+            <BillingPeriodCostChart 
+              key={activeTab === 'cost-chart' ? 'visible' : 'hidden'} 
+              readings={chartReadings} 
+            />
           </Suspense>
         ),
       },
     ],
-    [chartReadings, columns, effectiveItems, paginationConfig],
+    [chartReadings, columns, effectiveItems, paginationConfig, activeTab],
   )
 
   return (
@@ -213,7 +219,8 @@ function ConsumptionTable({
         }
       >
         <Tabs
-          defaultActiveKey="table"
+          activeKey={activeTab}
+          onChange={setActiveTab}
           items={tabItems}
         />
       </Card>
