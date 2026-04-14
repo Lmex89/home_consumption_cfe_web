@@ -26,6 +26,12 @@
   }
 }
 
+@media (max-width: 640px) {
+  .metricItem {
+    height: auto;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .metricItem:hover {
     transform: translate3d(0, -4px, 0);

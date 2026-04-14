@@ -66,10 +66,12 @@
 
 @media (max-width: 640px) {
   .card {
+    height: auto;
     border-radius: 20px;
   }
 
   .card :global(.ant-card-body) {
+    height: auto;
     padding: 16px;
   }
 
