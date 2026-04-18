@@ -1,4 +1,5 @@
 import {
+  CalendarOutlined,
   FormOutlined,
   LogoutOutlined,
   MenuOutlined,
@@ -19,6 +20,7 @@ const navItems = [
   { key: '/insertar-consumo', icon: <FormOutlined />, label: 'Lecturas de Medidor' },
   { key: '/agregar-vivienda', icon: <HomeOutlined />, label: 'Alta Viviendas' },
   { key: '/agregar-tarifa', icon: <TagOutlined />, label: 'Alta Tarifas' },
+  { key: '/agregar-periodo', icon: <CalendarOutlined />, label: 'Alta Periodos' },
 ]
 
 function Layout() {
@@ -32,6 +34,7 @@ function Layout() {
     if (location.pathname.startsWith('/insertar-consumo')) return '/insertar-consumo'
     if (location.pathname.startsWith('/agregar-vivienda')) return '/agregar-vivienda'
     if (location.pathname.startsWith('/agregar-tarifa')) return '/agregar-tarifa'
+    if (location.pathname.startsWith('/agregar-periodo')) return '/agregar-periodo'
     return '/'
   }
 
@@ -125,8 +128,8 @@ function Layout() {
         width={240}
         open={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
-        title={null}
-        closable={false}
+        title="Menu de navegacion"
+        closable
         styles={{
           body: {
             padding: 0,
