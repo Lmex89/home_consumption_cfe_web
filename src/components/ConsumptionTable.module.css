@@ -28,6 +28,18 @@
   padding: 0;
 }
 
+.wrapper :global(.ant-tabs) {
+  width: 100%;
+}
+
+.wrapper :global(.ant-tabs-content) {
+  width: 100%;
+}
+
+.wrapper :global(.ant-tabs-tabpane) {
+  width: 100%;
+}
+
 .wrapper :global(.ant-card-body) {
   padding: 18px 28px 28px;
 }
@@ -123,6 +135,7 @@
 
 .chartArea {
   width: 100%;
+  min-width: 0;
   min-height: 320px;
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 18px;

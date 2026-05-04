@@ -18,6 +18,7 @@ import { Suspense, lazy, useCallback, useMemo, useState } from 'react'
 import styles from './ConsumptionTable.module.css'
 
 const MeterReadingsChart = lazy(() => import('./MeterReadingsChart'))
+const BillingPeriodCostChart = lazy(() => import('./Dashboard/BillingPeriodCostChart'))
 
 function ConsumptionTable({
   items,
@@ -35,6 +36,8 @@ function ConsumptionTable({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [form] = Form.useForm()
+
+  const [activeTab, setActiveTab] = useState('table')
 
   const effectiveItems = displayItems || items
 
@@ -136,7 +139,6 @@ function ConsumptionTable({
       {
         key: 'chart',
         label: 'Grafica',
-        forceRender: true,
         children: (
           <Suspense
             fallback={
@@ -145,12 +147,33 @@ function ConsumptionTable({
               </div>
             }
           >
-            <MeterReadingsChart chartReadings={chartReadings} />
+            <MeterReadingsChart 
+              key={activeTab === 'chart' ? 'visible' : 'hidden'} 
+              chartReadings={chartReadings} 
+            />
+          </Suspense>
+        ),
+      },
+      {
+        key: 'cost-chart',
+        label: 'Costo del período',
+        children: (
+          <Suspense
+            fallback={
+              <div className={styles.chartLoader}>
+                <Typography.Text type="secondary">Cargando grafica de costos...</Typography.Text>
+              </div>
+            }
+          >
+            <BillingPeriodCostChart 
+              key={activeTab === 'cost-chart' ? 'visible' : 'hidden'} 
+              readings={chartReadings} 
+            />
           </Suspense>
         ),
       },
     ],
-    [chartReadings, columns, effectiveItems, paginationConfig],
+    [chartReadings, columns, effectiveItems, paginationConfig, activeTab],
   )
 
   return (
@@ -196,7 +219,8 @@ function ConsumptionTable({
         }
       >
         <Tabs
-          defaultActiveKey="table"
+          activeKey={activeTab}
+          onChange={setActiveTab}
           items={tabItems}
         />
       </Card>
