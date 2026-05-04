@@ -92,6 +92,7 @@ function buildBilling(costDashboard) {
     ],
     periodId: costDashboard.billing_period_id,
     tariffCode: costDashboard.tariff_code,
+    cfeBreakdown: costDashboard.cfe_breakdown ?? null,
   }
 }
 
