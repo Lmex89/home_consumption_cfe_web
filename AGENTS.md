@@ -30,34 +30,54 @@ The application provides a dashboard for viewing consumption metrics, managing m
 
 ```
 src/
-├── components/          # Reusable UI components
-│   ├── ui/             # Base UI components
+├── components/                   # Reusable UI components
+│   ├── ui/                       # Base UI primitives
+│   │   ├── FormActions.jsx       # Shared form submit/cancel buttons
+│   │   ├── SectionCard.jsx       # Bordered section wrapper card
+│   │   └── SuccessAlert.jsx      # Success feedback alert
+│   ├── Dashboard/                # Dashboard feature components (container/presenter split)
+│   │   ├── DashboardPageContainer.jsx   # Container: data fetching & state
+│   │   ├── DashboardPage.jsx            # Presenter: renders dashboard layout
+│   │   ├── DashboardHero.jsx            # Household/billing period selectors
+│   │   ├── DashboardHighlight.jsx       # Key metric highlight row
+│   │   ├── DashboardMetricsGrid.jsx     # Summary metrics grid (kWh cards)
+│   │   ├── DashboardBillingBreakdown.jsx # Billing cost breakdown with CFE tier detail
+│   │   └── BillingPeriodCostChart.jsx   # Chart of per-reading cost over time
+│   ├── AddBillingPeriodForm.jsx
+│   ├── AddHouseholdForm.jsx
+│   ├── AddTariffForm.jsx
+│   ├── AddTariffRangeForm.jsx
+│   ├── AddTariffVersionForm.jsx
 │   ├── ConsumptionForm.jsx
 │   ├── ConsumptionTable.jsx
 │   ├── Layout.jsx
+│   ├── MeterReadingsChart.jsx
 │   ├── MetricCard.jsx
-│   └── RequireAuth.jsx  # Auth guard for protected routes
-├── config/              # Configuration
-│   ├── apiConfig.js     # API endpoints, backend URL builder
+│   ├── RequireAuth.jsx           # Auth guard for protected routes
+│   ├── TariffRangesList.jsx
+│   └── TariffVersionsList.jsx
+├── config/                       # Configuration
+│   ├── apiConfig.js              # API endpoints, backend URL builder
 │   └── consumptionMockConfig.js  # Mock data for dev
-├── hooks/               # Custom React hooks
-│   └── useHouseholds.js
-├── lib/                 # Core utilities
-│   ├── apiClient.js     # HTTP request client
-│   └── authStorage.js   # Token/session management
-├── pages/               # Route-level page components
-│   ├── DashboardPage.jsx
+├── hooks/                        # Custom React hooks
+│   ├── useHouseholds.js          # Household list fetching with loading state
+│   └── useMeterReadingsPagination.js  # Paginated readings with "show all" toggle
+├── lib/                          # Core utilities
+│   ├── apiClient.js              # HTTP request client
+│   └── authStorage.js            # Token/session management
+├── pages/                        # Route-level page components
+│   ├── DashboardPage.jsx         # Renders DashboardPageContainer
 │   ├── InsertarConsumoPage.jsx
 │   ├── AddHouseholdPage.jsx
 │   ├── AddTariffPage.jsx
 │   ├── AddBillingPeriodPage.jsx
 │   ├── LoginPage.jsx
 │   └── RegisterPage.jsx
-├── services/            # API service layer
+├── services/                     # API service layer
 │   ├── authService.js
-│   ├── consumoService.js
+│   ├── consumoService.js         # Meter readings, billing periods, dashboard data
 │   └── householdService.js
-└── utils/               # Helper functions
+└── utils/                        # Helper functions
     └── dateUtils.js
 ```
 
@@ -157,6 +177,8 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 - **JSX**: Uses the modern JSX transform (React 19). No explicit `React` import needed.
 - **Component Style**: Functional components with React hooks. UI uses Ant Design components with a custom theme (primary color `#3b82f6`, IBM Plex Sans font).
 - **Module System**: ES modules (`"type": "module"` in package.json).
+- **Container/Presenter Pattern**: The Dashboard feature follows a strict container/presenter split. `DashboardPageContainer` owns all data fetching and state; `DashboardPage` (presenter) receives everything via props and only renders UI. Apply this pattern to any new feature components that need async data.
+- **CSS Modules**: Component-specific styles use CSS Modules (`*.module.css` co-located next to each component file).
 
 ---
 
@@ -165,3 +187,7 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 - **Ant Design Theme**: Custom theme tokens are defined in `src/main.jsx` including primary/success/error colors, border radius, and component-specific overrides (Button height, Card border radius, Layout colors, Menu styling for the sidebar).
 - **Auth Flow**: Uses `RequireAuth` component as a route guard. Auth tokens are managed via `src/lib/authStorage.js`.
 - **Mock Data**: `src/config/consumptionMockConfig.js` provides sample data for development, including mock billing rates (Energy: $1.34/kWh, Distribution: $0.38/kWh, Transmission: $0.11/kWh, Service: $39.50, IVA: 16%).
+- **Meter Readings Pagination**: `useMeterReadingsPagination` provides paginated display of billing-period readings with an optional "show all" toggle that lazy-fetches all readings for the selected household. Items are sorted descending (newest first) client-side.
+- **Dashboard Data Flow**: `DashboardPageContainer` orchestrates: household list (`useHouseholds`), billing period list, dashboard API data (`getDashboardConsumptions`), and meter reading pagination (`useMeterReadingsPagination`). A `latestRequestIdRef` guards against race conditions when the user switches households/periods quickly.
+- **Race Condition Guard**: `DashboardPageContainer` uses a monotonically incrementing `latestRequestIdRef` to discard stale API responses when the user changes selections before the prior fetch completes.
+- **CFE Billing Breakdown**: `DashboardBillingBreakdown` renders tier-based cost breakdown (Básico, Intermedio, Excedente tiers with color-coded tags) grouped by `tier_level` from the API's `tier_lines` array. Formatters use `Intl.NumberFormat` with `es-MX` locale.
