@@ -103,7 +103,7 @@ export function getSuggestedNextPeriod(periods) {
 
   if (latest) {
     const durationDays = getPeriodDurationDays(latest)
-    const startDate = latest.end_date
+    const startDate = addDays(latest.end_date, 1)
     const endDate = addDays(startDate, durationDays)
     return { startDate, endDate, basedOnExisting: true }
   }
