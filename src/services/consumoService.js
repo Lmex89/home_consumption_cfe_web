@@ -1,5 +1,12 @@
 import { apiEndpoints, backendConfig, buildApiUrl } from '../config/apiConfig'
 import { requestApi } from '../lib/apiClient'
+import {
+  addDays,
+  generateYearPeriods,
+  getLatestPeriod,
+  getPeriodDurationDays,
+  periodsOverlap,
+} from '../utils/billingPeriodUtils'
 
 const LIMITS = {
   households: 500,
@@ -333,6 +340,56 @@ export async function createBillingPeriod(householdId, startDate, endDate) {
   })
 
   return createdPeriod
+}
+
+/**
+ * Bulk-creates billing periods for a full year for a household.
+ *
+ * Behavior:
+ *   - Uses the latest existing period's duration as the template for new periods.
+ *   - If no periods exist, defaults to bimonthly periods (~59 days).
+ *   - Generates ranges from Jan 1 to Dec 31 of the requested year.
+ *   - Skips any generated range that overlaps with an existing period.
+ *   - Returns a summary of created, skipped, and failed periods.
+ */
+export async function createYearBillingPeriods(householdId, year = new Date().getFullYear()) {
+  const existingPeriods = await fetchBillingPeriods(householdId)
+
+  const latestPeriod = getLatestPeriod(existingPeriods)
+  const durationDays = latestPeriod ? getPeriodDurationDays(latestPeriod) : 59
+
+  const candidatePeriods = generateYearPeriods(year, durationDays)
+  const periodsToCreate = candidatePeriods.filter(
+    (period) => !periodsOverlap(period.start_date, period.end_date, existingPeriods),
+  )
+
+  const created = []
+  const errors = []
+
+  for (const period of periodsToCreate) {
+    try {
+      const createdPeriod = await createBillingPeriod(
+        householdId,
+        period.start_date,
+        period.end_date,
+      )
+      created.push(createdPeriod)
+    } catch (error) {
+      errors.push({
+        start_date: period.start_date,
+        end_date: period.end_date,
+        message: error.message || 'Error al crear el periodo',
+      })
+    }
+  }
+
+  return {
+    year,
+    durationDays,
+    created,
+    skipped: candidatePeriods.length - periodsToCreate.length,
+    errors,
+  }
 }
 
 export async function updateConsumption(meterReadingId, values) {

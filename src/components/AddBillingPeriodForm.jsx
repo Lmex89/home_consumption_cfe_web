@@ -1,25 +1,34 @@
-import { Alert, Card, Col, Form, Input, Row, Select, Spin, Typography, message } from 'antd'
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Form,
+  Input,
+  Modal,
+  Row,
+  Select,
+  Spin,
+  Typography,
+  message,
+} from 'antd'
 import { useState } from 'react'
 import { useHouseholds } from '../hooks/useHouseholds'
 import { fetchBillingPeriods } from '../services/consumoService'
+import {
+  getSuggestedNextPeriod,
+  periodsOverlap,
+} from '../utils/billingPeriodUtils'
 import FormActions from './ui/FormActions'
 import SuccessAlert from './ui/SuccessAlert'
 
-function periodsOverlap(newStart, newEnd, existingPeriods) {
-  const newStartMs = new Date(newStart).getTime()
-  const newEndMs = new Date(newEnd).getTime()
-
-  if (Number.isNaN(newStartMs) || Number.isNaN(newEndMs)) return false
-
-  return existingPeriods.some((period) => {
-    const existingStart = new Date(period.start_date).getTime()
-    const existingEnd = new Date(period.end_date).getTime()
-    if (Number.isNaN(existingStart) || Number.isNaN(existingEnd)) return false
-    return newStartMs <= existingEnd && newEndMs >= existingStart
-  })
-}
-
-function AddBillingPeriodForm({ onSubmit, isSubmitting, successMessage }) {
+function AddBillingPeriodForm({
+  onSubmit,
+  onCreateYear,
+  isSubmitting,
+  isCreatingYear,
+  successMessage,
+}) {
   const [form] = Form.useForm()
   const { households, isLoading: loadingHouseholds, error: householdsError } = useHouseholds()
   const [existingPeriods, setExistingPeriods] = useState([])
@@ -27,12 +36,22 @@ function AddBillingPeriodForm({ onSubmit, isSubmitting, successMessage }) {
 
   const handleHouseholdChange = async (householdId) => {
     setExistingPeriods([])
+    form.resetFields(['startDate', 'endDate'])
     if (!householdId) return
 
     setLoadingPeriods(true)
     try {
       const periods = await fetchBillingPeriods(householdId)
-      setExistingPeriods(Array.isArray(periods) ? periods : [])
+      const normalizedPeriods = Array.isArray(periods) ? periods : []
+      setExistingPeriods(normalizedPeriods)
+
+      const suggested = getSuggestedNextPeriod(normalizedPeriods)
+      if (suggested.startDate) {
+        form.setFieldsValue({ startDate: suggested.startDate })
+      }
+      if (suggested.endDate) {
+        form.setFieldsValue({ endDate: suggested.endDate })
+      }
     } catch (error) {
       console.error('Error fetching billing periods:', error)
       setExistingPeriods([])
@@ -60,14 +79,22 @@ function AddBillingPeriodForm({ onSubmit, isSubmitting, successMessage }) {
     const wasSaved = await onSubmit(payload)
     if (wasSaved) {
       const householdId = values.householdId
-      form.resetFields()
-      setExistingPeriods([])
-      // Reload periods for the household that was just used
+      form.resetFields(['startDate', 'endDate'])
+      // Reload periods for the household that was just used and suggest the next one
       if (householdId) {
         setLoadingPeriods(true)
         try {
           const periods = await fetchBillingPeriods(householdId)
-          setExistingPeriods(Array.isArray(periods) ? periods : [])
+          const normalizedPeriods = Array.isArray(periods) ? periods : []
+          setExistingPeriods(normalizedPeriods)
+
+          const suggested = getSuggestedNextPeriod(normalizedPeriods)
+          if (suggested.startDate) {
+            form.setFieldsValue({ startDate: suggested.startDate })
+          }
+          if (suggested.endDate) {
+            form.setFieldsValue({ endDate: suggested.endDate })
+          }
         } catch {
           setExistingPeriods([])
         } finally {
@@ -75,6 +102,23 @@ function AddBillingPeriodForm({ onSubmit, isSubmitting, successMessage }) {
         }
       }
     }
+  }
+
+  const handleCreateYearClick = () => {
+    const householdId = form.getFieldValue('householdId')
+    if (!householdId) {
+      message.warning('Selecciona una vivienda para crear los periodos del año.')
+      return
+    }
+
+    Modal.confirm({
+      title: '¿Crear periodos del año?',
+      content:
+        'Se generarán los periodos de facturación para el año actual basándose en la duración de los periodos existentes. Los periodos que ya existan serán omitidos.',
+      okText: 'Crear periodos',
+      cancelText: 'Cancelar',
+      onOk: () => onCreateYear(householdId),
+    })
   }
 
   return (
@@ -155,6 +199,19 @@ function AddBillingPeriodForm({ onSubmit, isSubmitting, successMessage }) {
         ) : null}
 
         <FormActions loading={isSubmitting} onReset={() => form.resetFields()} />
+
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
+          <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
+            También puedes generar automáticamente todos los periodos del año actual.
+          </Typography.Paragraph>
+          <Button
+            onClick={handleCreateYearClick}
+            loading={isCreatingYear}
+            disabled={isSubmitting || isCreatingYear}
+          >
+            Crear periodos del año
+          </Button>
+        </div>
       </Form>
     </Card>
   )

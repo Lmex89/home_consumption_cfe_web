@@ -1,5 +1,7 @@
 # CFE Web - Home Energy Consumption Tracker
 
+> **Mandatory: Document all changes in this file.** Every modification to the project (code, config, dependencies, scripts, docs) must be reflected in AGENTS.md — update the relevant section or add a new one. This file is the single source of truth for project knowledge.
+
 ## Project Overview
 
 A React + Vite single-page application (SPA) for tracking household energy consumption, tariffs, and billing periods for Mexico's Federal Electricity Commission (CFE - Comisión Federal de Electricidad).
@@ -191,3 +193,17 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 - **Dashboard Data Flow**: `DashboardPageContainer` orchestrates: household list (`useHouseholds`), billing period list, dashboard API data (`getDashboardConsumptions`), and meter reading pagination (`useMeterReadingsPagination`). A `latestRequestIdRef` guards against race conditions when the user switches households/periods quickly.
 - **Race Condition Guard**: `DashboardPageContainer` uses a monotonically incrementing `latestRequestIdRef` to discard stale API responses when the user changes selections before the prior fetch completes.
 - **CFE Billing Breakdown**: `DashboardBillingBreakdown` renders tier-based cost breakdown (Básico, Intermedio, Excedente tiers with color-coded tags) grouped by `tier_level` from the API's `tier_lines` array. Formatters use `Intl.NumberFormat` with `es-MX` locale.
+
+---
+
+## Git Commit Guidelines (Mandatory)
+
+1. **Atomic commits** — Each commit must contain one logically separate change. If a description gets too long, split the commit into finer-grained pieces. Never mix unrelated changes (e.g., a bugfix + a refactor + a feature) in a single commit.
+
+2. **Imperative subject line (≤50 chars)** — The first line must summarize the change in imperative mood, e.g. "add tariff history endpoint" not "added tariff history endpoint" or "I added tariff history endpoint". Keep it under 50 characters and omit the trailing period.
+
+3. **Body explains *why*** — After a blank line, the body must explain the reasoning behind the change — what problem it solves, why this approach was chosen, and any alternatives considered. The body should be detailed enough that reviewers and future maintainers can understand the change without reading the diff.
+
+4. **Area prefix** — Prefix the subject line with a scope identifier matching the area being modified, e.g. `dashboard:`, `api:`, `docker:`, `auth:`, `readings:`. This makes history scanning fast and groups related changes.
+
+5. **Never commit broken state** — Every commit should leave the project in a working state. Avoid "fix fixup" commits that repair a mistake from an earlier commit in the same branch. Use `git rebase -i` to squash or amend before opening a PR.
