@@ -81,7 +81,11 @@ function DashboardPageContainer() {
         const initialHouseholdId = hasDefaultHousehold ? 1 : (households[0]?.value ?? 1)
 
         const periods = await listBillingPeriods(initialHouseholdId)
-        const initialBillingPeriodId = periods[0]?.value ?? null
+        const today = new Date().toISOString().slice(0, 10)
+        const currentPeriod = periods.find(
+          (p) => today >= p.startDate && today <= p.endDate,
+        )
+        const initialBillingPeriodId = currentPeriod?.value ?? periods[0]?.value ?? null
 
         if (!isMounted) return
 
@@ -123,7 +127,11 @@ function DashboardPageContainer() {
 
     try {
       const periods = await listBillingPeriods(householdId)
-      const nextBillingPeriodId = periods[0]?.value ?? null
+      const today = new Date().toISOString().slice(0, 10)
+      const currentPeriod = periods.find(
+        (p) => today >= p.startDate && today <= p.endDate,
+      )
+      const nextBillingPeriodId = currentPeriod?.value ?? periods[0]?.value ?? null
 
       setBillingPeriods(periods)
       setSelectedBillingPeriodId(nextBillingPeriodId)

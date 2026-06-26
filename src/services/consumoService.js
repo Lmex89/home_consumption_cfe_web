@@ -294,6 +294,8 @@ export async function listBillingPeriods(householdId) {
   return sortedPeriods.map((period) => ({
     value: period.id,
     label: formatPeriodOption(period),
+    startDate: period.start_date,
+    endDate: period.end_date,
   }))
 }
 

@@ -9,17 +9,6 @@ function formatShortDate(value) {
   return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })
 }
 
-function formatFullDate(value) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleDateString('es-MX', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
 function MeterReadingsChart({ chartReadings }) {
   const chartData = useMemo(() => {
     const filtered = chartReadings.filter(
@@ -61,45 +50,34 @@ function MeterReadingsChart({ chartReadings }) {
     seriesField: 'type',
     isGroup: true,
     autoFit: true,
-    color: ({ type }) => (type === 'Entre lecturas' ? '#3b82f6' : '#f59e0b'),
-    axis: {
-      x: {
-        label: {
-          autoRotate: true,
-          autoHide: { type: 'equidistance', cfg: { minGap: 60 } },
-        },
-        title: 'Fecha de lectura',
-      },
-      y: {
-        label: {
-          formatter: (value) => `${Number(value).toFixed(1)} kWh`,
-        },
-        title: 'Consumo (kWh)',
+    color: ['#3b82f6', '#f59e0b'],
+    columnWidthRatio: 0.6,
+    xAxis: {
+      label: {
+        autoRotate: true,
+        formatter: (value) => value,
       },
     },
-    style: {
-      radius: 6,
+    yAxis: {
+      label: {
+        formatter: (value) => `${Number(value).toFixed(1)} kWh`,
+      },
     },
     tooltip: {
       title: (title) => title,
-      items: [
-        {
-          channel: 'y',
-          name: 'Consumo',
-          valueFormatter: (value) => `${Number(value).toFixed(1)} kWh`,
-        },
-      ],
+      formatter: (datum) => ({
+        name: datum.type,
+        value: `${Number(datum.value).toFixed(1)} kWh`,
+      }),
     },
     legend: {
       position: 'top',
     },
-    interaction: {
-      elementHighlight: true,
-    },
-    animation: {
-      appear: {
-        animation: 'scale-in-y',
-        duration: 600,
+    label: {
+      position: 'top',
+      formatter: (datum) => `${Number(datum.value).toFixed(1)} kWh`,
+      style: {
+        fontSize: 10,
       },
     },
   }
