@@ -1,7 +1,7 @@
 .wrapper {
-  border-radius: 32px;
+  border-radius: 18px;
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--color-surface);
   box-shadow: var(--shadow-soft);
   overflow: hidden;
   max-width: 100%;
@@ -15,7 +15,7 @@
 
 .wrapper :global(.ant-card-head) {
   min-height: 0;
-  padding: 24px 28px 0;
+  padding: 16px 14px 0;
   border-bottom: 0;
 }
 
@@ -26,6 +26,12 @@
 
 .wrapper :global(.ant-card-extra) {
   padding: 0;
+  margin-top: 6px;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 .wrapper :global(.ant-tabs) {
@@ -41,20 +47,12 @@
 }
 
 .wrapper :global(.ant-card-body) {
-  padding: 18px 28px 28px;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: end;
-  margin-bottom: 18px;
+  padding: 14px 14px 16px;
 }
 
 .eyebrow {
-  margin: 0 0 4px;
-  font-size: clamp(0.65rem, 2vw, 0.78rem);
+  margin: 0 0 2px;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -63,7 +61,7 @@
 
 .title {
   margin: 0;
-  font-size: clamp(1.1rem, 4vw, 1.4rem);
+  font-size: 1.1rem;
   line-height: 1.2;
 }
 
@@ -71,9 +69,7 @@
   margin: 0;
   color: var(--color-muted);
   max-width: 24rem;
-  text-align: right;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  font-size: 0.86rem;
 }
 
 .tableContainer {
@@ -98,174 +94,142 @@
 }
 
 .table :global(.ant-table-container) {
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
   overflow: hidden;
 }
 
 .table :global(.ant-table-thead > tr > th) {
   background: rgba(248, 250, 252, 0.92);
   color: var(--color-muted);
-  font-size: 0.76rem;
-  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  padding: 10px 10px !important;
 }
 
 .table :global(.ant-table-tbody > tr > td) {
   background: rgba(255, 255, 255, 0.88);
+  padding: 10px 10px !important;
+  font-size: 0.86rem;
 }
 
 .table :global(.ant-table-cell) {
-  padding: 14px 14px;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
 .table :global(.ant-btn) {
-  border-radius: 12px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  height: 32px;
 }
 
 .wrapper :global(.ant-tabs-nav) {
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+}
+
+.wrapper :global(.ant-tabs-nav::before) {
+  border-color: var(--color-border);
 }
 
 .wrapper :global(.ant-tabs-tab-btn) {
   font-weight: 600;
+  font-size: 0.88rem;
 }
 
 .chartArea {
   width: 100%;
   min-width: 0;
-  min-height: 320px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  border-radius: 18px;
-  padding: 14px;
+  min-height: 280px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 12px;
   background: rgba(255, 255, 255, 0.88);
 }
 
 .chartControls {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .chartLoader {
-  min-height: 240px;
+  min-height: 220px;
   display: grid;
   place-items: center;
-  border: 1px dashed rgba(148, 163, 184, 0.45);
-  border-radius: 16px;
+  border: 1px dashed var(--color-border);
+  border-radius: 14px;
 }
 
-@media (max-width: 700px) {
-  .wrapper :global(.ant-card-head) {
-    padding: 20px 18px 0;
-  }
-
-  .wrapper :global(.ant-card-body) {
-    padding: 16px 18px 20px;
-  }
-
-  .caption {
-    text-align: left;
-  }
-}
-
-@media (max-width: 640px) {
+@media (min-width: 480px) {
   .wrapper {
     border-radius: 20px;
   }
-
   .wrapper :global(.ant-card-head) {
-    padding: 18px 16px 0;
+    padding: 20px 18px 0;
   }
-
   .wrapper :global(.ant-card-body) {
-    padding: 14px 16px 16px;
+    padding: 16px 18px 18px;
   }
-
-  .table :global(.ant-table-container) {
-    border-radius: 14px;
-  }
-
-  .chartArea {
-    min-height: 280px;
-    border-radius: 14px;
-    padding: 12px;
-  }
-
-  .chartControls {
-    justify-content: flex-start;
-  }
-
-  .table :global(.ant-table-cell) {
-    padding: 12px 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .wrapper {
-    border-radius: 16px;
-  }
-
-  .wrapper :global(.ant-card-head) {
-    padding: 12px 12px 0;
-    min-height: auto;
-  }
-
-  .wrapper :global(.ant-card-head-title) {
-    padding: 0;
-  }
-
   .wrapper :global(.ant-card-extra) {
-    margin-top: 8px;
+    width: auto;
+    margin-top: 0;
   }
-
-  .wrapper :global(.ant-card-body) {
-    padding: 12px 12px 12px;
-  }
-
-  .eyebrow {
-    margin: 0 0 2px;
-    font-size: 0.65rem;
-  }
-
-  .title {
-    font-size: 1.1rem;
-    margin: 0;
-  }
-
-  .caption {
-    max-width: 100%;
-    font-size: 0.86rem;
-  }
-
   .table :global(.ant-table-container) {
-    border-radius: 12px;
+    border-radius: 14px;
   }
-
-  .table :global(.ant-table-cell) {
-    padding: 10px 10px;
-    font-size: 0.86rem;
+  .table :global(.ant-table-thead > tr > th) {
+    padding: 12px 14px !important;
   }
-
-  .table :global(.ant-btn) {
-    width: 100%;
-  }
-
-  .chartArea {
-    min-height: 240px;
-    border-radius: 12px;
-    padding: 10px;
-  }
-
-  .chartControls :global(.ant-segmented) {
-    width: 100%;
+  .table :global(.ant-table-tbody > tr > td) {
+    padding: 12px 14px !important;
   }
 }
 
-@media (max-width: 430px) {
-  .caption {
-    display: none;
+@media (min-width: 640px) {
+  .wrapper {
+    border-radius: 20px;
+  }
+  .chartArea {
+    min-height: 320px;
+    border-radius: 14px;
+    padding: 14px;
+  }
+}
+
+@media (min-width: 768px) {
+  .wrapper {
+    border-radius: 24px;
+  }
+  .wrapper :global(.ant-card-head) {
+    padding: 24px 28px 0;
+  }
+  .wrapper :global(.ant-card-body) {
+    padding: 18px 28px 28px;
+  }
+  .table :global(.ant-table-container) {
+    border-radius: 18px;
+  }
+  .table :global(.ant-table-thead > tr > th) {
+    padding: 14px 14px !important;
+    font-size: 0.76rem;
+  }
+  .table :global(.ant-table-tbody > tr > td) {
+    padding: 14px 14px !important;
+  }
+  .chartArea {
+    min-height: 320px;
+    border-radius: 18px;
+    padding: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .wrapper {
+    border-radius: 32px;
+  }
+  .chartArea {
+    border-radius: 18px;
   }
 }

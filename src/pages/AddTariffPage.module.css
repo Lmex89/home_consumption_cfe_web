@@ -1,6 +1,6 @@
 .page {
   display: grid;
-  gap: 20px;
+  gap: 14px;
 }
 
 .page > * {
@@ -20,7 +20,7 @@
 .hero {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 18px;
+  gap: 12px;
 }
 
 .hero > * {
@@ -29,28 +29,28 @@
 
 .introCard,
 .statusCard {
-  border-radius: 20px;
+  border-radius: 18px;
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-soft);
 }
 
 .introCard {
-  padding: 22px 18px;
+  padding: 18px 14px;
   background:
     radial-gradient(circle at top right, var(--color-primary-soft), transparent 34%),
     var(--color-surface-strong);
 }
 
 .statusCard {
-  padding: 22px 18px;
+  padding: 18px 14px;
   background:
-    radial-gradient(circle at top right, rgba(14, 165, 233, 0.18), transparent 36%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 36%),
     var(--color-surface);
   color: var(--color-text);
 }
 
 .eyebrow {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: var(--header-eyebrow-size);
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -65,21 +65,22 @@
 .title {
   margin: 0 !important;
   color: var(--color-title);
-  font-size: var(--header-title-size-mobile) !important;
-  line-height: 1.02 !important;
+  font-size: clamp(1.5rem, 8.5vw, 1.95rem) !important;
+  line-height: 1.05 !important;
   letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
 
 .description {
-  margin: 12px 0 0 !important;
+  margin: 10px 0 0 !important;
   max-width: 56ch;
   color: var(--color-muted) !important;
+  font-size: 0.88rem !important;
 }
 
 .statusValue {
-  margin: 8px 0 0;
-  font-size: clamp(1.8rem, 7vw, 2.65rem);
+  margin: 6px 0 0;
+  font-size: clamp(1.5rem, 7vw, 2rem);
   font-weight: 700;
   line-height: 1;
   color: var(--color-title);
@@ -87,8 +88,9 @@
 }
 
 .statusHint {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   color: var(--color-muted);
+  font-size: 0.88rem;
 }
 
 .statsRow {
@@ -115,31 +117,73 @@
   border-style: dashed;
 }
 
+@media (min-width: 480px) {
+  .page {
+    gap: 16px;
+  }
+  .introCard,
+  .statusCard {
+    padding: 22px 18px;
+    border-radius: 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .page {
+    gap: 20px;
+  }
+  .introCard,
+  .statusCard {
+    padding: 24px;
+    border-radius: 24px;
+  }
+  .title {
+    font-size: clamp(1.9rem, 5.5vw, 2.9rem) !important;
+    line-height: 1 !important;
+  }
+  .description {
+    font-size: 0.95rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page {
+    gap: 24px;
+  }
+  .hero {
+    grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+    gap: 20px;
+  }
+  .introCard,
+  .statusCard {
+    padding: 28px;
+    border-radius: 28px;
+  }
+  .statusCard {
+    padding: 24px;
+  }
+  .title {
+    font-size: var(--header-title-size-desktop) !important;
+    line-height: 0.95 !important;
+  }
+}
+
 @media (max-width: 480px) {
   .page {
     gap: 12px;
   }
-
   .hero {
     gap: 10px;
   }
-
   .introCard,
   .statusCard {
     padding: 16px 14px;
     border-radius: 16px;
   }
-
-  .title {
-    font-size: clamp(1.5rem, 8.5vw, 1.95rem) !important;
-    line-height: 1.05 !important;
-  }
-
   .statsRow {
     display: block;
     margin: 0 !important;
   }
-
   .statsRow :global(.ant-col) {
     display: block;
     width: 100%;
@@ -147,56 +191,19 @@
     max-width: 100%;
     padding-left: 0 !important;
     padding-right: 0 !important;
-    margin: 0 0 12px 0;
+    margin: 0 0 10px 0;
   }
-
   .statsRow :global(.ant-col:last-child) {
     margin-bottom: 0;
   }
-
   .selectorRow {
     margin-left: 0 !important;
     margin-right: 0 !important;
   }
-
   .selectorRow :global(.ant-col) {
     flex: 0 0 100%;
     max-width: 100%;
     padding-left: 0 !important;
     padding-right: 0 !important;
-  }
-}
-
-@media (min-width: 768px) {
-  .introCard,
-  .statusCard {
-    padding: 24px;
-    border-radius: 24px;
-  }
-
-  .title {
-    font-size: clamp(1.9rem, 5.5vw, 2.9rem) !important;
-    line-height: 1 !important;
-  }
-}
-
-@media (min-width: 1024px) {
-  .hero {
-    grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
-  }
-
-  .introCard,
-  .statusCard {
-    padding: 28px;
-    border-radius: 28px;
-  }
-
-  .statusCard {
-    padding: 24px;
-  }
-
-  .title {
-    font-size: var(--header-title-size-desktop) !important;
-    line-height: 0.95 !important;
   }
 }

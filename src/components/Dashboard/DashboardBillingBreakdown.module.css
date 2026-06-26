@@ -1,6 +1,6 @@
 .breakdown {
-  padding: 18px 16px;
-  border-radius: 16px;
+  padding: 16px 14px;
+  border-radius: 18px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   box-shadow: var(--shadow-soft);
@@ -14,11 +14,12 @@
 
 .breakdownCollapse :global(.ant-collapse-header-text) {
   font-weight: 700;
+  font-size: 0.9rem;
   color: var(--color-title);
 }
 
 .breakdownCollapse :global(.ant-collapse-content-box) {
-  padding: 14px 0 0 !important;
+  padding: 12px 0 0 !important;
 }
 
 .breakdownCollapse :global(.ant-collapse-expand-icon) {
@@ -33,6 +34,12 @@
   min-width: 0;
 }
 
+@media (max-width: 480px) {
+  .breakdownCollapse :global(.ant-collapse-content-box) {
+    padding: 10px 0 0 !important;
+  }
+}
+
 @media (min-width: 480px) {
   .breakdown {
     padding: 18px 16px;
@@ -45,9 +52,8 @@
     padding: 22px 26px;
     border-radius: 24px;
   }
-
   .breakdownCollapse :global(.ant-collapse-content-box) {
-    padding-top: 18px !important;
+    padding-top: 16px !important;
   }
 }
 

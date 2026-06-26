@@ -1,6 +1,6 @@
 .page {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .page > * {
@@ -26,6 +26,12 @@
   overflow-wrap: anywhere;
 }
 
+@media (min-width: 480px) {
+  .page {
+    gap: 16px;
+  }
+}
+
 @media (min-width: 768px) {
   .page {
     gap: 20px;
@@ -37,7 +43,10 @@
     gap: 12px;
   }
 
-  .page :global(.ant-card),
+  .page :global(.ant-card) {
+    border-radius: 16px !important;
+  }
+
   .page :global(.ant-alert) {
     border-radius: 16px;
   }

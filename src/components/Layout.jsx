@@ -2,32 +2,30 @@ import {
   CalendarOutlined,
   FormOutlined,
   LogoutOutlined,
-  MenuOutlined,
   ThunderboltOutlined,
   HomeOutlined,
   TagOutlined,
 } from '@ant-design/icons'
-import { Button, Drawer, Grid, Layout as AntLayout, Menu, Space, Typography } from 'antd'
-import { useState } from 'react'
+import { Button, Grid, Layout as AntLayout, Menu, Typography } from 'antd'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { logout } from '../services/authService'
+import styles from './Layout.module.css'
 
 const { Header, Sider, Content } = AntLayout
 const { useBreakpoint } = Grid
 
 const navItems = [
   { key: '/', icon: <ThunderboltOutlined />, label: 'Dashboard' },
-  { key: '/insertar-consumo', icon: <FormOutlined />, label: 'Lecturas de Medidor' },
-  { key: '/agregar-vivienda', icon: <HomeOutlined />, label: 'Alta Viviendas' },
-  { key: '/agregar-tarifa', icon: <TagOutlined />, label: 'Alta Tarifas' },
-  { key: '/agregar-periodo', icon: <CalendarOutlined />, label: 'Alta Periodos' },
+  { key: '/insertar-consumo', icon: <FormOutlined />, label: 'Lecturas' },
+  { key: '/agregar-vivienda', icon: <HomeOutlined />, label: 'Viviendas' },
+  { key: '/agregar-tarifa', icon: <TagOutlined />, label: 'Tarifas' },
+  { key: '/agregar-periodo', icon: <CalendarOutlined />, label: 'Periodos' },
 ]
 
 function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
   const screens = useBreakpoint()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const isMobile = !screens.lg
 
   const getSelectedKey = () => {
@@ -42,9 +40,6 @@ function Layout() {
 
   const handleNavigate = (key) => {
     navigate(key)
-    if (isMobile) {
-      setIsMobileMenuOpen(false)
-    }
   }
 
   const handleLogout = () => {
@@ -53,7 +48,7 @@ function Layout() {
   }
 
   return (
-    <AntLayout style={{ minHeight: '100vh' }}>
+    <AntLayout className={styles.shell}>
       {!isMobile ? (
         <Sider
           collapsible
@@ -76,79 +71,47 @@ function Layout() {
         </Sider>
       ) : null}
 
-      <AntLayout>
-        <Header
-          style={{
-            height: 'auto',
-            padding: isMobile ? '16px' : '20px 24px',
-            borderBottom: '1px solid #e2e8f0',
-          }}
-        >
-          <Space style={{ width: '100%', justifyContent: 'space-between' }} align="start">
-            <Space direction="vertical" size={0}>
-              <Typography.Title level={3} className="app-shell-title">
-                Panel de consumos CFE
-              </Typography.Title>
-              <Typography.Text className="app-shell-subtitle">
-                Monitoreo de consumo energetico y registro de lecturas conectado al backend FastAPI.
-              </Typography.Text>
-            </Space>
-            {isMobile ? (
-              <Space>
-                <Button
-                  type="text"
-                  icon={<LogoutOutlined />}
-                  aria-label="Cerrar sesion"
-                  onClick={handleLogout}
-                >
-                  Salir
-                </Button>
-                <Button
-                  type="text"
-                  icon={<MenuOutlined />}
-                  aria-label="Abrir menu"
-                  onClick={() => setIsMobileMenuOpen(true)}
-                />
-              </Space>
-            ) : null}
-            {!isMobile ? (
-              <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>
-                Cerrar sesion
-              </Button>
-            ) : null}
-          </Space>
+      <AntLayout className={styles.contentArea}>
+        <Header className={styles.header}>
+          <div className={styles.headerLeft}>
+            <ThunderboltOutlined className={styles.headerIcon} />
+            <Typography.Title level={4} className={styles.headerTitle}>
+              CFE Consumos
+            </Typography.Title>
+          </div>
+          <Button
+            type="text"
+            icon={<LogoutOutlined />}
+            aria-label="Cerrar sesion"
+            onClick={handleLogout}
+            className={styles.logoutBtn}
+          />
         </Header>
-        <Content style={{ padding: isMobile ? 16 : 24 }}>
+
+        <Content className={styles.content}>
           <Outlet />
         </Content>
-      </AntLayout>
 
-      <Drawer
-        placement="left"
-        width={240}
-        open={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-        title="Menu de navegacion"
-        closable
-        styles={{
-          body: {
-            padding: 0,
-            background: '#0f172a',
-          },
-        }}
-      >
-        <div className="app-brand">
-          <ThunderboltOutlined />
-          <span>CFE Web</span>
-        </div>
-        <Menu
-          mode="inline"
-          theme="dark"
-          selectedKeys={[selectedKey]}
-          items={navItems}
-          onClick={({ key }) => handleNavigate(key)}
-        />
-      </Drawer>
+        {isMobile ? (
+          <nav className={styles.bottomNav} aria-label="Navegacion principal">
+            {navItems.map((item) => {
+              const isActive = selectedKey === item.key
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => handleNavigate(item.key)}
+                  className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+                  aria-current={isActive ? 'page' : undefined}
+                  type="button"
+                >
+                  <span className={styles.navIcon}>{item.icon}</span>
+                  <span className={styles.navLabel}>{item.label}</span>
+                </button>
+              )
+            })}
+          </nav>
+        ) : null}
+      </AntLayout>
     </AntLayout>
   )
 }

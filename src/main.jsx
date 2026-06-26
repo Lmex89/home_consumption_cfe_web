@@ -15,21 +15,30 @@ createRoot(document.getElementById('root')).render(
           colorSuccess: '#10b981',
           colorError: '#ef4444',
           colorLink: '#3b82f6',
-          colorBgBase: '#f5f5f5',
-          colorBgLayout: '#f5f5f5',
+          colorBgBase: '#f4f6fa',
+          colorBgLayout: '#f4f6fa',
           borderRadius: 12,
+          borderRadiusLG: 18,
           fontFamily: "'IBM Plex Sans', 'Segoe UI', sans-serif",
+          controlHeight: 44,
+          controlHeightLG: 48,
+          controlOutlineWidth: 0,
+          lineWidth: 1,
+          lineWidthFocus: 2,
         },
         components: {
           Button: {
-            controlHeight: 40,
+            controlHeight: 44,
+            borderRadius: 12,
+            primaryShadow: 'none',
           },
           Alert: {
             withDescriptionIconSize: 18,
+            borderRadiusLG: 14,
           },
           Layout: {
-            bodyBg: '#f5f5f5',
-            headerBg: '#ffffff',
+            bodyBg: '#f4f6fa',
+            headerBg: 'rgba(255, 255, 255, 0.92)',
             siderBg: '#0f172a',
             triggerBg: '#0b1223',
           },
@@ -39,7 +48,25 @@ createRoot(document.getElementById('root')).render(
             itemHoverColor: '#dbeafe',
           },
           Card: {
-            borderRadiusLG: 16,
+            borderRadiusLG: 18,
+          },
+          Select: {
+            controlHeight: 44,
+            borderRadius: 12,
+          },
+          Input: {
+            controlHeight: 44,
+            borderRadius: 12,
+          },
+          InputNumber: {
+            controlHeight: 44,
+            borderRadius: 12,
+          },
+          Modal: {
+            borderRadiusLG: 18,
+          },
+          Table: {
+            borderRadius: 14,
           },
         },
       }}

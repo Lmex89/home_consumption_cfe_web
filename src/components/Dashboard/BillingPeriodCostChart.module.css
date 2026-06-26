@@ -1,9 +1,9 @@
 .chartArea {
-  border-radius: 32px;
+  border-radius: 18px;
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--color-surface);
   box-shadow: var(--shadow-soft);
-  padding: 24px 28px 28px;
+  padding: 16px 14px;
   overflow: hidden;
   width: 100%;
   min-width: 0;
@@ -11,12 +11,12 @@
 }
 
 .chartHeader {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .eyebrow {
-  margin: 0 0 6px;
-  font-size: clamp(0.65rem, 2vw, 0.78rem);
+  margin: 0 0 4px;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -26,24 +26,24 @@
 .caption {
   margin: 0;
   color: var(--color-muted);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   line-height: 1.5;
   max-width: 32rem;
 }
 
 .chartArea :global(.ant-empty) {
-  padding: 40px 0;
+  padding: 32px 0;
 }
 
 .summary {
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(148, 163, 184, 0.22);
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  font-size: 0.88rem;
+  gap: 12px;
+  font-size: 0.82rem;
   color: var(--color-muted);
   flex-wrap: wrap;
 }
@@ -51,48 +51,41 @@
 .totalCost {
   font-weight: 700;
   color: var(--color-text);
-  font-size: 0.95rem;
+  font-size: 0.88rem;
 }
 
-@media (max-width: 700px) {
+@media (min-width: 480px) {
   .chartArea {
     padding: 20px 18px;
+    border-radius: 20px;
   }
 }
 
-@media (max-width: 640px) {
+@media (min-width: 640px) {
   .chartArea {
-    border-radius: 20px;
-    padding: 16px;
+    padding: 24px 28px 28px;
+    border-radius: 32px;
   }
-
   .summary {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 14px;
   }
 }
 
 @media (max-width: 480px) {
-  .chartArea {
-    border-radius: 16px;
-    padding: 14px;
-  }
-
-  .eyebrow {
-    font-size: 0.65rem;
-    margin: 0 0 4px;
-  }
-
-  .caption {
-    font-size: 0.82rem;
-  }
-
   .summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
     font-size: 0.82rem;
   }
-
   .totalCost {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
+  }
+  .chartArea :global(.ant-empty) {
+    padding: 24px 0;
   }
 }

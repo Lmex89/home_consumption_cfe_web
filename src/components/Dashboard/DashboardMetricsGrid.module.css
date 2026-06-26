@@ -32,6 +32,17 @@
   }
 }
 
+@media (max-width: 480px) {
+  .metricsRow :global(.ant-row) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .metricsRow :global(.ant-col) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .metricItem:hover {
     transform: translate3d(0, -4px, 0);
