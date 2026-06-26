@@ -93,23 +93,18 @@ function getToday() {
   return formatLocalDate(new Date())
 }
 
-/**
- * Suggests start/end dates for the next billing period after the latest existing one.
- * Start defaults to the latest period's end_date (user can change it).
- * If no periods exist, defaults to today.
- */
 export function getSuggestedNextPeriod(periods) {
   const latest = getLatestPeriod(periods)
 
   if (latest) {
-    const durationDays = getPeriodDurationDays(latest)
     const startDate = addDays(latest.end_date, 1)
-    const endDate = addDays(startDate, durationDays)
+    const endDate = addDays(startDate, 60)
     return { startDate, endDate, basedOnExisting: true }
   }
 
   const startDate = getToday()
-  return { startDate, endDate: null, basedOnExisting: false }
+  const endDate = addDays(startDate, 60)
+  return { startDate, endDate, basedOnExisting: false }
 }
 
 /**

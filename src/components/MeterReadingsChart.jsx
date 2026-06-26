@@ -1,12 +1,13 @@
-import { Line } from '@ant-design/charts'
-import { useMemo, useState } from 'react'
-import { Empty, Segmented } from 'antd'
+import { Column } from '@ant-design/charts'
+import { useMemo } from 'react'
+import { Empty } from 'antd'
 import styles from './ConsumptionTable.module.css'
 
-const currencyFormatter = new Intl.NumberFormat('es-MX', {
-  style: 'currency',
-  currency: 'MXN',
-})
+function formatShortDate(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return String(value)
+  return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })
+}
 
 function formatFullDate(value) {
   const date = new Date(value)
@@ -20,108 +21,92 @@ function formatFullDate(value) {
 }
 
 function MeterReadingsChart({ chartReadings }) {
-  const seriesOptions = [
-    {
-      label: 'Consumo entre lecturas',
-      value: 'consumption',
-    },
-    {
-      label: 'Lectura acumulada',
-      value: 'reading',
-    },
-  ]
-  const [visibleSeries, setVisibleSeries] = useState('consumption')
-
-  const readingSeriesData = chartReadings
-    .map((reading) => ({
-      date: reading.date,
-      value: Number(reading.readingKwh),
-      series: 'Lectura acumulada (kWh)',
-      estimatedCost: reading.estimatedCost,
-    }))
-    .filter((point) => Number.isFinite(point.value))
-
-  const consumptionSeriesData = chartReadings
-    .filter((reading) => reading.consumptionSinceLast !== null && reading.consumptionSinceLast !== undefined)
-    .map((reading) => ({
-      date: reading.date,
-      value: Number(reading.consumptionSinceLast),
-      series: 'Consumo entre lecturas (kWh)',
-      estimatedCost: reading.estimatedCost,
-    }))
-    .filter((point) => Number.isFinite(point.value))
-
   const chartData = useMemo(() => {
-    if (visibleSeries === 'reading') {
-      return readingSeriesData
-    }
+    const filtered = chartReadings.filter(
+      (reading) => reading.consumptionSinceLast !== null && reading.consumptionSinceLast !== undefined,
+    )
 
-    if (visibleSeries === 'consumption') {
-      return consumptionSeriesData
-    }
+    return filtered.flatMap((reading) => {
+      const points = [
+        {
+          date: reading.date,
+          dateLabel: formatShortDate(reading.date),
+          type: 'Entre lecturas',
+          value: Number(reading.consumptionSinceLast),
+        },
+      ]
 
-    return [...readingSeriesData, ...consumptionSeriesData]
-  }, [consumptionSeriesData, readingSeriesData, visibleSeries])
+      const accumulated = reading.billing_period_cost?.total_consumption_kwh
+      if (accumulated !== null && accumulated !== undefined) {
+        points.push({
+          date: reading.date,
+          dateLabel: formatShortDate(reading.date),
+          type: 'Acumulado',
+          value: Number(accumulated),
+        })
+      }
 
-  if (readingSeriesData.length === 0 && consumptionSeriesData.length === 0) {
+      return points
+    }).filter((point) => Number.isFinite(point.value))
+  }, [chartReadings])
+
+  if (chartData.length === 0) {
     return <Empty description="No hay lecturas para graficar." />
   }
 
   const chartConfig = {
     data: chartData,
-    xField: 'date',
+    xField: 'dateLabel',
     yField: 'value',
-    seriesField: 'series',
+    seriesField: 'type',
+    isGroup: true,
     autoFit: true,
-    smooth: false,
-    color: ({ series }) => {
-      if (series === 'Lectura acumulada (kWh)') return '#2563eb'
-      if (series === 'Consumo entre lecturas (kWh)') return '#f59e0b'
-      return '#999'
+    color: ({ type }) => (type === 'Entre lecturas' ? '#3b82f6' : '#f59e0b'),
+    axis: {
+      x: {
+        label: {
+          autoRotate: true,
+          autoHide: { type: 'equidistance', cfg: { minGap: 60 } },
+        },
+        title: 'Fecha de lectura',
+      },
+      y: {
+        label: {
+          formatter: (value) => `${Number(value).toFixed(1)} kWh`,
+        },
+        title: 'Consumo (kWh)',
+      },
     },
-    lineStyle: {
-      lineWidth: 2.8,
+    style: {
+      radius: 6,
     },
-    point: {
-      size: 3.5,
-      shape: 'circle',
+    tooltip: {
+      title: (title) => title,
+      items: [
+        {
+          channel: 'y',
+          name: 'Consumo',
+          valueFormatter: (value) => `${Number(value).toFixed(1)} kWh`,
+        },
+      ],
     },
     legend: {
       position: 'top',
     },
-    xAxis: {
-      label: {
-        formatter: (value) =>
-          new Date(value).toLocaleDateString('es-MX', {
-            day: '2-digit',
-            month: 'short',
-          }),
-      },
+    interaction: {
+      elementHighlight: true,
     },
-    yAxis: {
-      label: {
-        formatter: (value) => `${Number(value).toFixed(1)} kWh`,
+    animation: {
+      appear: {
+        animation: 'scale-in-y',
+        duration: 600,
       },
-    },
-    tooltip: {
-      title: (title) => formatFullDate(title),
-      formatter: (datum) => ({
-        name: datum.series,
-        value: `${Number(datum.value).toFixed(1)} kWh | Costo estimado: ${
-          datum.estimatedCost === null || datum.estimatedCost === undefined
-            ? 'N/D'
-            : currencyFormatter.format(Number(datum.estimatedCost))
-        }`,
-      }),
     },
   }
 
   return (
     <div className={styles.chartArea}>
-      <div className={styles.chartControls}>
-        <Segmented options={seriesOptions} value={visibleSeries} onChange={setVisibleSeries} />
-      </div>
-      <Line {...chartConfig} />
+      <Column {...chartConfig} />
     </div>
   )
 }

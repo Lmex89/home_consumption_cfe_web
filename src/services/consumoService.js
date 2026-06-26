@@ -54,6 +54,8 @@ function buildSummary(items) {
   const current = items.at(-1)?.kWh ?? 0
   const previous = items.at(-2)?.kWh ?? 0
   const values = items.map((item) => item.kWh)
+  const firstKwh = items[0]?.kWh ?? 0
+  const lastKwh = items.at(-1)?.kWh ?? 0
 
   return {
     total,
@@ -64,6 +66,7 @@ function buildSummary(items) {
     min: values.length > 0 ? Math.min(...values) : 0,
     difference: current - previous,
     currentDate: items.at(-1)?.fecha ?? 'Sin fecha',
+    accumulated: lastKwh - firstKwh,
   }
 }
 
