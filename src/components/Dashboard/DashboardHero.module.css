@@ -98,7 +98,7 @@
 .filterRow {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid rgba(148, 163, 184, 0.26);
   margin-left: 0 !important;
   margin-right: 0 !important;
 }

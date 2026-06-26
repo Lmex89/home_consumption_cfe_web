@@ -6,9 +6,9 @@
   padding-top: calc(24px + var(--sat, 0px));
   padding-bottom: calc(24px + var(--sab, 0px));
   background:
-    radial-gradient(circle at 20% 10%, rgba(59, 130, 246, 0.12), transparent 45%),
-    radial-gradient(circle at 80% 30%, rgba(16, 185, 129, 0.08), transparent 40%),
-    #f4f6fa;
+    radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.18), transparent 40%),
+    radial-gradient(circle at 85% 20%, rgba(16, 185, 129, 0.16), transparent 38%),
+    #f6f8fc;
 }
 
 .card {

@@ -40,7 +40,7 @@
 .secondaryMetric {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .secondaryLabel {
