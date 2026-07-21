@@ -147,10 +147,7 @@ function ConsumptionTable({
               </div>
             }
           >
-            <MeterReadingsChart 
-              key={activeTab === 'chart' ? 'visible' : 'hidden'} 
-              chartReadings={chartReadings} 
-            />
+            <MeterReadingsChart chartReadings={chartReadings} />
           </Suspense>
         ),
       },
@@ -165,15 +162,12 @@ function ConsumptionTable({
               </div>
             }
           >
-            <BillingPeriodCostChart 
-              key={activeTab === 'cost-chart' ? 'visible' : 'hidden'} 
-              readings={chartReadings} 
-            />
+            <BillingPeriodCostChart readings={chartReadings} />
           </Suspense>
         ),
       },
     ],
-    [chartReadings, columns, effectiveItems, paginationConfig, activeTab],
+    [chartReadings, columns, effectiveItems, paginationConfig],
   )
 
   return (
@@ -221,6 +215,7 @@ function ConsumptionTable({
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
+          destroyInactiveTabPane
           items={tabItems}
         />
       </Card>

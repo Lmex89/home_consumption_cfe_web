@@ -2,6 +2,14 @@
 
 > **Mandatory: Document all changes in this file.** Every modification to the project (code, config, dependencies, scripts, docs) must be reflected in AGENTS.md — update the relevant section or add a new one. This file is the single source of truth for project knowledge.
 
+## Mandatory: Use Codegraph
+
+Before making any code change, **always run codegraph tools first** to understand the codebase context. Use `codegraph_context_for_task`, `codegraph_search_symbols`, `codegraph_find_callers`, `codegraph_find_callees`, `codegraph_trace_dependencies`, and `codegraph_get_impact_radius` to identify affected files, symbols, and dependencies. This is mandatory — never skip codegraph analysis before editing code.
+
+**Codegraph is the preferred tool for codebase exploration.** Use codegraph tools instead of `read`, `grep`, or `glob` when searching for symbols, understanding dependencies, finding callers/callees, or exploring code structure. Only fall back to standard file tools (read, grep, glob) when the query cannot be satisfied by codegraph (e.g., searching for specific string literals, regex patterns in file contents, or file paths by name pattern).
+
+---
+
 ## Project Overview
 
 A React + Vite single-page application (SPA) for tracking household energy consumption, tariffs, and billing periods for Mexico's Federal Electricity Commission (CFE - Comisión Federal de Electricidad).
@@ -190,9 +198,12 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 - **Auth Flow**: Uses `RequireAuth` component as a route guard. Auth tokens are managed via `src/lib/authStorage.js`.
 - **Mock Data**: `src/config/consumptionMockConfig.js` provides sample data for development, including mock billing rates (Energy: $1.34/kWh, Distribution: $0.38/kWh, Transmission: $0.11/kWh, Service: $39.50, IVA: 16%).
 - **Meter Readings Pagination**: `useMeterReadingsPagination` provides paginated display of billing-period readings with an optional "show all" toggle that lazy-fetches all readings for the selected household. Items are sorted descending (newest first) client-side.
+- **Dashboard Chart Tabs**: `ConsumptionTable` renders the consumption and billing-cost charts in Ant Design `Tabs` with `destroyInactiveTabPane` enabled to force remount/reflow when switching tabs, preventing desktop chart width shrink after tab toggles.
 - **Dashboard Data Flow**: `DashboardPageContainer` orchestrates: household list (`useHouseholds`), billing period list, dashboard API data (`getDashboardConsumptions`), and meter reading pagination (`useMeterReadingsPagination`). A `latestRequestIdRef` guards against race conditions when the user switches households/periods quickly.
 - **Race Condition Guard**: `DashboardPageContainer` uses a monotonically incrementing `latestRequestIdRef` to discard stale API responses when the user changes selections before the prior fetch completes.
 - **CFE Billing Breakdown**: `DashboardBillingBreakdown` renders tier-based cost breakdown (Básico, Intermedio, Excedente tiers with color-coded tags) grouped by `tier_level` from the API's `tier_lines` array. Formatters use `Intl.NumberFormat` with `es-MX` locale.
+- **Billing Cost Tooltip Formatting**: `BillingPeriodCostChart` normalizes non-finite values in axis/tooltip formatters and returns `N/D` instead of `NaN` to keep chart overlays readable when API data is incomplete.
+- **Consumption Chart Tooltip Formatting**: `MeterReadingsChart` also normalizes non-finite values in y-axis, tooltip, and bar label formatters to return `N/D` instead of `NaN` when readings include invalid numeric data.
 
 ---
 

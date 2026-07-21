@@ -8,6 +8,18 @@ const currencyFormatter = new Intl.NumberFormat('es-MX', {
   currency: 'MXN',
 })
 
+function formatCurrencyValue(value) {
+  const numericValue = Number(value)
+  if (!Number.isFinite(numericValue)) return 'N/D'
+  return currencyFormatter.format(numericValue)
+}
+
+function formatConsumptionValue(value) {
+  const numericValue = Number(value)
+  if (!Number.isFinite(numericValue)) return 'N/D'
+  return `${numericValue.toFixed(1)} kWh`
+}
+
 function formatFullDate(value) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return String(value)
@@ -85,7 +97,7 @@ function BillingPeriodCostChart({ readings }) {
       },
       y: {
         label: {
-          formatter: (value) => currencyFormatter.format(Number(value)),
+          formatter: (value) => formatCurrencyValue(value),
         },
         title: 'Costo acumulado (MXN)',
       },
@@ -106,12 +118,12 @@ function BillingPeriodCostChart({ readings }) {
         {
           channel: 'y',
           name: 'Costo acumulado',
-          valueFormatter: (value) => currencyFormatter.format(Number(value)),
+          valueFormatter: (value) => formatCurrencyValue(value),
         },
         {
           channel: 'totalConsumption',
           name: 'Consumo acumulado',
-          valueFormatter: (value) => `${Number(value).toFixed(1)} kWh`,
+          valueFormatter: (value) => formatConsumptionValue(value),
         },
       ],
     },

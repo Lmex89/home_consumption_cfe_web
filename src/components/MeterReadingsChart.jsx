@@ -3,6 +3,12 @@ import { useMemo } from 'react'
 import { Empty } from 'antd'
 import styles from './ConsumptionTable.module.css'
 
+function formatKwhValue(value) {
+  const numericValue = Number(value)
+  if (!Number.isFinite(numericValue)) return 'N/D'
+  return `${numericValue.toFixed(1)} kWh`
+}
+
 function formatShortDate(value) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return String(value)
@@ -60,14 +66,14 @@ function MeterReadingsChart({ chartReadings }) {
     },
     yAxis: {
       label: {
-        formatter: (value) => `${Number(value).toFixed(1)} kWh`,
+        formatter: (value) => formatKwhValue(value),
       },
     },
     tooltip: {
       title: (title) => title,
       formatter: (datum) => ({
         name: datum.type,
-        value: `${Number(datum.value).toFixed(1)} kWh`,
+        value: formatKwhValue(datum.value),
       }),
     },
     legend: {
@@ -75,7 +81,7 @@ function MeterReadingsChart({ chartReadings }) {
     },
     label: {
       position: 'top',
-      formatter: (datum) => `${Number(datum.value).toFixed(1)} kWh`,
+      formatter: (datum) => formatKwhValue(datum.value),
       style: {
         fontSize: 10,
       },
