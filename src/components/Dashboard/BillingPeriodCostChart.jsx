@@ -152,6 +152,13 @@ function BillingPeriodCostChart({ readings }) {
     )
   }, [readings])
 
+  const maxTierLevel = useMemo(() => {
+    const levels = chartData
+      .filter((row) => row.tierLevel !== 99 && row.tierLevel !== 100)
+      .map((row) => row.tierLevel)
+    return levels.length > 0 ? Math.max(...levels) : 0
+  }, [chartData])
+
   if (chartData.length === 0 || readingsWithCost.length === 0) {
     return <Empty description="No hay datos de costos disponibles para graficar." />
   }
@@ -168,9 +175,11 @@ function BillingPeriodCostChart({ readings }) {
     seriesField: 'series',
     isStack: true,
     autoFit: true,
-    color: (arg) => {
-      const seriesName = typeof arg === 'string' ? arg : arg?.series
-      return getSeriesColor(seriesName)
+    color: (datum) => {
+      const seriesName = datum?.series
+      if (seriesName === 'IVA') return getSeriesColor(seriesName)
+      if (seriesName === 'DAP') return getSeriesColor(seriesName)
+      return getSeriesColor(seriesName, datum?.tierLevel, maxTierLevel)
     },
     columnWidthRatio: 0.6,
     xAxis: {

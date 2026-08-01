@@ -25,12 +25,35 @@ export const TIER_SERIES_NAMES = {
 }
 
 /**
- * Return a hex color for a tier series name.
- * Handles dynamic middle tiers (Intermedio, Intermedio2, Intermedio3, …)
- * by mapping the first and last names to fixed colors and middle tiers to
- * the intermediate palette.
+ * Map a tier level to a stable color.
+ * - level 1 (Básico) → green
+ * - middle levels (Intermedio, Intermedio2, …) → blue, orange, …
+ * - max level (Excedente) → red
+ *
+ * Falls back to the last middle color if there are more middle tiers than
+ * palette entries.
  */
-export function getSeriesColor(seriesName) {
+export function getTierColorByLevel(level, maxLevel) {
+  if (level === 1) return TIER_COLORS[1]
+  if (level === maxLevel) return TIER_COLORS[4]
+
+  const middleLevel = level - 2 // 0 for Intermedio, 1 for Intermedio2, …
+  const middleKeys = [2, 3]
+  const key = middleKeys[middleLevel] ?? middleKeys[middleKeys.length - 1]
+  return TIER_COLORS[key]
+}
+
+/**
+ * Return a hex color for a tier series name.
+ * Prefers level-based coloring when tierLevel is supplied, because labels
+ * from the backend can vary and middle tiers (Intermedio, Intermedio2, …)
+ * should each get their own color.
+ */
+export function getSeriesColor(seriesName, tierLevel, maxLevel) {
+  if (tierLevel !== undefined && maxLevel !== undefined) {
+    return getTierColorByLevel(tierLevel, maxLevel)
+  }
+
   if (seriesName === TIER_SERIES_NAMES.basic) {
     return TIER_COLORS[1]
   }
@@ -43,19 +66,11 @@ export function getSeriesColor(seriesName) {
   if (seriesName === TIER_SERIES_NAMES.dap) {
     return TAX_COLORS.dap
   }
-  // Any Intermedio / Intermedio2 / Intermedio3 …
-  if (seriesName.startsWith(TIER_SERIES_NAMES.intermediate)) {
+  if (seriesName === TIER_SERIES_NAMES.intermediate) {
+    return TIER_COLORS[2]
+  }
+  if (seriesName?.startsWith(TIER_SERIES_NAMES.intermediate)) {
     return TIER_COLORS[3]
   }
   return '#8c8c8c'
-}
-
-/**
- * Return a color for a tier by its level (1 = Básico, last = Excedente).
- * Useful when the level is known independently of the label.
- */
-export function getTierColorByLevel(level, maxLevel) {
-  if (level === 1) return TIER_COLORS[1]
-  if (level === maxLevel) return TIER_COLORS[4]
-  return TIER_COLORS[3]
 }

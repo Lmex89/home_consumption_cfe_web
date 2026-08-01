@@ -18,10 +18,15 @@ const MONTH_NAMES = [
 ]
 
 function groupByTier(tierLines) {
+  const maxLevel = Math.max(...tierLines.map((line) => line.tier_level))
   return tierLines.reduce((acc, line) => {
     const key = line.tier_level
     if (!acc[key]) {
-      acc[key] = { name: line.tier_name, color: getSeriesColor(line.tier_name), lines: [] }
+      acc[key] = {
+        name: line.tier_name,
+        color: getSeriesColor(line.tier_name, line.tier_level, maxLevel),
+        lines: [],
+      }
     }
     acc[key].lines.push(line)
     return acc
