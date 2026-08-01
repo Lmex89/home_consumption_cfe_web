@@ -148,6 +148,11 @@
   background: rgba(255, 255, 255, 0.88);
 }
 
+.chartHeader {
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
 .chartControls {
   margin-bottom: 10px;
   display: flex;
