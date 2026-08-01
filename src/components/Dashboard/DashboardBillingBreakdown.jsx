@@ -1,4 +1,5 @@
 import { Collapse, Divider, Flex, Space, Tag, Typography } from 'antd'
+import { getSeriesColor } from '../../utils/tierColors'
 import styles from './DashboardBillingBreakdown.module.css'
 
 const currencyFormatter = new Intl.NumberFormat('es-MX', {
@@ -16,13 +17,11 @@ const MONTH_NAMES = [
   'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
 ]
 
-const TIER_COLORS = { 1: 'green', 2: 'blue', 3: 'volcano' }
-
 function groupByTier(tierLines) {
   return tierLines.reduce((acc, line) => {
     const key = line.tier_level
     if (!acc[key]) {
-      acc[key] = { name: line.tier_name, color: TIER_COLORS[key] ?? 'default', lines: [] }
+      acc[key] = { name: line.tier_name, color: getSeriesColor(line.tier_name), lines: [] }
     }
     acc[key].lines.push(line)
     return acc
