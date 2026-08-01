@@ -159,6 +159,25 @@ function BillingPeriodCostChart({ readings }) {
     return levels.length > 0 ? Math.max(...levels) : 0
   }, [chartData])
 
+  // Series order and colors for the color scale. Kept in first-appearance
+  // order (tiers by level, then IVA, DAP) so the legend and the stacked
+  // segments stay aligned. @ant-design/plots v2 requires colorField plus an
+  // explicit scale; the v1 `color` callback option is ignored by G2 v5.
+  const seriesColorMap = useMemo(() => {
+    const seen = new Set()
+    const map = []
+    chartData.forEach((row) => {
+      if (seen.has(row.series)) return
+      seen.add(row.series)
+      const isTax = row.series === 'IVA' || row.series === 'DAP'
+      const color = isTax
+        ? getSeriesColor(row.series)
+        : getSeriesColor(row.series, row.tierLevel, maxTierLevel)
+      map.push({ series: row.series, color })
+    })
+    return map
+  }, [chartData, maxTierLevel])
+
   if (chartData.length === 0 || readingsWithCost.length === 0) {
     return <Empty description="No hay datos de costos disponibles para graficar." />
   }
@@ -173,13 +192,14 @@ function BillingPeriodCostChart({ readings }) {
     xField: 'dateLabel',
     yField: 'value',
     seriesField: 'series',
-    isStack: true,
+    colorField: 'series',
+    stack: true,
     autoFit: true,
-    color: (datum) => {
-      const seriesName = datum?.series
-      if (seriesName === 'IVA') return getSeriesColor(seriesName)
-      if (seriesName === 'DAP') return getSeriesColor(seriesName)
-      return getSeriesColor(seriesName, datum?.tierLevel, maxTierLevel)
+    scale: {
+      color: {
+        domain: seriesColorMap.map((entry) => entry.series),
+        range: seriesColorMap.map((entry) => entry.color),
+      },
     },
     columnWidthRatio: 0.6,
     xAxis: {
