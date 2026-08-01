@@ -163,6 +163,9 @@ function BillingPeriodCostChart({ readings }) {
   // order (tiers by level, then IVA, DAP) so the legend and the stacked
   // segments stay aligned. @ant-design/plots v2 requires colorField plus an
   // explicit scale; the v1 `color` callback option is ignored by G2 v5.
+  // NOTE: do NOT add seriesField back — the G2 interval mark uses the series
+  // channel to dodge each series into its own thin sub-band (thin, offset
+  // bars). stackY groups by the color channel, so colorField is enough.
   const seriesColorMap = useMemo(() => {
     const seen = new Set()
     const map = []
@@ -191,7 +194,6 @@ function BillingPeriodCostChart({ readings }) {
     data: chartData,
     xField: 'dateLabel',
     yField: 'value',
-    seriesField: 'series',
     colorField: 'series',
     stack: true,
     autoFit: true,
@@ -201,7 +203,11 @@ function BillingPeriodCostChart({ readings }) {
         range: seriesColorMap.map((entry) => entry.color),
       },
     },
-    columnWidthRatio: 0.6,
+    style: {
+      radius: 6,
+      maxWidth: 72,
+      minWidth: 24,
+    },
     xAxis: {
       label: {
         autoRotate: true,
@@ -222,9 +228,6 @@ function BillingPeriodCostChart({ readings }) {
         formatter: (value) => formatCurrencyValue(value),
       },
       title: 'Costo acumulado (MXN)',
-    },
-    style: {
-      radius: 6,
     },
     tooltip: {
       title: (title) => title,
