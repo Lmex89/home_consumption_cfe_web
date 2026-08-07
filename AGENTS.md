@@ -88,7 +88,9 @@ src/
 │   ├── consumoService.js         # Meter readings, billing periods, dashboard data
 │   └── householdService.js
 └── utils/                        # Helper functions
-    └── dateUtils.js
+    ├── dateUtils.js
+    ├── tierColors.js            # Centralized CFE tier + tax colors for breakdown & charts
+    └── billingPeriodUtils.js     # Local-date parsing, daysBetween/periodsOverlap, generateYearPeriods, getSuggestedNextPeriod
 ```
 
 ---
@@ -113,6 +115,7 @@ src/
 The app communicates with a backend API. Endpoints are defined in `src/config/apiConfig.js`:
 
 - `/auth/login` — User authentication
+- `/auth/refresh` — Rotate refresh token (`VITE_AUTH_REFRESH_ENDPOINT`, defaults to `/auth/refresh`)
 - `/auth/register` — User registration (requires `VITE_REGISTER_API_KEY`)
 - `/auth/me` — Get current user
 - `/households` — CRUD for households
@@ -123,6 +126,7 @@ The app communicates with a backend API. Endpoints are defined in `src/config/ap
 - `/meter-readings` — Consumption data logging
 - `/billing-periods` — Billing cycle management
 - `/dashboards/billing-period/:id` — Billing cost breakdown
+- `/dashboards/household/:householdId/meter-readings` — Per-reading history with cumulative `billing_period_cost` (feeds `chart.readings`; see Dashboard History Source)
 
 ### Backend URL Configuration
 
@@ -132,9 +136,10 @@ Configure via environment variables (see `.env.example`):
 |----------|---------|-------------|
 | `VITE_BACKEND_PROTOCOL` | `http` | Backend protocol |
 | `VITE_BACKEND_HOST` | `localhost` | Backend host |
-| `VITE_BACKEND_PORT` | `3001` | Backend port |
-| `VITE_BACKEND_BASE_PATH` | `/api` | Backend base path |
+| `VITE_BACKEND_PORT` | _(empty)_ | Backend port (defaults to empty → no `:port` in URL; set to `3001` via `.env`) |
+| `VITE_BACKEND_BASE_PATH` | `` | Backend base path (config normalizes a leading `/`; commonly set to `/api` via `.env`) |
 | `VITE_REGISTER_API_KEY` | _(empty)_ | API key required for registration |
+| `VITE_AUTH_REFRESH_ENDPOINT` | `/auth/refresh` | Override for the refresh-token endpoint |
 
 ---
 
@@ -206,6 +211,9 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 - **Tier Color Sharing**: Tier and tax colors are centralized in `src/utils/tierColors.js` and used by both `BillingPeriodCostChart` and `DashboardBillingBreakdown` so the desglose and the chart stay consistent for 3-range and 4-range tariffs. `getSeriesColor` prefers level-based coloring (`tierLevel`/`maxLevel`) when supplied; otherwise it falls back to exact name matching. This keeps middle tiers (`Intermedio`, `Intermedio2`, …) visually distinct in the stacked chart.
 - **Billing Cost Tooltip Formatting**: `BillingPeriodCostChart` normalizes non-finite values in axis/tooltip formatters and returns `N/D` instead of `NaN` to keep chart overlays readable when API data is incomplete.
 - **Consumption Chart (kWh by tier)**: `MeterReadingsChart` renders a stacked column chart of kWh consumption per reading broken down by CFE tier, mirroring `BillingPeriodCostChart` (same `@ant-design/plots` v2 pattern: `stack: true`, `colorField: 'series'`, explicit `scale.color` domain/range, `style.minWidth/maxWidth`). Tier kWh comes from `billing_period_cost.cfe_breakdown.tier_lines[].kwh_charged`; falls back to a single "Subtotal" bar with `total_consumption_kwh` when the API has no tier breakdown. It also normalizes non-finite values in y-axis, tooltip, and bar label formatters to return `N/D` instead of `NaN` when readings include invalid numeric data.
+- **Dashboard History Source**: `getDashboardConsumptions` (in `services/consumoService.js`) fetches per-reading history from `/dashboards/household/:householdId/meter-readings?billing_period_id=...`, normalized via `normalizeDashboardReading` into `{ id, date, readingKwh, consumptionSinceLast, estimatedCost, billing_period_cost }` and exposed as `chart.readings` on the returned object. This is the data that drives `BillingPeriodCostChart` / `MeterReadingsChart` tier breakdowns. The call is wrapped in try/catch and degrades to an empty `chart.readings` array on failure. Each reading carries its own `billing_period_cost` (cumulative cost from the first reading), so charts must read `billing_period_cost.cfe_breakdown.tier_lines` per item, not the period-level billing summary.
+- **Billing Period Utilities**: `src/utils/billingPeriodUtils.js` provides timezone-safe local-date parsing/formatting (`parseLocalDate`/`formatLocalDate` via explicit date parts to avoid UTC shifting), plus `addDays`, `daysBetween`, `periodsOverlap`, `getLatestPeriod`, `getPeriodDurationDays`, `getSuggestedNextPeriod`, and `generateYearPeriods`. Always use these for period date math instead of raw `new Date(isoString)` to keep dates anchored to local midnight.
+- **Bulk Billing Period Creation**: `createYearBillingPeriods(householdId, year)` in `consumoService.js` generates covering ranges for a full year using the latest existing period's duration (`getPeriodDurationDays`; defaults to bimonthly ~59 days), skips any range that overlaps an existing period via `periodsOverlap`, creates non-overlapping periods sequentially, and returns `{ year, durationDays, created, skipped, errors }`. It is the consumer of `billingPeriodUtils.js`.
 
 ---
 
