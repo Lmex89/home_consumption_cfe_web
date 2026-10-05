@@ -167,3 +167,75 @@
     transform: none;
   }
 }
+
+/* More drawer */
+.moreDrawerBody {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-bottom: calc(24px + var(--sab, 0px)) !important;
+}
+
+.moreDrawerNav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+
+.drawerItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 12px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #334155;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.drawerItemIcon {
+  display: flex;
+  font-size: 1.15rem;
+  color: #64748b;
+  transition: color 180ms ease;
+}
+
+.drawerItemLabel {
+  min-width: 0;
+}
+
+.drawerItemActive {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+}
+
+.drawerItemActive .drawerItemIcon {
+  color: #3b82f6;
+}
+
+.drawerItem:active {
+  background: rgba(100, 116, 139, 0.1);
+}
+
+.drawerLogout {
+  margin-top: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .drawerItem:hover {
+    background: rgba(100, 116, 139, 0.08);
+    color: #3b82f6;
+  }
+
+  .drawerItem:hover .drawerItemIcon {
+    color: #3b82f6;
+  }
+}
