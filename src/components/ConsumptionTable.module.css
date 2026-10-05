@@ -90,13 +90,13 @@
 }
 
 .table :global(.ant-table-container) {
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid var(--color-border);
   border-radius: 14px;
   overflow: hidden;
 }
 
 .table :global(.ant-table-thead > tr > th) {
-  background: rgba(248, 250, 252, 0.92);
+  background: var(--color-surface);
   color: var(--color-muted);
   font-size: 0.72rem;
   letter-spacing: 0.1em;
@@ -105,7 +105,7 @@
 }
 
 .table :global(.ant-table-tbody > tr > td) {
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--color-surface);
   padding: 10px 10px !important;
   font-size: 0.86rem;
 }
@@ -146,9 +146,9 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid var(--color-border);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--color-surface);
 }
 
 .readingCardTop {
@@ -212,10 +212,10 @@
   width: 100%;
   min-width: 0;
   min-height: 280px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid var(--color-border);
   border-radius: 14px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--color-surface);
 }
 
 .chartHeader {
@@ -234,7 +234,7 @@
   min-height: 220px;
   display: grid;
   place-items: center;
-  border: 1px dashed rgba(148, 163, 184, 0.45);
+  border: 1px dashed var(--color-border);
   border-radius: 14px;
 }
 

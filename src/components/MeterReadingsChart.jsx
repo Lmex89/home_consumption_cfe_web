@@ -5,6 +5,7 @@ import { getSeriesColor } from '../utils/tierColors'
 import { formatFullReadingDate, formatReadingDate } from '../utils/billingPeriodUtils'
 import { hasRoomForBarLabels } from '../utils/chartLayout'
 import { useElementWidth } from '../hooks/useElementWidth'
+import { useTheme } from '../contexts/ThemeContext'
 import styles from './ConsumptionTable.module.css'
 
 function formatKwhValue(value) {
@@ -86,7 +87,14 @@ function buildStackedRows(reading, index) {
  *   billing_period_cost.cfe_breakdown.tier_lines
  */
 function MeterReadingsChart({ chartReadings }) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const [chartCanvasRef, chartCanvasWidth] = useElementWidth()
+  
+  // Theme-aware colors for chart elements (G2 doesn't inherit AntD theme)
+  const axisLabelFill = isDark ? '#94a3b8' : '#475569'
+  const barLabelFill = isDark ? '#cbd5e1' : '#64748b'
+  const legendLabelFill = isDark ? '#e2e8f0' : '#1e293b'
   const chartData = useMemo(() => {
     if (!chartReadings || chartReadings.length === 0) return []
 
@@ -159,12 +167,14 @@ function MeterReadingsChart({ chartReadings }) {
     axis: {
       x: {
         title: false,
+        labelFill: axisLabelFill,
         labelAutoRotate: true,
         labelAutoHide: { keepHeader: true, keepTail: true },
         labelFormatter: (value) => value,
       },
       y: {
         title: false,
+        labelFill: axisLabelFill,
         labelFormatter: (value) => formatKwhValue(value),
       },
     },
@@ -183,6 +193,7 @@ function MeterReadingsChart({ chartReadings }) {
     },
     legend: {
       position: 'top',
+      itemLabelFill: legendLabelFill,
       itemLabelFontSize: 10,
       itemMarkerSize: 8,
       itemSpacing: [6, 4],
@@ -200,6 +211,7 @@ function MeterReadingsChart({ chartReadings }) {
           },
           style: {
             fontSize: 10,
+            fill: barLabelFill,
           },
         }
       : false,
