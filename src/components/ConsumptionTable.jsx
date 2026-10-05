@@ -147,7 +147,6 @@ function ConsumptionTable({
                 dataSource={effectiveItems}
                 pagination={paginationConfig || false}
                 locale={{ emptyText: 'No hay consumos para mostrar.' }}
-                scroll={{ x: 720 }}
               />
             </div>
             <div className={styles.cardView}>
