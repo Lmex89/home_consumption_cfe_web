@@ -184,6 +184,17 @@
   margin-top: 14px;
 }
 
+/*
+ * Phones (same <768px cutoff as the card view): the page-size selector is
+ * redundant next to the simple pager — 10 cards per page, or "Mostrar todo"
+ * to see every reading.
+ */
+@media (max-width: 767px) {
+  .pageSizeSelect {
+    display: none;
+  }
+}
+
 .wrapper :global(.ant-tabs-nav) {
   margin-bottom: 12px;
 }
