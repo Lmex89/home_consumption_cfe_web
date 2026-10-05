@@ -228,3 +228,19 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 4. **Area prefix** — Prefix the subject line with a scope identifier matching the area being modified, e.g. `dashboard:`, `api:`, `docker:`, `auth:`, `readings:`. This makes history scanning fast and groups related changes.
 
 5. **Never commit broken state** — Every commit should leave the project in a working state. Avoid "fix fixup" commits that repair a mistake from an earlier commit in the same branch. Use `git rebase -i` to squash or amend before opening a PR.
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as GitHub issues in `Lmex89/home_consumption_cfe_web`, operated via `gh`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical triage roles, each mapping 1:1 to its default string. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
