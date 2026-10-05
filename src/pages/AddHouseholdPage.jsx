@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Alert, Card, Space, Typography, message } from 'antd'
+import { Alert, Space, Typography, message } from 'antd'
 import AddHouseholdForm from '../components/AddHouseholdForm'
-import SectionCard from '../components/ui/SectionCard'
+import PageHero from '../components/ui/PageHero'
+import SectionCollapse from '../components/ui/SectionCollapse'
 import { createHouseholdWithTariff } from '../services/householdService'
 import styles from './AddHouseholdPage.module.css'
 
@@ -11,6 +12,7 @@ function AddHouseholdPage() {
   const [successMessage, setSuccessMessage] = useState('')
   const [error, setError] = useState('')
   const [createdHousehold, setCreatedHousehold] = useState(null)
+  const [openSections, setOpenSections] = useState([])
 
   const handleSubmit = async (payload) => {
     setIsSubmitting(true)
@@ -26,6 +28,9 @@ function AddHouseholdPage() {
       )
 
       setCreatedHousehold(result.household)
+      setOpenSections((current) => (
+        current.includes('created') ? current : [...current, 'created']
+      ))
       setSuccessMessage(
         `Vivienda "${result.household.name}" creada correctamente con Tarifa asignada.`,
       )
@@ -41,46 +46,59 @@ function AddHouseholdPage() {
     }
   }
 
+  const sections = [
+    {
+      key: 'register',
+      label: 'Registrar vivienda',
+      children: (
+        <AddHouseholdForm
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          successMessage={successMessage}
+        />
+      ),
+    },
+  ]
+
+  if (createdHousehold) {
+    sections.push({
+      key: 'created',
+      label: 'Vivienda creada',
+      children: (
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Typography.Text>
+            <strong>ID:</strong> {createdHousehold.id}
+          </Typography.Text>
+          <Typography.Text>
+            <strong>Nombre:</strong> {createdHousehold.name || 'Sin nombre'}
+          </Typography.Text>
+          {createdHousehold.created_at && (
+            <Typography.Text>
+              <strong>Creada:</strong> {new Date(createdHousehold.created_at).toLocaleString()}
+            </Typography.Text>
+          )}
+        </Space>
+      ),
+    })
+  }
+
   return (
-    <Space direction="vertical" size={16} style={{ display: 'flex' }} className={styles.page}>
+    <div className={styles.page}>
       {contextHolder}
-      <SectionCard
+      <PageHero
         eyebrow="Administración"
         title="Alta de viviendas con tarifas"
         description="Este flujo registra nuevas viviendas en FastAPI con tarifas asociadas."
-        level={3}
       />
 
-      <AddHouseholdForm
-        onSubmit={handleSubmit}
-        isSubmitting={isSubmitting}
-        successMessage={successMessage}
+      <SectionCollapse
+        activeKey={openSections}
+        onChange={setOpenSections}
+        items={sections}
       />
 
       {error ? <Alert type="error" showIcon message={error} /> : null}
-
-      {createdHousehold ? (
-        <Card
-          title="Vivienda creada"
-          type="inner"
-          className={styles.createdCard}
-        >
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <Typography.Text>
-              <strong>ID:</strong> {createdHousehold.id}
-            </Typography.Text>
-            <Typography.Text>
-              <strong>Nombre:</strong> {createdHousehold.name || 'Sin nombre'}
-            </Typography.Text>
-            {createdHousehold.created_at && (
-              <Typography.Text>
-                <strong>Creada:</strong> {new Date(createdHousehold.created_at).toLocaleString()}
-              </Typography.Text>
-            )}
-          </Space>
-        </Card>
-      ) : null}
-    </Space>
+    </div>
   )
 }
 
