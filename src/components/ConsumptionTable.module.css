@@ -72,10 +72,6 @@
   font-size: 0.86rem;
 }
 
-.tableContainer {
-  overflow-x: auto;
-}
-
 .table :global(.ant-table) {
   background: transparent;
   max-width: 100%;
@@ -151,12 +147,6 @@
 .chartHeader {
   margin-bottom: 12px;
   padding: 0 4px;
-}
-
-.chartControls {
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: flex-start;
 }
 
 .chartLoader {
