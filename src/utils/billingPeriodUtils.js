@@ -16,6 +16,30 @@ function parseLocalDate(dateString) {
 }
 
 /**
+ * Formats a reading date for display without the UTC day shift.
+ * `YYYY-MM-DD` and ISO datetime strings both use their date part, so a
+ * `…T00:00:00Z` value does not render as the previous day in Mexico. Other
+ * formats fall back to `new Date` and then to the raw string. Returns '' for
+ * empty values.
+ */
+export function formatReadingDate(dateString, options = { day: '2-digit', month: 'short' }) {
+  if (!dateString) return ''
+
+  const datePart = String(dateString).match(/^(\d{4}-\d{2}-\d{2})/)?.[1]
+  const date = parseLocalDate(datePart) ?? new Date(dateString)
+  if (Number.isNaN(date.getTime())) return String(dateString)
+
+  return date.toLocaleDateString('es-MX', options)
+}
+
+/**
+ * Formats a reading date with the full day, month and year for tooltips.
+ */
+export function formatFullReadingDate(dateString) {
+  return formatReadingDate(dateString, { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+/**
  * Formats a Date as YYYY-MM-DD using local time values.
  */
 function formatLocalDate(date) {

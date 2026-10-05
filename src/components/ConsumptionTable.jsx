@@ -2,10 +2,12 @@ import { EditOutlined } from '@ant-design/icons'
 import {
   Button,
   Card,
+  Empty,
   Form,
   Input,
   InputNumber,
   Modal,
+  Pagination,
   Select,
   Space,
   Spin,
@@ -40,6 +42,17 @@ function ConsumptionTable({
   const [activeTab, setActiveTab] = useState('table')
 
   const effectiveItems = displayItems || items
+
+  // The table paginates its own dataSource, but the mobile cards are rendered
+  // by hand, so slice them with the same page/pageSize configuration.
+  const cardItems = useMemo(() => {
+    const readings = effectiveItems || []
+    if (showAll || !paginationConfig) return readings
+
+    const page = paginationConfig.current || 1
+    const size = paginationConfig.pageSize || pageSize || 10
+    return readings.slice((page - 1) * size, page * size)
+  }, [effectiveItems, pageSize, paginationConfig, showAll])
 
   const handleEdit = useCallback((record) => {
     setEditingItem(record)
@@ -125,15 +138,59 @@ function ConsumptionTable({
         key: 'table',
         label: 'Tabla',
         children: (
-          <Table
-            className={styles.table}
-            rowKey={(record) => record.id}
-            columns={columns}
-            dataSource={effectiveItems}
-            pagination={paginationConfig || false}
-            locale={{ emptyText: 'No hay consumos para mostrar.' }}
-            scroll={{ x: 720 }}
-          />
+          <>
+            <div className={styles.tableView}>
+              <Table
+                className={styles.table}
+                rowKey={(record) => record.id}
+                columns={columns}
+                dataSource={effectiveItems}
+                pagination={paginationConfig || false}
+                locale={{ emptyText: 'No hay consumos para mostrar.' }}
+                scroll={{ x: 720 }}
+              />
+            </div>
+            <div className={styles.cardView}>
+              {cardItems.length === 0 ? (
+                <Empty description="No hay consumos para mostrar." />
+              ) : (
+                <ul className={styles.readingCards}>
+                  {cardItems.map((record) => (
+                    <li key={record.id} className={styles.readingCard}>
+                      <div className={styles.readingCardTop}>
+                        <span className={styles.readingCardDate}>{record.fecha}</span>
+                        <span className={styles.readingCardKwh}>
+                          {Number(record.kWh).toFixed(1)} kWh
+                        </span>
+                      </div>
+                      <p className={styles.readingCardNote}>
+                        {record.note || 'Sin observaciones'}
+                      </p>
+                      {onUpdateItem ? (
+                        <Button
+                          type="primary"
+                          icon={<EditOutlined />}
+                          onClick={() => handleEdit(record)}
+                          block
+                        >
+                          Editar
+                        </Button>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {!showAll && paginationConfig ? (
+                <Pagination
+                  {...paginationConfig}
+                  total={(effectiveItems || []).length}
+                  className={styles.cardPagination}
+                  size="small"
+                  simple
+                />
+              ) : null}
+            </div>
+          </>
         ),
       },
       {
@@ -167,7 +224,7 @@ function ConsumptionTable({
         ),
       },
     ],
-    [chartReadings, columns, effectiveItems, paginationConfig],
+    [cardItems, chartReadings, columns, effectiveItems, handleEdit, onUpdateItem, paginationConfig, showAll],
   )
 
   return (

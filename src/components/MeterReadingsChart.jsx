@@ -2,18 +2,15 @@ import { Column } from '@ant-design/charts'
 import { useMemo } from 'react'
 import { Empty } from 'antd'
 import { getSeriesColor } from '../utils/tierColors'
+import { formatFullReadingDate, formatReadingDate } from '../utils/billingPeriodUtils'
+import { hasRoomForBarLabels } from '../utils/chartLayout'
+import { useElementWidth } from '../hooks/useElementWidth'
 import styles from './ConsumptionTable.module.css'
 
 function formatKwhValue(value) {
   const numericValue = Number(value)
   if (!Number.isFinite(numericValue)) return 'N/D'
   return `${numericValue.toFixed(1)} kWh`
-}
-
-function formatShortDate(value) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })
 }
 
 function aggregateTierKwh(tierLines) {
@@ -43,7 +40,8 @@ function buildStackedRows(reading, index) {
 
   const breakdown = cost.cfe_breakdown
   const hasBreakdown = breakdown && Array.isArray(breakdown.tier_lines)
-  const dateLabel = formatShortDate(reading.date)
+  const dateLabel = formatReadingDate(reading.date)
+  const fullDate = formatFullReadingDate(reading.date)
   const totalConsumption = Number(cost.total_consumption_kwh)
 
   const rows = []
@@ -54,6 +52,7 @@ function buildStackedRows(reading, index) {
       if (tier.value > 0) {
         rows.push({
           dateLabel,
+          fullDate,
           readingIndex: index + 1,
           series: tier.series,
           tierLevel: tier.tierLevel,
@@ -65,6 +64,7 @@ function buildStackedRows(reading, index) {
     // Fallback when the API has no tier breakdown: show a single "Subtotal" bar.
     rows.push({
       dateLabel,
+      fullDate,
       readingIndex: index + 1,
       series: 'Subtotal',
       tierLevel: 0,
@@ -86,6 +86,7 @@ function buildStackedRows(reading, index) {
  *   billing_period_cost.cfe_breakdown.tier_lines
  */
 function MeterReadingsChart({ chartReadings }) {
+  const [chartCanvasRef, chartCanvasWidth] = useElementWidth()
   const chartData = useMemo(() => {
     if (!chartReadings || chartReadings.length === 0) return []
 
@@ -126,7 +127,12 @@ function MeterReadingsChart({ chartReadings }) {
     return <Empty description="No hay lecturas para graficar." />
   }
 
-  const hasMultipleReadings = new Set(chartData.map((row) => row.readingIndex)).size > 1
+  const readingCount = new Set(chartData.map((row) => row.readingIndex)).size
+  const showBarLabels = hasRoomForBarLabels({
+    containerWidth: chartCanvasWidth,
+    readingCount,
+    yAxisReserve: 80,
+  })
 
   const chartConfig = {
     data: chartData,
@@ -135,6 +141,9 @@ function MeterReadingsChart({ chartReadings }) {
     colorField: 'series',
     stack: true,
     autoFit: true,
+    // Let G2 measure the fixed-height `.chartCanvas` wrapper below; without it
+    // the chart falls back to a fixed 480px canvas on every viewport.
+    containerStyle: { width: '100%', height: '100%' },
     scale: {
       color: {
         domain: seriesColorMap.map((entry) => entry.series),
@@ -146,34 +155,48 @@ function MeterReadingsChart({ chartReadings }) {
       maxWidth: 72,
       minWidth: 24,
     },
-    xAxis: {
-      label: {
-        autoRotate: true,
-        formatter: (value) => value,
+    // G2 v5 reads axes from `axis` (the v1 `xAxis`/`yAxis` keys are ignored).
+    axis: {
+      x: {
+        title: false,
+        labelAutoRotate: true,
+        labelAutoHide: { keepHeader: true, keepTail: true },
+        labelFormatter: (value) => value,
+      },
+      y: {
+        title: false,
+        labelFormatter: (value) => formatKwhValue(value),
       },
     },
-    yAxis: {
-      label: {
-        formatter: (value) => formatKwhValue(value),
-      },
-    },
+    // G2 v5 uses tooltip `items[].valueFormatter`; the v1 `formatter` key is
+    // ignored and would leak raw floating-point values into the tooltip.
     tooltip: {
-      title: (title) => title,
-      formatter: (datum) => ({
-        name: datum?.series,
-        value: formatKwhValue(datum?.value),
-      }),
+      title: (datum) => datum?.fullDate ?? datum?.dateLabel ?? '',
+      items: [
+        {
+          // `field` reads the raw datum, not the post-`stackY` cumulative
+          // `y` channel value.
+          field: 'value',
+          valueFormatter: (value) => formatKwhValue(value),
+        },
+      ],
     },
     legend: {
       position: 'top',
+      itemLabelFontSize: 10,
+      itemMarkerSize: 8,
+      itemSpacing: [6, 4],
+      rowPadding: 2,
     },
-    label: hasMultipleReadings
+    label: showBarLabels
       ? {
           position: 'top',
-          formatter: (datum) => {
-            const value = datum?.value
-            if (value === null || value === undefined || value === 0) return ''
-            return formatKwhValue(value)
+          // G2 v5 calls label formatters with the resolved text value (not the
+          // v1 datum object); a datum-style callback would return ''.
+          formatter: (value) => {
+            const numericValue = Number(value)
+            if (!Number.isFinite(numericValue) || numericValue === 0) return ''
+            return formatKwhValue(numericValue)
           },
           style: {
             fontSize: 10,
@@ -191,7 +214,9 @@ function MeterReadingsChart({ chartReadings }) {
           desglosado por rango de tarifa
         </p>
       </div>
-      <Column {...chartConfig} />
+      <div ref={chartCanvasRef} className={styles.chartCanvas}>
+        <Column {...chartConfig} />
+      </div>
     </div>
   )
 }

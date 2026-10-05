@@ -2,6 +2,9 @@ import { Column } from '@ant-design/charts'
 import { Empty } from 'antd'
 import { useMemo } from 'react'
 import { getSeriesColor } from '../../utils/tierColors'
+import { formatFullReadingDate, formatReadingDate } from '../../utils/billingPeriodUtils'
+import { hasRoomForBarLabels } from '../../utils/chartLayout'
+import { useElementWidth } from '../../hooks/useElementWidth'
 import styles from './BillingPeriodCostChart.module.css'
 
 const currencyFormatter = new Intl.NumberFormat('es-MX', {
@@ -13,16 +16,6 @@ function formatCurrencyValue(value) {
   const numericValue = Number(value)
   if (!Number.isFinite(numericValue)) return 'N/D'
   return currencyFormatter.format(numericValue)
-}
-
-function formatFullDate(value) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleDateString('es-MX', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
 }
 
 function aggregateTierLines(tierLines) {
@@ -57,7 +50,8 @@ function buildStackedRows(reading, index) {
 
   const breakdown = cost.cfe_breakdown
   const hasBreakdown = breakdown && Array.isArray(breakdown.tier_lines)
-  const dateLabel = formatFullDate(reading.date)
+  const dateLabel = formatReadingDate(reading.date)
+  const fullDate = formatFullReadingDate(reading.date)
   const totalConsumption = toFiniteNumber(cost.total_consumption_kwh)
   const totalCost = toFiniteNumber(cost.total_cost)
 
@@ -69,6 +63,7 @@ function buildStackedRows(reading, index) {
       if (tier.value > 0) {
         rows.push({
           dateLabel,
+          fullDate,
           readingIndex: index + 1,
           series: tier.series,
           tierLevel: tier.tierLevel,
@@ -83,6 +78,7 @@ function buildStackedRows(reading, index) {
     // Fallback when the API has no tier breakdown: show a single "Subtotal" bar.
     rows.push({
       dateLabel,
+      fullDate,
       readingIndex: index + 1,
       series: 'Subtotal',
       tierLevel: 0,
@@ -97,6 +93,7 @@ function buildStackedRows(reading, index) {
   if (iva > 0) {
     rows.push({
       dateLabel,
+      fullDate,
       readingIndex: index + 1,
       series: 'IVA',
       tierLevel: 99,
@@ -111,6 +108,7 @@ function buildStackedRows(reading, index) {
   if (dap > 0) {
     rows.push({
       dateLabel,
+      fullDate,
       readingIndex: index + 1,
       series: 'DAP',
       tierLevel: 100,
@@ -135,6 +133,7 @@ function buildStackedRows(reading, index) {
  *   billing_period_cost.cfe_breakdown.tier_lines
  */
 function BillingPeriodCostChart({ readings }) {
+  const [chartCanvasRef, chartCanvasWidth] = useElementWidth()
   const chartData = useMemo(() => {
     if (!readings || readings.length === 0) return []
 
@@ -186,6 +185,11 @@ function BillingPeriodCostChart({ readings }) {
   }
 
   const hasMultipleReadings = readingsWithCost.length > 1
+  const showBarLabels = hasRoomForBarLabels({
+    containerWidth: chartCanvasWidth,
+    readingCount: readingsWithCost.length,
+    yAxisReserve: 100,
+  })
   const lastReading = readingsWithCost[readingsWithCost.length - 1]
   const lastTotalCost = toFiniteNumber(lastReading.billing_period_cost?.total_cost)
   const lastTariffCode = lastReading.billing_period_cost?.tariff_code || 'N/D'
@@ -197,6 +201,9 @@ function BillingPeriodCostChart({ readings }) {
     colorField: 'series',
     stack: true,
     autoFit: true,
+    // Let G2 measure the fixed-height `.chartCanvas` wrapper below; without it
+    // the chart falls back to a fixed 480px canvas on every viewport.
+    containerStyle: { width: '100%', height: '100%' },
     scale: {
       color: {
         domain: seriesColorMap.map((entry) => entry.series),
@@ -208,47 +215,48 @@ function BillingPeriodCostChart({ readings }) {
       maxWidth: 72,
       minWidth: 24,
     },
-    xAxis: {
-      label: {
-        autoRotate: true,
-        autoHide: { type: 'equidistance', cfg: { minGap: 60 } },
-        formatter: (value) => {
-          const date = new Date(value)
-          if (Number.isNaN(date.getTime())) return value
-          return date.toLocaleDateString('es-MX', {
-            day: '2-digit',
-            month: 'short',
-          })
-        },
+    // G2 v5 reads axes from `axis` (the v1 `xAxis`/`yAxis` keys are ignored).
+    axis: {
+      x: {
+        title: 'Fecha de lectura',
+        labelAutoRotate: true,
+        labelAutoHide: { keepHeader: true, keepTail: true },
+        labelFormatter: (value) => value,
       },
-      title: 'Fecha de lectura',
-    },
-    yAxis: {
-      label: {
-        formatter: (value) => formatCurrencyValue(value),
+      y: {
+        title: 'Costo acumulado (MXN)',
+        labelFormatter: (value) => formatCurrencyValue(value),
       },
-      title: 'Costo acumulado (MXN)',
     },
+    // G2 v5 uses tooltip `items[].valueFormatter`; the v1 `formatter` key is
+    // ignored and would leak raw floating-point values into the tooltip.
     tooltip: {
-      title: (title) => title,
-      formatter: (datum) => {
-        const value = datum?.value
-        return {
-          name: datum?.series,
-          value: formatCurrencyValue(value),
-        }
-      },
+      title: (datum) => datum?.fullDate ?? datum?.dateLabel ?? '',
+      items: [
+        {
+          // `field` reads the raw datum, not the post-`stackY` cumulative
+          // `y` channel value.
+          field: 'value',
+          valueFormatter: (value) => formatCurrencyValue(value),
+        },
+      ],
     },
     legend: {
       position: 'top',
+      itemLabelFontSize: 10,
+      itemMarkerSize: 8,
+      itemSpacing: [6, 4],
+      rowPadding: 2,
     },
-    label: hasMultipleReadings
+    label: showBarLabels
       ? {
           position: 'top',
-          formatter: (datum) => {
-            const value = datum?.value
-            if (value === null || value === undefined || value === 0) return ''
-            return currencyFormatter.format(value)
+          // G2 v5 calls label formatters with the resolved text value (not the
+          // v1 datum object); a datum-style callback would return ''.
+          formatter: (value) => {
+            const numericValue = Number(value)
+            if (!Number.isFinite(numericValue) || numericValue === 0) return ''
+            return currencyFormatter.format(numericValue)
           },
           style: {
             fontSize: 10,
@@ -276,7 +284,9 @@ function BillingPeriodCostChart({ readings }) {
           desglosado por tarifa
         </p>
       </div>
-      <Column {...chartConfig} />
+      <div ref={chartCanvasRef} className={styles.chartCanvas}>
+        <Column {...chartConfig} />
+      </div>
       {hasMultipleReadings && (
         <div className={styles.summary}>
           <span>
