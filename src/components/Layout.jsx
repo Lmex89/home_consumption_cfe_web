@@ -11,6 +11,7 @@ import {
 import { Button, Drawer, Grid, Layout as AntLayout, Menu, Typography } from 'antd'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { logout } from '../services/authService'
+import ThemeToggle from './ThemeToggle'
 import styles from './Layout.module.css'
 
 const { Header, Sider, Content } = AntLayout
@@ -136,15 +137,18 @@ function Layout() {
               CFE Consumos
             </Typography.Title>
           </div>
-          {!isMobile ? (
-            <Button
-              type="text"
-              icon={<LogoutOutlined />}
-              aria-label="Cerrar sesion"
-              onClick={handleLogout}
-              className={styles.logoutBtn}
-            />
-          ) : null}
+          <div className={styles.headerActions}>
+            <ThemeToggle />
+            {!isMobile ? (
+              <Button
+                type="text"
+                icon={<LogoutOutlined />}
+                aria-label="Cerrar sesion"
+                onClick={handleLogout}
+                className={styles.logoutBtn}
+              />
+            ) : null}
+          </div>
         </Header>
 
         <Content className={styles.content}>
