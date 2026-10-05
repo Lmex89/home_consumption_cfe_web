@@ -76,6 +76,21 @@ textarea {
   touch-action: manipulation;
 }
 
+/*
+ * iOS Safari auto-zooms the viewport whenever a focused form control renders
+ * below 16px. Ant Design ships 14px inputs, so below the shell breakpoint
+ * (~992px, where Layout switches to the mobile chrome) every native control
+ * is raised to the no-zoom threshold. Element selectors also reach antd's
+ * internal inputs (Select search box, DatePicker, pagination pager).
+ */
+@media (max-width: 991.98px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 .app-brand {
   display: flex;
   align-items: center;
