@@ -182,11 +182,12 @@ function ConsumptionTable({
               )}
               {!showAll && paginationConfig ? (
                 <Pagination
-                  {...paginationConfig}
-                  total={(effectiveItems || []).length}
                   className={styles.cardPagination}
-                  size="small"
                   simple
+                  current={paginationConfig.current}
+                  pageSize={paginationConfig.pageSize}
+                  total={(effectiveItems || []).length}
+                  onChange={paginationConfig.onChange}
                 />
               ) : null}
             </div>
@@ -253,6 +254,7 @@ function ConsumptionTable({
                 ]}
                 style={{ width: 140 }}
                 size="small"
+                className={styles.pageSizeSelect}
               />
             )}
             {isLoadingAll ? (

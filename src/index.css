@@ -76,6 +76,49 @@ textarea {
   touch-action: manipulation;
 }
 
+/*
+ * iOS Safari auto-zooms the viewport whenever a focused form control renders
+ * below 16px. Ant Design ships 14px inputs, so below the shell breakpoint
+ * (~992px, where Layout switches to the mobile chrome) every native control
+ * is raised to the no-zoom threshold. Element selectors also reach antd's
+ * internal inputs (Select search box, DatePicker, pagination pager).
+ */
+@media (max-width: 991.98px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /*
+   * Touch targets: default controls already render at 44px through the
+   * ConfigProvider controlHeight token, but antd's small variants (derived
+   * controlHeightSM = 44 × 0.75 = 33px) miss the minimum on touch screens.
+   * min-height clamps the button height without touching its padding;
+   * icon-only buttons also get a square area.
+   */
+  .ant-btn-sm {
+    min-height: 44px;
+  }
+
+  .ant-btn-sm.ant-btn-icon-only {
+    min-width: 44px;
+  }
+
+  /*
+   * Small tables (antd Table size="small", used by the tariff tables) shrink
+   * their built-in pagination to that same 33px; clamp it back to 44px and
+   * recenter the page numbers and arrows in the enlarged item.
+   */
+  .ant-pagination-mini .ant-pagination-item,
+  .ant-pagination-mini .ant-pagination-prev,
+  .ant-pagination-mini .ant-pagination-next {
+    min-width: 44px;
+    min-height: 44px;
+    line-height: 44px;
+  }
+}
+
 .app-brand {
   display: flex;
   align-items: center;
