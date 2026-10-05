@@ -26,7 +26,11 @@ function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
   const screens = useBreakpoint()
-  const isMobile = !screens.lg
+
+  // `screens.lg` is undefined until the breakpoint observer measures after
+  // mount; requiring an explicit false keeps desktop from flashing the mobile
+  // bottom nav on the first render.
+  const isMobile = screens.lg === false
 
   const getSelectedKey = () => {
     if (location.pathname.startsWith('/insertar-consumo')) return '/insertar-consumo'
