@@ -1,11 +1,9 @@
 import {
   Alert,
-  Button,
   Card,
   Col,
   Form,
   Input,
-  Modal,
   Row,
   Select,
   Spin,
@@ -24,10 +22,9 @@ import SuccessAlert from './ui/SuccessAlert'
 
 function AddBillingPeriodForm({
   onSubmit,
-  onCreateYear,
   isSubmitting,
-  isCreatingYear,
   successMessage,
+  onHouseholdChange,
 }) {
   const [form] = Form.useForm()
   const { households, isLoading: loadingHouseholds, error: householdsError } = useHouseholds()
@@ -35,6 +32,9 @@ function AddBillingPeriodForm({
   const [loadingPeriods, setLoadingPeriods] = useState(false)
 
   const handleHouseholdChange = async (householdId) => {
+    if (onHouseholdChange) {
+      onHouseholdChange(householdId ?? null)
+    }
     setExistingPeriods([])
     form.resetFields(['startDate', 'endDate'])
     if (!householdId) return
@@ -57,6 +57,14 @@ function AddBillingPeriodForm({
       setExistingPeriods([])
     } finally {
       setLoadingPeriods(false)
+    }
+  }
+
+  const handleReset = () => {
+    form.resetFields()
+    setExistingPeriods([])
+    if (onHouseholdChange) {
+      onHouseholdChange(null)
     }
   }
 
@@ -102,23 +110,6 @@ function AddBillingPeriodForm({
         }
       }
     }
-  }
-
-  const handleCreateYearClick = () => {
-    const householdId = form.getFieldValue('householdId')
-    if (!householdId) {
-      message.warning('Selecciona una vivienda para crear los periodos del año.')
-      return
-    }
-
-    Modal.confirm({
-      title: '¿Crear periodos del año?',
-      content:
-        'Se generarán los periodos de facturación para el año actual basándose en la duración de los periodos existentes. Los periodos que ya existan serán omitidos.',
-      okText: 'Crear periodos',
-      cancelText: 'Cancelar',
-      onOk: () => onCreateYear(householdId),
-    })
   }
 
   return (
@@ -198,20 +189,7 @@ function AddBillingPeriodForm({
           </div>
         ) : null}
 
-        <FormActions loading={isSubmitting} onReset={() => form.resetFields()} />
-
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
-          <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
-            También puedes generar automáticamente todos los periodos del año actual.
-          </Typography.Paragraph>
-          <Button
-            onClick={handleCreateYearClick}
-            loading={isCreatingYear}
-            disabled={isSubmitting || isCreatingYear}
-          >
-            Crear periodos del año
-          </Button>
-        </div>
+        <FormActions loading={isSubmitting} onReset={handleReset} />
       </Form>
     </Card>
   )

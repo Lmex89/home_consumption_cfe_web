@@ -1,0 +1,90 @@
+.hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.hero > * {
+  min-width: 0;
+}
+
+.content,
+.aside {
+  min-width: 0;
+  padding: 14px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+.content {
+  background:
+    radial-gradient(circle at top right, var(--color-primary-soft), transparent 34%),
+    var(--color-surface-strong);
+}
+
+.aside {
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 36%),
+    var(--color-surface);
+  color: var(--color-text);
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: var(--header-eyebrow-size);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.title {
+  margin: 0 !important;
+  color: var(--color-title);
+  font-size: clamp(1.25rem, 6vw, 1.6rem) !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.description {
+  margin: 8px 0 0 !important;
+  max-width: 56ch;
+  color: var(--color-muted) !important;
+  font-size: 0.85rem !important;
+}
+
+@media (min-width: 576px) {
+  .content,
+  .aside {
+    padding: 18px 16px;
+    border-radius: 18px;
+  }
+}
+
+@media (min-width: 768px) {
+  .content,
+  .aside {
+    padding: 20px;
+    border-radius: 20px;
+  }
+  .title {
+    font-size: clamp(1.6rem, 3.4vw, 2.1rem) !important;
+  }
+  .description {
+    font-size: 0.92rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hasAside {
+    grid-template-columns: minmax(0, 1.3fr) minmax(240px, 0.7fr);
+    gap: 16px;
+  }
+  .content,
+  .aside {
+    padding: 24px;
+    border-radius: 24px;
+  }
+}

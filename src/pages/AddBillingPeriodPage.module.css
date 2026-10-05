@@ -17,15 +17,6 @@
   word-break: break-word;
 }
 
-.createdCard :global(.ant-space),
-.createdCard :global(.ant-space-item) {
-  min-width: 0;
-}
-
-.createdCard :global(.ant-typography) {
-  overflow-wrap: anywhere;
-}
-
 @media (min-width: 480px) {
   .page {
     gap: 16px;
@@ -49,9 +40,5 @@
 
   .page :global(.ant-alert) {
     border-radius: 16px;
-  }
-
-  .createdCard :global(.ant-card-body) {
-    padding: 14px 12px;
   }
 }
