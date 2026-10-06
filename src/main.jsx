@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 import 'antd/dist/reset.css'
 import './index.css'
 import App from './App.jsx'
+import { registerSW } from 'virtual:pwa-register'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext.jsx'
 
 // Shared tokens that don't change with the theme.
@@ -111,6 +112,10 @@ function ThemedApp() {
     </ConfigProvider>
   )
 }
+
+// Register the generated service worker so the built app shell stays
+// available offline; autoUpdate takes over new deployments on the next load.
+registerSW({ immediate: true })
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

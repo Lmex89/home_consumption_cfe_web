@@ -27,6 +27,7 @@ The application provides a dashboard for viewing consumption metrics, managing m
 | **Linting** | ESLint 9 (with react-hooks, react-refresh plugins) |
 | **Container Runtime** | Nginx (nginx-unprivileged, Alpine-based) |
 | **Node Runtime** | Node.js 22 (build stage) |
+| **PWA** | vite-plugin-pwa 2 (Workbox `generateSW`) + @vite-pwa/assets-generator |
 
 ### Architecture
 
@@ -39,6 +40,11 @@ The application provides a dashboard for viewing consumption metrics, managing m
 ## Project Structure
 
 ```
+public/                          # Static assets served from the root
+├── favicon.svg / favicon.ico / icons.svg
+├── pwa-64x64.png / pwa-192x192.png / pwa-512x512.png   # any-purpose PWA icons
+├── maskable-icon-512x512.png    # maskable icon (safe zone) for Android
+└── apple-touch-icon-180x180.png # iOS home-screen icon
 src/
 ├── components/                   # Reusable UI components
 │   ├── ui/                       # Base UI primitives
@@ -179,6 +185,21 @@ npm run build
 npm run preview
 ```
 
+### PWA (installable app)
+
+`npm run build` also emits `dist/sw.js`, `dist/workbox-*.js` and `dist/manifest.webmanifest`. The service worker is **only active in production builds** — `npm run dev` does not register it (no `devOptions.enabled`) so development never serves stale caches. To test the installed experience locally:
+
+```bash
+npm run build
+npm run preview   # service workers require a secure context; localhost qualifies
+```
+
+Chromium reports zero installability errors for the build; on Safari/iOS install via **Compartir → Añadir a pantalla de inicio**. Icons are generated from `public/favicon.svg` and must not be hand-edited — regenerate them with:
+
+```bash
+npx @vite-pwa/assets-generator --preset minimal public/favicon.svg
+```
+
 ### Docker
 
 ```bash
@@ -217,7 +238,7 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 - **Responsive Reading History**: Below 768px the `Tabla` tab of `ConsumptionTable` renders the reading history as cards (fecha, kWh, nota, Editar) and hides the Ant Design table; from 768px up the table renders and the cards are hidden. Both views stay in the DOM and switch through `ConsumptionTable.module.css` media queries, so the first paint already matches the viewport without a JS breakpoint-measure flash (an `Empty` replaces the list when there are no readings). Because the table paginates its own `dataSource`, the cards are sliced client-side with the same `paginationConfig` (`current`/`pageSize`) and the standalone mobile `Pagination` receives `total` explicitly (it has no dataSource) plus only `current`/`pageSize`/`onChange`, in `simple` mode — no size changer, quick jumper or total text. The card-header page-size `Select` (`.pageSizeSelect`) is hidden below 768px, so phones paginate 10 per page or use the "Mostrar todo" toggle. Removing `size="small"` from that pager also lets it inherit the theme's 44px pagination `itemSize` (antd's small variant would shrink it to `controlHeightSM`). With no `onUpdateItem` (e.g. `/insertar-consumo`) the cards omit Editar; with it, Editar opens the same edit modal and save flow as the table. The table no longer sets `scroll={{ x: 720 }}`: its four columns fit the card at every width where the table is shown (≥768px), so the forced width only produced an inner horizontal scrollbar on tablets. `.ant-table-content` keeps `overflow-x: auto` as a safety net for future columns.
 - **Mobile Touch & iOS Inputs**: Below the shell breakpoint (`@media (max-width: 991.98px)`) `index.css` raises every native control (`input`, `textarea`, `select`) to a 16px base, because iOS Safari auto-zooms the viewport when a focused control renders below that threshold; element selectors also reach Ant Design's internal inputs (Select search box, DatePicker, pagination pager), so no per-component override is needed. The same media block enforces the 44px touch minimum on antd's small controls — `.ant-btn-sm` gets `min-height: 44px` and icon-only buttons a square `min-width: 44px`, and the `.ant-pagination-mini` pager that `Table size="small"` renders in the tariff tables is clamped back from `controlHeightSM` (44 × 0.75 = 33px) — which complements the `controlHeight: 44` ConfigProvider token that already sizes default buttons, inputs, and pagination items (Popconfirm's default ok/cancel buttons are small, so they are covered too). `min-height`/`min-width` only clamp the generated sizes, so button padding and labels keep their layout. The same block raises Ant Design's `.ant-checkbox-wrapper` to a 44px row, covering the readings form's "La lectura es inicial" toggle, whose box plus label is only ~22px tall by default.
 - **Dashboard Chart Tabs**: `ConsumptionTable` renders the consumption and billing-cost charts in Ant Design `Tabs` with `destroyInactiveTabPane` enabled to force remount/reflow when switching tabs, preventing desktop chart width shrink after tab toggles.
-- **Dashboard Data Flow**: `DashboardPageContainer` orchestrates: household list (`useHouseholds`), billing period list, dashboard API data (`getDashboardConsumptions`), and meter reading pagination (`useMeterReadingsPagination`). A `latestRequestIdRef` guards against race conditions when the user switches households/periods quickly.
+- **Dashboard Data Flow**: `DashboardPageContainer` orchestrates: household list (`useHouseholds`), billing period list, dashboard API data (`getDashboardConsumptions`), and meter reading pagination (`useMeterReadingsPagination`). A `latestRequestIdRef` guards against race conditions when the user switches households/periods quickly. When the household list fails to load (offline, API down) or comes back empty, the container stops the loading state and surfaces `householdsError` — or `No hay viviendas registradas.` — through the same error alert instead of leaving the skeleton spinning forever.
 - **Race Condition Guard**: `DashboardPageContainer` uses a monotonically incrementing `latestRequestIdRef` to discard stale API responses when the user changes selections before the prior fetch completes.
 - **CFE Billing Breakdown**: `DashboardBillingBreakdown` renders tier-based cost breakdown (Básico, Intermedio, Excedente tiers with color-coded tags) grouped by `tier_level` from the API's `tier_lines` array. Formatters use `Intl.NumberFormat` with `es-MX` locale.
 - **Billing Period Cost Chart**: `BillingPeriodCostChart` renders a stacked column chart that breaks down cumulative cost per reading by CFE tier (`Básico`, `Intermedio`, `Intermedio2`, `Excedente`) plus `IVA` and `DAP`. Tier line data comes from `billing_period_cost.cfe_breakdown.tier_lines`; taxes come from `billing_period_cost.iva` / `dap`. The chart falls back to a single "Subtotal" bar when the API does not provide a tier breakdown. Uses the **@ant-design/plots v2 / G2 v5 API**: `stack: true` (maps to the `stackY` transform) plus `colorField: 'series'` and an explicit `scale.color` with `domain`/`range` computed from the data via `getSeriesColor` so each range has a distinct color. Bar thickness is controlled with `style.maxWidth` (72) / `style.minWidth` (24) — v1's `columnWidthRatio` is ignored by G2 v5. **Gotchas**: (1) v1-style options (`isStack: true`, top-level `color: (datum) => …` callback, `columnWidthRatio`) are silently ignored by G2 v5 — never reintroduce them; the color must come from the `colorField` channel, not a mark-level `color` prop. (2) Do NOT set `seriesField` — the G2 interval mark treats the `series` channel as a dodging band (each series gets its own thin, horizontally-offset sub-band, producing thin, misaligned bars). `stackY` groups by the `color` channel, so `colorField` alone is sufficient.
@@ -229,6 +250,7 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 - **Billing Period Utilities**: `src/utils/billingPeriodUtils.js` provides timezone-safe local-date helpers (`parseLocalDate`/`formatLocalDate` internally via explicit date parts to avoid UTC shifting) and exports `formatReadingDate(dateString, options)`/`formatFullReadingDate(dateString)` for display — both use the date part of `YYYY-MM-DD` and ISO datetime values so they never shift a day in local time, and the charts use them for the short `DD mmm` axis labels and full tooltip titles — plus `addDays`, `daysBetween`, `periodsOverlap`, `getLatestPeriod`, `getPeriodDurationDays`, `getSuggestedNextPeriod`, and `generateYearPeriods`. Always use these for period date math instead of raw `new Date(isoString)` to keep dates anchored to local midnight.
 - **Bulk Billing Period Creation**: `createYearBillingPeriods(householdId, year)` in `consumoService.js` generates covering ranges for a full year using the latest existing period's duration (`getPeriodDurationDays`; defaults to bimonthly ~59 days), skips any range that overlaps an existing period via `periodsOverlap`, creates non-overlapping periods sequentially, and returns `{ year, durationDays, created, skipped, errors }`. It is the consumer of `billingPeriodUtils.js`.
 - **Mobile Acceptance Pass (automatable part)**: Verified in Chromium via Playwright at 360/390/768px in both themes with the backend mocked, across `/login`, `/register`, `/`, `/insertar-consumo`, `/agregar-vivienda`, `/agregar-tarifa` and `/agregar-periodo` (admin sections expanded, versions/ranges tables rendered): no document-level horizontal overflow, the mobile Más drawer opens → navigates → closes, the theme toggle flips `data-theme`, and no touch target falls below 44px. This pass fixed the readings-table width and the checkbox touch row (see the two bullets above). The per-route × width × theme checklist and the method live in `docs/acceptance/mobile.md`; the real iPhone/Safari run on the LAN is the remaining manual step tracked by issue #8.
+- **PWA (installable + offline shell)**: `vite-plugin-pwa` 2 runs in `generateSW` mode (config in `vite.config.js`): `registerType: 'autoUpdate'` plus Workbox `skipWaiting`/`clientsClaim` make a new deployment take over on the next load, and `injectRegister: null` leaves registration to `src/main.jsx`, which calls `registerSW({ immediate: true })` from `virtual:pwa-register`. The generated SW precaches the built shell plus the `public/` icons (`globPatterns` js/css/html/svg/png/ico/woff2), serves `index.html` for unknown navigations (`navigateFallback`, so deep routes work offline) and runtime-caches Google Fonts (`StaleWhileRevalidate` for the CSS, `CacheFirst` for the webfonts). The manifest ("CFE Consumos", `display: standalone`, theme/background `#f4f6fa`, 64/192/512 + maskable 512 icons) is generated as `dist/manifest.webmanifest` and linked from `index.html`, which also carries the iOS meta tags and `apple-touch-icon-180x180.png`. `docker/nginx/default.conf` answers `/sw.js` and `/manifest.webmanifest` with `Cache-Control: no-cache` so deployments roll out without waiting for cache expiry. Offline, the shell and fonts load from cache while data pages degrade through their normal error alerts (see Dashboard Data Flow); `npm run dev` never registers the SW, so use `npm run build && npm run preview` to test installed mode.
 
 ---
 
