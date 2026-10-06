@@ -22,7 +22,11 @@ function DashboardPageContainer() {
   const [error, setError] = useState('')
   const latestRequestIdRef = useRef(0)
 
-  const { households, isLoading: isLoadingHouseholds } = useHouseholds()
+  const {
+    households,
+    isLoading: isLoadingHouseholds,
+    error: householdsError,
+  } = useHouseholds()
 
   const {
     displayItems,
@@ -68,7 +72,15 @@ function DashboardPageContainer() {
    * Initialize dashboard on mount and when households load
    */
   useEffect(() => {
-    if (isLoadingHouseholds || households.length === 0) return
+    if (isLoadingHouseholds) return
+
+    // Without households there is nothing to fetch: stop the skeleton and
+    // surface why (network failure or an account with no households).
+    if (households.length === 0) {
+      setIsLoading(false)
+      setError(householdsError || 'No hay viviendas registradas.')
+      return
+    }
 
     let isMounted = true
 
@@ -116,7 +128,7 @@ function DashboardPageContainer() {
     return () => {
       isMounted = false
     }
-  }, [households, isLoadingHouseholds])
+  }, [households, isLoadingHouseholds, householdsError])
 
   /**
    * Handle household selection change

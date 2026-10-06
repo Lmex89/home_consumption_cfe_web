@@ -121,6 +121,17 @@ textarea {
   }
 
   /*
+   * Ant Design's checkbox wrapper is only as tall as its 14px box plus the
+   * label line box (~22px). Give the row the 44px touch minimum so the
+   * "La lectura es inicial" toggle in the readings form is easy to hit.
+   */
+  .ant-checkbox-wrapper {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /*
    * Small tables (antd Table size="small", used by the tariff tables) shrink
    * their built-in pagination to that same 33px; clamp it back to 44px and
    * recenter the page numbers and arrows in the enlarged item.
