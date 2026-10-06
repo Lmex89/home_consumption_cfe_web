@@ -220,7 +220,7 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 - **Component Style**: Functional components with React hooks. UI uses Ant Design components with a custom theme (primary color `#3b82f6`, IBM Plex Sans font).
 - **Module System**: ES modules (`"type": "module"` in package.json).
 - **Container/Presenter Pattern**: The Dashboard feature follows a strict container/presenter split. `DashboardPageContainer` owns all data fetching and state; `DashboardPage` (presenter) receives everything via props and only renders UI. Apply this pattern to any new feature components that need async data.
-- **CSS Modules**: Component-specific styles use CSS Modules (`*.module.css` co-located next to each component file).
+- **CSS Modules**: Component-specific styles use CSS Modules (`*.module.css` co-located next to each component file). Every module must be imported by at least one component; delete a stylesheet or class once it loses its last reference instead of leaving it orphaned.
 
 ---
 
