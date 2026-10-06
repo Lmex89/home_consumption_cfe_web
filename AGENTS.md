@@ -220,7 +220,7 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 - **Component Style**: Functional components with React hooks. UI uses Ant Design components with a custom theme (primary color `#3b82f6`, IBM Plex Sans font).
 - **Module System**: ES modules (`"type": "module"` in package.json).
 - **Container/Presenter Pattern**: The Dashboard feature follows a strict container/presenter split. `DashboardPageContainer` owns all data fetching and state; `DashboardPage` (presenter) receives everything via props and only renders UI. Apply this pattern to any new feature components that need async data.
-- **CSS Modules**: Component-specific styles use CSS Modules (`*.module.css` co-located next to each component file).
+- **CSS Modules**: Component-specific styles use CSS Modules (`*.module.css` co-located next to each component file). Every module must be imported by at least one component; delete a stylesheet or class once it loses its last reference instead of leaving it orphaned.
 
 ---
 
@@ -254,6 +254,20 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 
 ---
 
+## Git Branch Naming Guidelines (Mandatory)
+
+Format: `<type>/<issue-id>-<description>` (omit the ID for trivial changes without an issue: `<type>/<description>`). Examples: `feature/42-add-dark-mode`, `bugfix/17-dashboard-race-condition`, `chore/1-css-cleanup-shell-docs`.
+
+1. **Type prefix** — Start the branch with a type: `feature/` (new functionality), `bugfix/` (fix), `hotfix/` (urgent), `refactor/` (no behavior change), `docs/`, `test/`, or `chore/` (tooling, dependencies, housekeeping). No near-duplicates such as `enhancement/` or `improvement/`.
+
+2. **Issue ID** — When an issue exists, put its number after the type: `bugfix/17-dashboard-race-condition`. It gives branch ↔ issue ↔ PR traceability and auto-links on GitHub. Omit it only for small changes without an issue.
+
+3. **Lowercase and hyphen-separated** — Only lowercase letters, digits and hyphens: `bugfix/17-dashboard-race-condition`, never `Bugfix/John_DashboardFix`, `bugfix/dashboard_race` or `bugfix/dashboardRace`. No spaces, underscores, camelCase or personal names.
+
+4. **Specific and short** — The description identifies the work at a glance and stays under ~50 characters: `feature/9-tariff-versioning`, not `feature/updates` nor `feature/new-feature`. The area word comes from the shared area list in the Commit Guidelines (e.g. `dashboard-race-condition`, `ui-mobile-shell`).
+
+5. **One branch, one logical change** — One logical change = one issue, feature, fix or refactor (a branch may still hold several atomic commits for that single change). Delete the branch after merge and do not reuse it.
+
 ## Git Commit Guidelines (Mandatory)
 
 1. **Atomic commits** — Each commit must contain one logically separate change. If a description gets too long, split the commit into finer-grained pieces. Never mix unrelated changes (e.g., a bugfix + a refactor + a feature) in a single commit.
@@ -262,7 +276,7 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 
 3. **Body explains *why*** — After a blank line, the body must explain the reasoning behind the change — what problem it solves, why this approach was chosen, and any alternatives considered. The body should be detailed enough that reviewers and future maintainers can understand the change without reading the diff.
 
-4. **Area prefix** — Prefix the subject line with a scope identifier matching the area being modified, e.g. `dashboard:`, `api:`, `docker:`, `auth:`, `readings:`. This makes history scanning fast and groups related changes.
+4. **Area prefix** — Prefix the subject line with a scope from the shared area list (used by commits and branch descriptions): `dashboard:`, `ui:`, `readings:`, `tariffs:`, `households:`, `periods:`, `auth:`, `api:`, `pwa:`, `docker:`, `docs:`, `chore:`. This makes history scanning fast and groups related changes.
 
 5. **Never commit broken state** — Every commit should leave the project in a working state. Avoid "fix fixup" commits that repair a mistake from an earlier commit in the same branch. Use `git rebase -i` to squash or amend before opening a PR.
 
