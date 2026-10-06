@@ -26,7 +26,7 @@ The application provides a dashboard for viewing consumption metrics, managing m
 | **Routing** | React Router 7 |
 | **Linting** | ESLint 9 (with react-hooks, react-refresh plugins) |
 | **Container Runtime** | Nginx (nginx-unprivileged, Alpine-based) |
-| **Node Runtime** | Node.js 22 (build stage) |
+| **Node Runtime** | Node.js 24 (build stage) |
 | **PWA** | vite-plugin-pwa 2 (Workbox `generateSW`) + @vite-pwa/assets-generator |
 
 ### Architecture
@@ -159,7 +159,7 @@ Configure via environment variables (see `.env.example`):
 
 ### Prerequisites
 
-- Node.js 18+ (Dockerfile uses Node.js 22)
+- Node.js 18+ (Dockerfile uses Node.js 24)
 - npm
 
 ### Local Development
@@ -209,7 +209,7 @@ docker compose up --build
 # Application will be available at http://localhost:3011
 ```
 
-The Docker setup uses a multi-stage build and serves the app via Nginx on port 3011. The container is security-hardened with a read-only filesystem, tmpfs mounts for `/tmp`, `/var/cache/nginx`, and `/var/run`, and dropped Linux capabilities.
+The Docker setup uses a multi-stage build and serves the app via Nginx on port 3011. The container is security-hardened with a read-only filesystem, tmpfs mounts for `/tmp`, `/var/cache/nginx`, and `/var/run`, and dropped Linux capabilities. The build stage runs **Node.js 24** (upgraded from Node 22). `package.json` additionally declares `@emnapi/core` and `@emnapi/runtime` as devDependencies: `@napi-rs/wasm-runtime` (a wasm32-only optional branch of the Vite 8 / Rolldown tree) lists them as peer dependencies, and `npm ci` fails when a skipped platform-optional package's peers are absent from the lock — while `npm install` does not record them. The explicit devDependencies keep `npm ci` green; do not remove them.
 
 ---
 
