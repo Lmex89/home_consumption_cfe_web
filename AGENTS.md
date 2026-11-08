@@ -165,3 +165,19 @@ The Docker setup uses a multi-stage build and serves the app via Nginx on port 3
 - **Ant Design Theme**: Custom theme tokens are defined in `src/main.jsx` including primary/success/error colors, border radius, and component-specific overrides (Button height, Card border radius, Layout colors, Menu styling for the sidebar).
 - **Auth Flow**: Uses `RequireAuth` component as a route guard. Auth tokens are managed via `src/lib/authStorage.js`.
 - **Mock Data**: `src/config/consumptionMockConfig.js` provides sample data for development, including mock billing rates (Energy: $1.34/kWh, Distribution: $0.38/kWh, Transmission: $0.11/kWh, Service: $39.50, IVA: 16%).
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are tracked as GitHub issues via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout: `GLOSSARY.md` at the root, `docs/adr/` for decisions. See `docs/agents/domain.md`.
