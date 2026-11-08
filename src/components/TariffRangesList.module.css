@@ -1,0 +1,10 @@
+/*
+ * Compact paddings below the md breakpoint (same cutoff used for the
+ * icon-only actions) so the Rango, Precio/kWh and Acciones columns fit the
+ * 360/390px viewport without horizontal scroll.
+ */
+@media (max-width: 767px) {
+  .table :global(.ant-table-cell) {
+    padding: 8px 6px !important;
+  }
+}

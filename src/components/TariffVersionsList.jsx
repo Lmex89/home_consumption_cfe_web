@@ -1,13 +1,29 @@
-import { Table, Button, message, Space, Popconfirm, Form, Input, Row, Col, Card, Tag } from 'antd'
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, UnorderedListOutlined } from '@ant-design/icons'
+import { Table, Button, Grid, message, Space, Popconfirm, Form, Input, Row, Col, Card, Tag } from 'antd'
 import { useState } from 'react'
 import { deleteTariffVersion, updateTariffVersion } from '../services/householdService'
+import styles from './TariffVersionsList.module.css'
+
+/**
+ * Formats an ISO date (YYYY-MM-DD) as DD/MM/YY so the mobile `Vigencia`
+ * column stays narrow enough to keep the table free of horizontal scroll.
+ */
+function formatShortDate(value) {
+  if (!value) return '—'
+  const [year, month, day] = String(value).slice(0, 10).split('-')
+  if (!year || !month || !day) return value
+  return `${day}/${month}/${year.slice(-2)}`
+}
 
 function TariffVersionsList({ versions, selectedVersionId, onRefresh, onSelectVersion }) {
   const [editingId, setEditingId] = useState(null)
   const [editForm] = Form.useForm()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const screens = Grid.useBreakpoint()
+  // Icon-only actions below the md breakpoint keep the Acciones column
+  // reachable without a horizontal swipe on 360/390px screens.
+  const compactActions = screens.md === false
 
   const handleEdit = (record) => {
     setEditingId(record.id)
@@ -62,25 +78,38 @@ function TariffVersionsList({ versions, selectedVersionId, onRefresh, onSelectVe
       title: 'ID',
       dataIndex: 'id',
       key: 'id',
-      width: 60,
+      responsive: ['sm'],
+    },
+    {
+      title: 'Vigencia',
+      key: 'range',
+      responsive: ['xs'],
+      render: (_, record) => (
+        <div className={styles.range}>
+          <span>{formatShortDate(record.startDate)}</span>
+          <span className={styles.rangeEnd}>
+            → {record.endDate ? formatShortDate(record.endDate) : 'abierta'}
+          </span>
+        </div>
+      ),
     },
     {
       title: 'Fecha Inicio',
       dataIndex: 'startDate',
       key: 'startDate',
-      width: 120,
+      responsive: ['sm'],
     },
     {
       title: 'Fecha Fin',
       dataIndex: 'endDate',
       key: 'endDate',
-      width: 120,
+      responsive: ['sm'],
       render: (text) => text || '-',
     },
     {
       title: 'Estado',
       key: 'selected',
-      width: 110,
+      responsive: ['sm'],
       render: (_, record) => (
         record.id === selectedVersionId ? <Tag color="blue">Activa</Tag> : null
       ),
@@ -88,24 +117,26 @@ function TariffVersionsList({ versions, selectedVersionId, onRefresh, onSelectVe
     {
       title: 'Acciones',
       key: 'actions',
-      width: 230,
       render: (_, record) => (
-        <Space>
+        <Space size={compactActions ? 4 : 8}>
           <Button
             size="small"
+            icon={<UnorderedListOutlined />}
+            aria-label="Rangos"
             onClick={() => onSelectVersion?.(record)}
             disabled={editingId !== null}
           >
-            Rangos
+            {compactActions ? null : 'Rangos'}
           </Button>
           <Button
             type="primary"
             size="small"
             icon={<EditOutlined />}
+            aria-label="Editar"
             onClick={() => handleEdit(record)}
             disabled={editingId !== null}
           >
-            Editar
+            {compactActions ? null : 'Editar'}
           </Button>
           <Popconfirm
             title="Eliminar versión"
@@ -118,10 +149,11 @@ function TariffVersionsList({ versions, selectedVersionId, onRefresh, onSelectVe
               danger
               size="small"
               icon={<DeleteOutlined />}
+              aria-label="Eliminar"
               loading={isDeleting}
               disabled={editingId !== null}
             >
-              Eliminar
+              {compactActions ? null : 'Eliminar'}
             </Button>
           </Popconfirm>
         </Space>
@@ -175,11 +207,11 @@ function TariffVersionsList({ versions, selectedVersionId, onRefresh, onSelectVe
       ) : null}
 
       <Table
+        className={styles.table}
         columns={columns}
         dataSource={dataSource}
         pagination={{ pageSize: 10 }}
         size="small"
-        scroll={{ x: 400 }}
         rowClassName={(record) => (record.id === selectedVersionId ? 'ant-table-row-selected' : '')}
       />
     </>

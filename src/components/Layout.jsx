@@ -1,50 +1,103 @@
+import { useState } from 'react'
 import {
   CalendarOutlined,
+  EllipsisOutlined,
   FormOutlined,
   LogoutOutlined,
-  MenuOutlined,
   ThunderboltOutlined,
   HomeOutlined,
   TagOutlined,
 } from '@ant-design/icons'
-import { Button, Drawer, Grid, Layout as AntLayout, Menu, Space, Typography } from 'antd'
-import { useState } from 'react'
+import { Button, Drawer, Grid, Layout as AntLayout, Menu, Typography } from 'antd'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { logout } from '../services/authService'
+import ThemeToggle from './ThemeToggle'
+import styles from './Layout.module.css'
 
 const { Header, Sider, Content } = AntLayout
 const { useBreakpoint } = Grid
 
-const navItems = [
+const primaryNavItems = [
   { key: '/', icon: <ThunderboltOutlined />, label: 'Dashboard' },
-  { key: '/insertar-consumo', icon: <FormOutlined />, label: 'Lecturas de Medidor' },
-  { key: '/agregar-vivienda', icon: <HomeOutlined />, label: 'Alta Viviendas' },
-  { key: '/agregar-tarifa', icon: <TagOutlined />, label: 'Alta Tarifas' },
-  { key: '/agregar-periodo', icon: <CalendarOutlined />, label: 'Alta Periodos' },
+  { key: '/insertar-consumo', icon: <FormOutlined />, label: 'Lecturas' },
 ]
+
+const moreNavItems = [
+  { key: '/agregar-vivienda', icon: <HomeOutlined />, label: 'Viviendas' },
+  { key: '/agregar-tarifa', icon: <TagOutlined />, label: 'Tarifas' },
+  { key: '/agregar-periodo', icon: <CalendarOutlined />, label: 'Periodos' },
+]
+
+const desktopNavItems = [...primaryNavItems, ...moreNavItems]
+
+// Más is an action, not a route, so it lives outside the route arrays.
+const moreTab = { icon: <EllipsisOutlined />, label: 'Más' }
+
+const navButtonVariants = {
+  tab: {
+    button: styles.navItem,
+    active: styles.navItemActive,
+    icon: styles.navIcon,
+    label: styles.navLabel,
+  },
+  drawer: {
+    button: styles.drawerItem,
+    active: styles.drawerItemActive,
+    icon: styles.drawerItemIcon,
+    label: styles.drawerItemLabel,
+  },
+}
+
+// Shared renderer for the bottom-nav tabs and the drawer rows: same button,
+// active state and aria wiring, different classes per variant.
+function NavButton({ item, variant, isActive, isCurrent = isActive, onClick, ...aria }) {
+  const variantStyles = navButtonVariants[variant]
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${variantStyles.button} ${isActive ? variantStyles.active : ''}`}
+      aria-current={isCurrent ? 'page' : undefined}
+      {...aria}
+    >
+      <span className={variantStyles.icon}>{item.icon}</span>
+      <span className={variantStyles.label}>{item.label}</span>
+    </button>
+  )
+}
 
 function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
   const screens = useBreakpoint()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const isMobile = !screens.lg
+  const [isMoreOpen, setIsMoreOpen] = useState(false)
 
-  const getSelectedKey = () => {
-    if (location.pathname.startsWith('/insertar-consumo')) return '/insertar-consumo'
-    if (location.pathname.startsWith('/agregar-vivienda')) return '/agregar-vivienda'
-    if (location.pathname.startsWith('/agregar-tarifa')) return '/agregar-tarifa'
-    if (location.pathname.startsWith('/agregar-periodo')) return '/agregar-periodo'
-    return '/'
+  // `screens.lg` is undefined until the breakpoint observer measures after
+  // mount; requiring an explicit false keeps desktop from flashing the mobile
+  // bottom nav on the first render.
+  const isMobile = screens.lg === false
+
+  // Prefix-match the pathname against the nav routes; `/` is the fallback, so
+  // it never participates in the match.
+  const matchedNavItem = desktopNavItems.find(
+    (item) => item.key !== '/' && location.pathname.startsWith(item.key),
+  )
+  const selectedKey = matchedNavItem?.key ?? '/'
+  const isMoreRoute = moreNavItems.some((item) => item.key === selectedKey)
+  const [lastShellState, setLastShellState] = useState({ pathname: location.pathname, isMobile })
+
+  // Adjusting state during render (instead of an effect) closes the drawer
+  // whenever the route or the shell breakpoint changes — including browser
+  // back/forward and mobile/desktop resizes.
+  if (lastShellState.pathname !== location.pathname || lastShellState.isMobile !== isMobile) {
+    setLastShellState({ pathname: location.pathname, isMobile })
+    setIsMoreOpen(false)
   }
 
-  const selectedKey = getSelectedKey()
-
   const handleNavigate = (key) => {
+    setIsMoreOpen(false)
     navigate(key)
-    if (isMobile) {
-      setIsMobileMenuOpen(false)
-    }
   }
 
   const handleLogout = () => {
@@ -53,7 +106,7 @@ function Layout() {
   }
 
   return (
-    <AntLayout style={{ minHeight: '100vh' }}>
+    <AntLayout className={styles.shell}>
       {!isMobile ? (
         <Sider
           collapsible
@@ -70,85 +123,96 @@ function Layout() {
             mode="inline"
             theme="dark"
             selectedKeys={[selectedKey]}
-            items={navItems}
+            items={desktopNavItems}
             onClick={({ key }) => handleNavigate(key)}
           />
         </Sider>
       ) : null}
 
-      <AntLayout>
-        <Header
-          style={{
-            height: 'auto',
-            padding: isMobile ? '16px' : '20px 24px',
-            borderBottom: '1px solid #e2e8f0',
-          }}
-        >
-          <Space style={{ width: '100%', justifyContent: 'space-between' }} align="start">
-            <Space direction="vertical" size={0}>
-              <Typography.Title level={3} className="app-shell-title">
-                Panel de consumos CFE
-              </Typography.Title>
-              <Typography.Text className="app-shell-subtitle">
-                Monitoreo de consumo energetico y registro de lecturas conectado al backend FastAPI.
-              </Typography.Text>
-            </Space>
-            {isMobile ? (
-              <Space>
-                <Button
-                  type="text"
-                  icon={<LogoutOutlined />}
-                  aria-label="Cerrar sesion"
-                  onClick={handleLogout}
-                >
-                  Salir
-                </Button>
-                <Button
-                  type="text"
-                  icon={<MenuOutlined />}
-                  aria-label="Abrir menu"
-                  onClick={() => setIsMobileMenuOpen(true)}
-                />
-              </Space>
-            ) : null}
+      <AntLayout className={styles.contentArea}>
+        <Header className={styles.header}>
+          <div className={styles.headerLeft}>
+            <ThunderboltOutlined className={styles.headerIcon} />
+            <Typography.Title level={4} className={styles.headerTitle}>
+              CFE Consumos
+            </Typography.Title>
+          </div>
+          <div className={styles.headerActions}>
+            <ThemeToggle />
             {!isMobile ? (
-              <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>
-                Cerrar sesion
-              </Button>
+              <Button
+                type="text"
+                icon={<LogoutOutlined />}
+                aria-label="Cerrar sesion"
+                onClick={handleLogout}
+                className={styles.logoutBtn}
+              />
             ) : null}
-          </Space>
+          </div>
         </Header>
-        <Content style={{ padding: isMobile ? 16 : 24 }}>
+
+        <Content className={styles.content}>
           <Outlet />
         </Content>
-      </AntLayout>
 
-      <Drawer
-        placement="left"
-        width={240}
-        open={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-        title="Menu de navegacion"
-        closable
-        styles={{
-          body: {
-            padding: 0,
-            background: '#0f172a',
-          },
-        }}
-      >
-        <div className="app-brand">
-          <ThunderboltOutlined />
-          <span>CFE Web</span>
-        </div>
-        <Menu
-          mode="inline"
-          theme="dark"
-          selectedKeys={[selectedKey]}
-          items={navItems}
-          onClick={({ key }) => handleNavigate(key)}
-        />
-      </Drawer>
+        {isMobile ? (
+          <nav className={styles.bottomNav} aria-label="Navegacion principal">
+            {primaryNavItems.map((item) => (
+              <NavButton
+                key={item.key}
+                item={item}
+                variant="tab"
+                isActive={selectedKey === item.key}
+                onClick={() => handleNavigate(item.key)}
+              />
+            ))}
+            {/* While the drawer is open its row owns the "current page" marker;
+                the tab keeps its visual highlight and expanded state. */}
+            <NavButton
+              item={moreTab}
+              variant="tab"
+              isActive={isMoreRoute}
+              isCurrent={isMoreRoute && !isMoreOpen}
+              onClick={() => setIsMoreOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={isMoreOpen}
+            />
+          </nav>
+        ) : null}
+
+        {isMobile ? (
+          <Drawer
+            title="Más"
+            placement="right"
+            size={280}
+            open={isMoreOpen}
+            onClose={() => setIsMoreOpen(false)}
+            classNames={{ body: styles.moreDrawerBody }}
+          >
+            <nav className={styles.moreDrawerNav} aria-label="Más opciones">
+              {moreNavItems.map((item) => (
+                <NavButton
+                  key={item.key}
+                  item={item}
+                  variant="drawer"
+                  isActive={selectedKey === item.key}
+                  onClick={() => handleNavigate(item.key)}
+                />
+              ))}
+            </nav>
+            <Button
+              type="text"
+              danger
+              block
+              icon={<LogoutOutlined />}
+              onClick={handleLogout}
+              className={styles.drawerLogout}
+            >
+              Cerrar sesión
+            </Button>
+          </Drawer>
+        ) : null}
+      </AntLayout>
     </AntLayout>
   )
 }

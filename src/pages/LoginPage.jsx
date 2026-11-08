@@ -2,6 +2,7 @@ import { Alert, Button, Card, Form, Input, Space, Typography } from 'antd'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { login } from '../services/authService'
+import ThemeToggle from '../components/ThemeToggle'
 import styles from './LoginPage.module.css'
 
 function LoginPage() {
@@ -28,6 +29,9 @@ function LoginPage() {
 
   return (
     <div className={styles.wrapper}>
+      <div className={styles.themeToggle}>
+        <ThemeToggle />
+      </div>
       <Card className={styles.card}>
         <Space direction="vertical" size={6}>
           <Typography.Title level={3} className={styles.title}>

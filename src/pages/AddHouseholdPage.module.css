@@ -1,6 +1,6 @@
 .page {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .page > * {
@@ -17,13 +17,10 @@
   word-break: break-word;
 }
 
-.createdCard :global(.ant-space),
-.createdCard :global(.ant-space-item) {
-  min-width: 0;
-}
-
-.createdCard :global(.ant-typography) {
-  overflow-wrap: anywhere;
+@media (min-width: 480px) {
+  .page {
+    gap: 16px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -37,12 +34,11 @@
     gap: 12px;
   }
 
-  .page :global(.ant-card),
-  .page :global(.ant-alert) {
-    border-radius: 16px;
+  .page :global(.ant-card) {
+    border-radius: 16px !important;
   }
 
-  .createdCard :global(.ant-card-body) {
-    padding: 14px 12px;
+  .page :global(.ant-alert) {
+    border-radius: 16px;
   }
 }

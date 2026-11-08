@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
 :root {
   --color-bg: #f5f7fb;
@@ -14,9 +14,30 @@
   --color-danger: #b91c1c;
   --shadow-soft: 0 12px 28px rgba(15, 23, 42, 0.1);
 
-  --header-eyebrow-size: 0.78rem;
-  --header-title-size-mobile: clamp(1.75rem, 8vw, 2.45rem);
+  --header-eyebrow-size: 0.7rem;
+  --header-title-size-mobile: clamp(1.45rem, 6vw, 2rem);
   --header-title-size-desktop: clamp(2rem, 4.2vw, 3.9rem);
+
+  /* Safe area insets */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+html[data-theme="dark"] {
+  --color-bg: #141414;
+  --color-surface: rgba(30, 30, 30, 0.86);
+  --color-surface-strong: #1e1e1e;
+  --color-text: #f1f5f9;
+  --color-title: #f8fafc;
+  --color-muted: #94a3b8;
+  --color-primary: #3b82f6;
+  --color-primary-soft: rgba(59, 130, 246, 0.24);
+  --color-border: rgba(148, 163, 184, 0.24);
+  --color-ink: #93c5fd;
+  --color-danger: #f87171;
+  --shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -30,6 +51,12 @@ body,
   min-height: 100%;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
 body {
   min-width: 320px;
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
@@ -38,6 +65,84 @@ body {
     radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.09), transparent 30%),
     var(--color-bg);
   color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Prevent content shift on iOS when scrollbars appear */
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Improve touch targets on mobile */
+button,
+a,
+[role="button"],
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+/*
+ * iOS Safari auto-zooms the viewport whenever a focused form control renders
+ * below 16px. Ant Design ships 14px inputs, so below the shell breakpoint
+ * (~992px, where Layout switches to the mobile chrome) every native control
+ * is raised to the no-zoom threshold. Element selectors also reach antd's
+ * internal inputs (Select search box, DatePicker, pagination pager).
+ */
+@media (max-width: 991.98px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /*
+   * Touch targets: default controls already render at 44px through the
+   * ConfigProvider controlHeight token, but antd's small variants (derived
+   * controlHeightSM = 44 × 0.75 = 33px) miss the minimum on touch screens.
+   * min-height clamps the button height without touching its padding;
+   * icon-only buttons also get a square area.
+   */
+  .ant-btn-sm {
+    min-height: 44px;
+  }
+
+  .ant-btn-sm.ant-btn-icon-only {
+    min-width: 44px;
+  }
+
+  /*
+   * Ant Design's checkbox wrapper is only as tall as its 14px box plus the
+   * label line box (~22px). Give the row the 44px touch minimum so the
+   * "La lectura es inicial" toggle in the readings form is easy to hit.
+   */
+  .ant-checkbox-wrapper {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /*
+   * Small tables (antd Table size="small", used by the tariff tables) shrink
+   * their built-in pagination to that same 33px; clamp it back to 44px and
+   * recenter the page numbers and arrows in the enlarged item.
+   */
+  .ant-pagination-mini .ant-pagination-item,
+  .ant-pagination-mini .ant-pagination-prev,
+  .ant-pagination-mini .ant-pagination-next {
+    min-width: 44px;
+    min-height: 44px;
+    line-height: 44px;
+  }
 }
 
 .app-brand {
@@ -49,12 +154,31 @@ body {
   font-weight: 600;
 }
 
-.app-shell-title {
-  margin: 0;
+/* Selection color */
+::selection {
+  background: rgba(59, 130, 246, 0.25);
   color: #0f172a;
 }
 
-.app-shell-subtitle {
-  margin-top: 4px;
-  color: #475569;
+/* Scrollbar styling for desktop */
+@media (hover: hover) and (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.3);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.5);
+  }
 }
+
+

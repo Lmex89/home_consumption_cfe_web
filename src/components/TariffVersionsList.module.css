@@ -1,0 +1,20 @@
+.range {
+  display: grid;
+  gap: 1px;
+}
+
+.rangeEnd {
+  font-size: 0.85em;
+  color: var(--color-muted);
+}
+
+/*
+ * Compact paddings below the md breakpoint (same cutoff used for the
+ * icon-only actions) so all columns fit the 360/390px viewport without
+ * horizontal scroll.
+ */
+@media (max-width: 767px) {
+  .table :global(.ant-table-cell) {
+    padding: 8px 6px !important;
+  }
+}

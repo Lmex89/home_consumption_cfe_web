@@ -38,9 +38,9 @@ function DashboardMetricsGrid({ summary, itemsCount }) {
         </Col>
         <Col xs={24} sm={12} lg={6} className={styles.metricItem} role="listitem">
           <MetricCard
-            label="Maximo registrado"
-            value={`${summary.max.toFixed(1)} kWh`}
-            hint={`Minimo registrado: ${summary.min.toFixed(1)} kWh`}
+            label="Consumo acumulado"
+            value={`${summary.accumulated.toFixed(1)} kWh`}
+            hint={`Desde ${itemsCount} mediciones`}
             tone="accent"
           />
         </Col>

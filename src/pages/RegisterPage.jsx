@@ -2,6 +2,7 @@ import { Alert, Button, Card, Form, Input, Select, Space, Typography } from 'ant
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { register } from '../services/authService'
+import ThemeToggle from '../components/ThemeToggle'
 import styles from './RegisterPage.module.css'
 
 const roleOptions = [
@@ -34,6 +35,9 @@ function RegisterPage() {
 
   return (
     <div className={styles.wrapper}>
+      <div className={styles.themeToggle}>
+        <ThemeToggle />
+      </div>
       <Card className={styles.card}>
         <Space direction="vertical" size={6}>
           <Typography.Title level={3} className={styles.title}>

@@ -1,13 +1,18 @@
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
-import { Button, Card, Form, InputNumber, Popconfirm, Space, Table, message } from 'antd'
+import { Button, Card, Form, Grid, InputNumber, Popconfirm, Space, Table, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { deleteTariffRange, updateTariffRange } from '../services/householdService'
+import styles from './TariffRangesList.module.css'
 
 function TariffRangesList({ ranges, onRefresh }) {
   const [editingId, setEditingId] = useState(null)
   const [editForm] = Form.useForm()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const screens = Grid.useBreakpoint()
+  // Icon-only actions below the md breakpoint keep the Acciones column
+  // reachable without a horizontal swipe on 360/390px screens.
+  const compactActions = screens.md === false
 
   useEffect(() => {
     if (editingId && !ranges.some((range) => range.id === editingId)) {
@@ -69,15 +74,23 @@ function TariffRangesList({ ranges, onRefresh }) {
 
   const columns = [
     {
+      title: 'Rango',
+      key: 'range',
+      responsive: ['xs'],
+      render: (_, record) => `${record.rangeMin} – ${record.rangeMax ?? '∞'}`,
+    },
+    {
       title: 'Mínimo',
       dataIndex: 'rangeMin',
       key: 'rangeMin',
+      responsive: ['sm'],
       render: (value) => value,
     },
     {
       title: 'Máximo',
       dataIndex: 'rangeMax',
       key: 'rangeMax',
+      responsive: ['sm'],
       render: (value) => value ?? 'Abierto',
     },
     {
@@ -89,17 +102,17 @@ function TariffRangesList({ ranges, onRefresh }) {
     {
       title: 'Acciones',
       key: 'actions',
-      width: 180,
       render: (_, record) => (
-        <Space>
+        <Space size={compactActions ? 4 : 8}>
           <Button
             type="primary"
             size="small"
             icon={<EditOutlined />}
+            aria-label="Editar"
             onClick={() => handleEdit(record)}
             disabled={editingId !== null && editingId !== record.id}
           >
-            Editar
+            {compactActions ? null : 'Editar'}
           </Button>
           <Popconfirm
             title="Eliminar rango"
@@ -112,10 +125,11 @@ function TariffRangesList({ ranges, onRefresh }) {
               danger
               size="small"
               icon={<DeleteOutlined />}
+              aria-label="Eliminar"
               loading={isDeleting}
               disabled={editingId !== null}
             >
-              Eliminar
+              {compactActions ? null : 'Eliminar'}
             </Button>
           </Popconfirm>
         </Space>
@@ -179,11 +193,11 @@ function TariffRangesList({ ranges, onRefresh }) {
       ) : null}
 
       <Table
+        className={styles.table}
         columns={columns}
         dataSource={dataSource}
         pagination={{ pageSize: 10 }}
         size="small"
-        scroll={{ x: 540 }}
       />
     </>
   )
