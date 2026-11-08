@@ -13,7 +13,8 @@ export default defineConfig({
       reporter: ['text', 'html'],
       include: ['src/**/*.{js,jsx}'],
       // main.jsx imports virtual:pwa-register, which only resolves with the PWA plugin.
-      exclude: ['src/main.jsx'],
+      // src/test/** is infrastructure (setup + fetch mock), not product code.
+      exclude: ['src/main.jsx', 'src/test/**'],
     },
   },
 })

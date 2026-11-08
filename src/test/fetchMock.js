@@ -21,12 +21,10 @@ import { vi } from 'vitest'
  *     { status: 401, json: { detail: 'Token expirado' } },
  *     { status: 200, json: [{ id: 1 }] })
  *
- *   // La cola tiene prioridad sobre las rutas; úsala cuando no importe el orden:
- *   fetchMock.once({ status: 204 })
- *
  *   // Inspección de llamadas:
- *   fetchMock.lastCall() // { url, method, headers, body }
- *   fetchMock.calls      // [{ url, method, headers, body }, ...]
+ *   fetchMock.lastCall()     // { url, method, headers, body }
+ *   fetchMock.lastJsonBody() // cuerpo JSON de la última llamada, ya parseado
+ *   fetchMock.calls          // [{ url, method, headers, body }, ...]
  *
  * Cada respuesta acepta `status` (default 200), `json` (se serializa con
  * `Content-Type: application/json`), `body` (texto/FormData crudo) y `headers`.
@@ -34,23 +32,17 @@ import { vi } from 'vitest'
  * así que `response.ok`, `response.status` y `response.json()` se comportan
  * igual que contra el backend.
  *
- * `reset()` limpia llamadas, rutas y cola sin tocar `globalThis.fetch`;
  * `restore()` devuelve el `fetch` original. Si una petición no tiene respuesta
  * configurada, el mock lanza un error que nombra método y URL para ubicar la
  * prueba que olvidó mockearla.
  */
 export function installFetchMock() {
   const routes = []
-  const queue = []
   const originalFetch = globalThis.fetch
 
   const fetchMock = vi.fn(async (input, init = {}) => {
     const url = String(input)
     const method = (init.method || 'GET').toUpperCase()
-
-    if (queue.length > 0) {
-      return buildResponse(queue.shift())
-    }
 
     const route = routes.find(
       (candidate) =>
@@ -77,11 +69,6 @@ export function installFetchMock() {
       return mock
     },
 
-    once(...responses) {
-      queue.push(...responses)
-      return mock
-    },
-
     get calls() {
       return fetchMock.mock.calls.map(([input, init = {}]) => ({
         url: String(input),
@@ -95,10 +82,8 @@ export function installFetchMock() {
       return mock.calls.at(-1)
     },
 
-    reset() {
-      fetchMock.mockClear()
-      routes.length = 0
-      queue.length = 0
+    lastJsonBody() {
+      return JSON.parse(mock.lastCall().body)
     },
 
     restore() {
@@ -121,8 +106,5 @@ function buildResponse({ status = 200, json, body, headers = {} } = {}) {
 }
 
 function matchesUrl(expected, url) {
-  if (!expected) return true
-  if (typeof expected === 'function') return expected(url)
-  if (expected instanceof RegExp) return expected.test(url)
-  return url.includes(expected)
+  return !expected || url.includes(expected)
 }

@@ -2,18 +2,14 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { message } from 'antd'
 import AddTariffRangeForm from './AddTariffRangeForm'
-import { createTariffRange } from '../services/householdService'
-
-vi.mock('../services/householdService', () => ({
-  createTariffRange: vi.fn(),
-}))
+import { installFetchMock } from '../test/fetchMock'
 
 const createdRange = {
   id: 21,
-  tariffVersionId: 3,
-  rangeMin: 100,
-  rangeMax: 200,
-  pricePerKwh: 1.2345,
+  tariff_version_id: 3,
+  range_min: 100,
+  range_max: 200,
+  price_per_kwh: 1.2345,
 }
 
 function renderForm(overrides = {}) {
@@ -46,11 +42,15 @@ async function submit(user) {
 }
 
 describe('Formulario de Rango', () => {
+  let fetchMock
+
   beforeEach(() => {
-    vi.mocked(createTariffRange).mockReset()
+    localStorage.clear()
+    fetchMock = installFetchMock()
   })
 
   afterEach(() => {
+    fetchMock.restore()
     message.destroy()
   })
 
@@ -66,14 +66,11 @@ describe('Formulario de Rango', () => {
     expect(
       await screen.findByText('El precio por kWh es obligatorio.'),
     ).toBeInTheDocument()
-    expect(createTariffRange).not.toHaveBeenCalled()
+    expect(fetchMock.calls).toHaveLength(0)
   })
 
   it('envía el payload numérico con rango mínimo, rango máximo y precio por kWh', async () => {
-    vi.mocked(createTariffRange).mockResolvedValue({
-      success: true,
-      tariffRange: createdRange,
-    })
+    fetchMock.on('POST', '/tariff-ranges', { status: 201, json: createdRange })
     renderForm()
     const user = userEvent.setup()
 
@@ -81,15 +78,21 @@ describe('Formulario de Rango', () => {
     await submit(user)
 
     await waitFor(() => {
-      expect(createTariffRange).toHaveBeenCalledWith(3, 100, 200, 1.2345)
+      expect(fetchMock.lastJsonBody()).toEqual({
+        tariff_version_id: 3,
+        range_min: 100,
+        range_max: 200,
+        price_per_kwh: 1.2345,
+      })
+    })
+    expect(fetchMock.lastCall()).toMatchObject({
+      method: 'POST',
+      url: expect.stringContaining('/tariff-ranges'),
     })
   })
 
   it('muestra el mensaje de éxito y entrega el Rango creado al padre', async () => {
-    vi.mocked(createTariffRange).mockResolvedValue({
-      success: true,
-      tariffRange: createdRange,
-    })
+    fetchMock.on('POST', '/tariff-ranges', { status: 201, json: createdRange })
     const { onRangeAdded } = renderForm()
     const user = userEvent.setup()
 
@@ -108,9 +111,10 @@ describe('Formulario de Rango', () => {
   })
 
   it('muestra el mensaje del backend cuando la creación falla', async () => {
-    vi.mocked(createTariffRange).mockRejectedValue(
-      new Error('El rango se traslapa con un rango existente.'),
-    )
+    fetchMock.on('POST', '/tariff-ranges', {
+      status: 500,
+      json: { detail: 'El rango se traslapa con un rango existente.' },
+    })
     vi.spyOn(console, 'error').mockImplementation(() => {})
     const { onRangeAdded } = renderForm()
     const user = userEvent.setup()
@@ -128,10 +132,7 @@ describe('Formulario de Rango', () => {
   })
 
   it('limpia los campos y el mensaje de éxito al cambiar de Versión de tarifa', async () => {
-    vi.mocked(createTariffRange).mockResolvedValue({
-      success: true,
-      tariffRange: createdRange,
-    })
+    fetchMock.on('POST', '/tariff-ranges', { status: 201, json: createdRange })
     const { rerender, props } = renderForm()
     const user = userEvent.setup()
 

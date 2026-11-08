@@ -102,7 +102,7 @@ src/
 │   └── householdService.js
 ├── test/                         # Shared test infrastructure
 │   ├── setup.js                  # jest-dom matchers + matchMedia/ResizeObserver for Ant Design
-│   └── fetchMock.js              # Reusable fetch mock (routes, queue, call inspection)
+│   └── fetchMock.js              # Reusable fetch mock (routes + call inspection)
 └── utils/                        # Helper functions
     ├── dateUtils.js
     ├── tierColors.js            # Centralized CFE tier + tax colors for breakdown & charts
@@ -166,7 +166,8 @@ Configure via environment variables (see `.env.example`):
 
 ### Prerequisites
 
-- Node.js 18+ (Dockerfile uses Node.js 24)
+- Node.js 18+ for development and production builds (Dockerfile uses Node.js 24)
+- Node.js ≥22.12 for the test suite (Vitest 5 requirement; Node 24 recommended, matching the Docker image)
 - npm
 
 ### Local Development
@@ -240,7 +241,7 @@ npm test                # vitest run — one pass, exits when finished
 npm run test:coverage   # vitest run --coverage — v8 report in coverage/
 ```
 
-`npm test` runs the suite once; use `npx vitest` for watch mode. `npm run test:coverage` writes an informational report to the gitignored `coverage/` directory (`text` and `html` reporters). **There is no coverage threshold**, and the suite **does not run in CI** (the repo has no CI workflow and no coverage gate); `npm run lint` remains the only automated check.
+`npm test` runs the suite once; use `npx vitest` for watch mode. `npm run test:coverage` writes an informational report to the gitignored `coverage/` directory (`text` and `html` reporters); it excludes `src/main.jsx` (imports the PWA virtual module) and `src/test/**` (setup and fetch mock), so the report measures product code only. **There is no coverage threshold**, and the suite **does not run in CI** (the repo has no CI workflow and no coverage gate); `npm run lint` remains the only automated check.
 
 **Node caveat**: Vitest 5 declares Node ≥22.12. The suite passes on the Node 20.20.2 installed via nvm on this machine, but prefer Node 22+/24 for tests when available. On Node 20 a *failing* test can crash the reporter while printing the failure (`Map.groupBy` is missing there), so trust the exit code and the failing file names instead of the tail of the console output.
 
@@ -249,7 +250,7 @@ npm run test:coverage   # vitest run --coverage — v8 report in coverage/
 - **Location**: tests live next to the module they cover as `*.test.js` / `*.test.jsx` (e.g. `src/utils/tierColors.test.js`, `src/components/ConsumptionForm.test.jsx`).
 - **Globals**: Vitest runs with `globals: true`; `describe`, `it`, `expect`, `vi`, `beforeEach` and `afterEach` are available without imports. `eslint.config.js` adds `globals.vitest` for `src/**/*.test.{js,jsx}` and `src/test/**`, and ignores `coverage/`.
 - **Assertions**: assert user-visible output or public return values — rendered text/roles, hook state, service/utility results — not internal state or implementation details.
-- **Interaction**: React Testing Library plus `@testing-library/user-event` (`userEvent.setup()`), `screen` queries and `findBy*`/`waitFor` for async flows; use `fireEvent` only for interactions user-event cannot express.
+- **Interaction**: React Testing Library plus `@testing-library/user-event` (`userEvent.setup()`), `screen` queries and `findBy*`/`waitFor` for async flows; use `fireEvent` only for interactions user-event cannot express. Native date inputs are set through a documented `fireEvent.change` helper because jsdom sanitizes invalid typed dates to `''`.
 - **Names**: `describe`/`it` in Spanish using the GLOSSARY vocabulary — Hogar, Hogar activo, Periodo activo, Lectura, Lectura inicial, Desglose, Capa de normalización, Costo estimado.
 
 ### Seams
@@ -257,7 +258,7 @@ npm run test:coverage   # vitest run --coverage — v8 report in coverage/
 - **Primary seam**: components and hooks rendered with RTL while the global `fetch` is mocked. This exercises services and `src/lib/` through `requestApi`/`apiClient` instead of mocking each module.
 - **Direct seam**: pure utilities are imported and tested directly.
 - **Shared setup**: `src/test/setup.js` runs before every test file — it registers jest-dom matchers and stubs `matchMedia`/`ResizeObserver`, which Ant Design needs under jsdom.
-- **Fetch mock**: `src/test/fetchMock.js` exposes `installFetchMock()`. It routes by method + URL substring (works for relative endpoints and the absolute URL built by `apiConfig`), consumes multiple responses per route in order (the last repeats), offers a one-shot queue, records calls, and restores the original `fetch`.
+- **Fetch mock**: `src/test/fetchMock.js` exposes `installFetchMock()`. It routes by method + URL substring (works for relative endpoints and the absolute URL built by `apiConfig`), consumes multiple responses per route in order (the last repeats), records calls, exposes the last call body as parsed JSON, and restores the original `fetch`.
 
 ```js
 import { installFetchMock } from '../test/fetchMock'
@@ -273,10 +274,9 @@ fetchMock.on('GET', '/households',
   { status: 401, json: { detail: 'Token expirado' } },
   { status: 200, json: [] })
 
-fetchMock.once({ status: 204 })   // queue has priority over routes
 fetchMock.lastCall()              // { url, method, headers, body }
+fetchMock.lastJsonBody()          // cuerpo JSON de la última llamada, ya parseado
 fetchMock.calls                   // all recorded calls
-fetchMock.reset()                 // clear calls, routes and queue
 ```
 
 A response spec is `{ status, json, body, headers }` (default `status` 200; `json` is serialized as JSON; `{ status: 204 }` for no body). The mock returns real `Response` objects, so `response.ok`, `status` and `json()` behave as against the backend. A request without a configured response throws `fetch sin mock para <METHOD> <url>`, naming the method and URL so the test that forgot the mock is easy to locate.
@@ -290,6 +290,7 @@ Covered:
 - `src/services/`: `authService`, `householdService`, `consumoService` (Capa de normalización).
 - `src/hooks/`: `useHouseholds`, `useMeterReadingsPagination`, `useElementWidth`.
 - Components: `RequireAuth`, `MetricCard`, `ConsumptionForm`, `AddTariffForm`, `AddTariffVersionForm`, `AddTariffRangeForm`, `ConsumptionTable`.
+- Pages: `AddTariffPage` and `InsertarConsumoPage` exercise the error surface a user sees when the backend rejects a Tarifa or a Lectura (the page-level Alert).
 
 Out of scope:
 
@@ -343,7 +344,7 @@ Testing devDependencies (already declared in `package.json`; do not remove them)
 - **Bulk Billing Period Creation**: `createYearBillingPeriods(householdId, year)` in `consumoService.js` generates covering ranges for a full year using the latest existing period's duration (`getPeriodDurationDays`; defaults to bimonthly ~59 days), skips any range that overlaps an existing period via `periodsOverlap`, creates non-overlapping periods sequentially, and returns `{ year, durationDays, created, skipped, errors }`. It is the consumer of `billingPeriodUtils.js`.
 - **Mobile Acceptance Pass (automatable part)**: Verified in Chromium via Playwright at 360/390/768px in both themes with the backend mocked, across `/login`, `/register`, `/`, `/insertar-consumo`, `/agregar-vivienda`, `/agregar-tarifa` and `/agregar-periodo` (admin sections expanded, versions/ranges tables rendered): no document-level horizontal overflow, the mobile Más drawer opens → navigates → closes, the theme toggle flips `data-theme`, and no touch target falls below 44px. This pass fixed the readings-table width and the checkbox touch row (see the two bullets above). The per-route × width × theme checklist and the method live in `docs/acceptance/mobile.md`; the real iPhone/Safari run on the LAN is the remaining manual step tracked by issue #8.
 - **PWA (installable + offline shell)**: `vite-plugin-pwa` 2 runs in `generateSW` mode (config in `vite.config.js`): `registerType: 'autoUpdate'` plus Workbox `skipWaiting`/`clientsClaim` make a new deployment take over on the next load, and `injectRegister: null` leaves registration to `src/main.jsx`, which calls `registerSW({ immediate: true })` from `virtual:pwa-register`. The generated SW precaches the built shell plus the `public/` icons (`globPatterns` js/css/html/svg/png/ico/woff2), serves `index.html` for unknown navigations (`navigateFallback`, so deep routes work offline) and runtime-caches Google Fonts (`StaleWhileRevalidate` for the CSS, `CacheFirst` for the webfonts). The manifest ("CFE Consumos", `display: standalone`, theme/background `#f4f6fa`, 64/192/512 + maskable 512 icons) is generated as `dist/manifest.webmanifest` and linked from `index.html`, which also carries the iOS meta tags and `apple-touch-icon-180x180.png`. `docker/nginx/default.conf` answers `/sw.js` and `/manifest.webmanifest` with `Cache-Control: no-cache` so deployments roll out without waiting for cache expiry. Offline, the shell and fonts load from cache while data pages degrade through their normal error alerts (see Dashboard Data Flow); `npm run dev` never registers the SW, so use `npm run build && npm run preview` to test installed mode.
-- **Test Suite (Vitest + RTL)**: Introduced under parent issue #29 as co-located `*.test.js` / `*.test.jsx` files covering utils, `lib/`, services, hooks and the main components. See **Testing** for commands, conventions, seams, scope, the shared `fetch` mock and the documented expected failure for #31. Runs locally only — no CI job and no coverage threshold by design.
+- **Test Suite (Vitest + RTL)**: Introduced under parent issue #29 as co-located `*.test.js` / `*.test.jsx` files covering utils, `lib/`, services, hooks, the main components and the Tarifa/Lectura page error surfaces. See **Testing** for commands, conventions, seams, scope, the shared `fetch` mock and the documented expected failure for #31. Runs locally only — no CI job and no coverage threshold by design.
 
 ---
 
