@@ -88,7 +88,7 @@ describe('requestApi', () => {
 
       const call = fetchMock.lastCall()
       expect(call.headers['Content-Type']).toBe('application/json')
-      expect(JSON.parse(call.body)).toEqual({ name: 'Casa', postal_code: '01000' })
+      expect(fetchMock.lastJsonBody()).toEqual({ name: 'Casa', postal_code: '01000' })
     })
 
     it('envía un cuerpo de formulario codificado con su Content-Type', async () => {
@@ -117,7 +117,7 @@ describe('requestApi', () => {
       await expect(requestApi('/meter-readings/1', { method: 'DELETE' })).resolves.toBeNull()
     })
 
-    it('usa el detail del backend como mensaje de error', async () => {
+    it('usa el detalle del backend como mensaje de error', async () => {
       fetchMock.on('GET', '/households', {
         status: 400,
         json: { detail: 'Hogar no encontrado' },

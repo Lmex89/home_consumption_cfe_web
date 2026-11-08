@@ -88,8 +88,10 @@ describe('Formulario de captura de Lecturas', () => {
       const user = userEvent.setup()
 
       fireEvent.change(fechaInput(), { target: { value: '2026-11-17' } })
-      fireEvent.change(kwhInput(), { target: { value: '0' } })
-      await submit(user)
+      await user.type(kwhInput(), '0')
+      // El InputNumber recorta al mínimo (0.1) al perder el foco, así que se
+      // envía el formulario sin desenfocar para que la validación vea el 0.
+      fireEvent.submit(kwhInput().closest('form'))
 
       expect(
         await screen.findByText('El consumo debe ser un numero positivo.'),
@@ -102,8 +104,8 @@ describe('Formulario de captura de Lecturas', () => {
       const user = userEvent.setup()
 
       fireEvent.change(fechaInput(), { target: { value: '2026-11-17' } })
-      fireEvent.change(kwhInput(), { target: { value: '-3' } })
-      await submit(user)
+      await user.type(kwhInput(), '-3')
+      fireEvent.submit(kwhInput().closest('form'))
 
       expect(
         await screen.findByText('El consumo debe ser un numero positivo.'),
@@ -115,7 +117,7 @@ describe('Formulario de captura de Lecturas', () => {
       const { onSubmit } = renderForm()
       const user = userEvent.setup()
 
-      fireEvent.change(kwhInput(), { target: { value: '12' } })
+      await user.type(kwhInput(), '12')
       setRawFecha('2026-02-30')
       await submit(user)
 
@@ -153,7 +155,7 @@ describe('Formulario de captura de Lecturas', () => {
       const user = userEvent.setup()
 
       fireEvent.change(fechaInput(), { target: { value: '2026-11-17' } })
-      fireEvent.change(kwhInput(), { target: { value: '12' } })
+      await user.type(kwhInput(), '12')
       await user.click(screen.getByLabelText('La lectura es inicial'))
       await submit(user)
 

@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import MetricCard from './MetricCard'
+import styles from './MetricCard.module.css'
 
 describe('MetricCard en el Dashboard', () => {
   it('muestra la etiqueta, el valor y la nota de una métrica de Consumo', () => {
@@ -38,9 +39,9 @@ describe('MetricCard en el Dashboard', () => {
   })
 
   it.each(['default', 'accent', 'soft'])(
-    'muestra el contenido completo con el tono %s',
+    'muestra el contenido completo y aplica el tono %s',
     (tone) => {
-      render(
+      const { container } = render(
         <MetricCard
           label="Consumo actual"
           value="120.5 kWh"
@@ -50,12 +51,20 @@ describe('MetricCard en el Dashboard', () => {
           tone={tone}
         />,
       )
+      const card = container.querySelector('.ant-card')
 
       expect(screen.getByText('Consumo actual')).toBeInTheDocument()
       expect(screen.getByText('120.5 kWh')).toBeInTheDocument()
       expect(screen.getByText('Fecha de lectura: 07 nov 2026')).toBeInTheDocument()
       expect(screen.getByText('Consumo anterior')).toBeInTheDocument()
       expect(screen.getByText('98.2 kWh')).toBeInTheDocument()
+
+      if (tone === 'accent') expect(card).toHaveClass(styles.accent)
+      if (tone === 'soft') expect(card).toHaveClass(styles.soft)
+      if (tone === 'default') {
+        expect(card).not.toHaveClass(styles.accent)
+        expect(card).not.toHaveClass(styles.soft)
+      }
     },
   )
 })

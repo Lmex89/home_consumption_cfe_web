@@ -70,7 +70,7 @@ describe('authService', () => {
       expect(call.url).toContain('/auth/register')
       expect(call.headers['x-api-key']).toBe('clave-registro')
       expect(call.headers['Content-Type']).toBe('application/json')
-      expect(JSON.parse(call.body)).toEqual({
+      expect(fetchMock.lastJsonBody()).toEqual({
         username: 'ana',
         password: 'secreta',
         email: 'ana@example.com',
@@ -84,7 +84,7 @@ describe('authService', () => {
 
       await authService.register({ username: 'ana', password: 'secreta' })
 
-      expect(JSON.parse(fetchMock.lastCall().body)).toEqual({
+      expect(fetchMock.lastJsonBody()).toEqual({
         username: 'ana',
         password: 'secreta',
         email: null,

@@ -96,6 +96,39 @@ describe('useMeterReadingsPagination en las Lecturas', () => {
     expect(result.current.paginationConfig.pageSize).toBe(50)
   })
 
+  it('deja una última página parcial cuando las Lecturas no llenan la página', () => {
+    const periodItems = lecturasDelMes(23)
+
+    const { result } = renderHook(() =>
+      useMeterReadingsPagination({ periodItems, householdId: 1, enableShowAll: true }),
+    )
+
+    act(() => result.current.paginationConfig.onChange(3))
+
+    const { current, pageSize, showTotal } = result.current.paginationConfig
+    const start = (current - 1) * pageSize
+
+    expect(current).toBe(3)
+    expect(pageSize).toBe(10)
+    expect(result.current.displayItems.slice(start)).toHaveLength(3)
+    expect(showTotal(23)).toBe('Total 23 lecturas')
+  })
+
+  it('registra una página fuera de rango sin recortar la lista de Lecturas', () => {
+    const periodItems = lecturasDelMes(23)
+
+    const { result } = renderHook(() =>
+      useMeterReadingsPagination({ periodItems, householdId: 1, enableShowAll: true }),
+    )
+
+    act(() => result.current.paginationConfig.onChange(99))
+
+    expect(result.current.currentPage).toBe(99)
+    expect(result.current.paginationConfig.current).toBe(99)
+    expect(result.current.displayItems).toHaveLength(23)
+    expect(result.current.displayItems[0].fecha).toBe('2026-11-23')
+  })
+
   it('carga todas las Lecturas una sola vez con Mostrar todo y las conserva al volver', async () => {
     const periodItems = lecturasDelMes(12)
     fetchMock.on('GET', '/meter-readings', { json: lecturasApiDelMes(30).reverse() })

@@ -16,11 +16,7 @@ import {
   updateTariffVersion,
 } from './householdService'
 
-function lastBody(fetchMock) {
-  return JSON.parse(fetchMock.lastCall().body)
-}
-
-describe('householdService — Hogares', () => {
+describe('Servicio de Hogares', () => {
   let fetchMock
 
   beforeEach(() => {
@@ -116,7 +112,7 @@ describe('householdService — Hogares', () => {
       const result = await createTariff('  1  ', '  Tarifa básica  ')
 
       expect(fetchMock.lastCall().method).toBe('POST')
-      expect(lastBody(fetchMock)).toEqual({ code: '1', description: 'Tarifa básica' })
+      expect(fetchMock.lastJsonBody()).toEqual({ code: '1', description: 'Tarifa básica' })
       expect(result).toEqual({ success: true, tariff: { id: 7, code: '1' } })
     })
 
@@ -125,7 +121,7 @@ describe('householdService — Hogares', () => {
 
       await createTariff('   ', '   ')
 
-      expect(lastBody(fetchMock)).toEqual({ code: '', description: null })
+      expect(fetchMock.lastJsonBody()).toEqual({ code: '', description: null })
     })
   })
 
@@ -136,7 +132,7 @@ describe('householdService — Hogares', () => {
       const result = await createHousehold('  Casa  ')
 
       expect(fetchMock.lastCall().method).toBe('POST')
-      expect(lastBody(fetchMock)).toEqual({ name: 'Casa' })
+      expect(fetchMock.lastJsonBody()).toEqual({ name: 'Casa' })
       expect(result).toEqual({ success: true, household: { id: 1, name: 'Casa' } })
     })
 
@@ -145,7 +141,7 @@ describe('householdService — Hogares', () => {
 
       await createHousehold('   ')
 
-      expect(lastBody(fetchMock)).toEqual({ name: null })
+      expect(fetchMock.lastJsonBody()).toEqual({ name: null })
     })
   })
 
@@ -156,7 +152,7 @@ describe('householdService — Hogares', () => {
       const result = await createHouseholdTariff(7, 3, '2026-01-01')
 
       expect(fetchMock.lastCall().method).toBe('POST')
-      expect(lastBody(fetchMock)).toEqual({
+      expect(fetchMock.lastJsonBody()).toEqual({
         household_id: 7,
         tariff_id: 3,
         start_date: '2026-01-01',
@@ -177,7 +173,7 @@ describe('householdService — Hogares', () => {
       const result = await createHouseholdWithTariff('Casa', 3, '2026-01-01')
 
       expect(fetchMock.calls).toHaveLength(2)
-      expect(lastBody(fetchMock)).toEqual({
+      expect(fetchMock.lastJsonBody()).toEqual({
         household_id: 42,
         tariff_id: 3,
         start_date: '2026-01-01',
@@ -280,7 +276,7 @@ describe('householdService — Hogares', () => {
       const result = await createTariffVersion(5, '2026-01-01')
 
       expect(fetchMock.lastCall().method).toBe('POST')
-      expect(lastBody(fetchMock)).toEqual({
+      expect(fetchMock.lastJsonBody()).toEqual({
         tariff_id: 5,
         start_date: '2026-01-01',
         end_date: null,
@@ -297,7 +293,7 @@ describe('householdService — Hogares', () => {
 
       expect(fetchMock.lastCall().method).toBe('PUT')
       expect(fetchMock.lastCall().url).toContain('/tariff-versions/8')
-      expect(lastBody(fetchMock)).toEqual({ start_date: '2026-01-05', end_date: null })
+      expect(fetchMock.lastJsonBody()).toEqual({ start_date: '2026-01-05', end_date: null })
       expect(result).toEqual({ success: true, tariffVersion: { id: 8 } })
     })
   })
@@ -321,7 +317,7 @@ describe('householdService — Hogares', () => {
       const result = await createTariffRange(5, '0', '150', '1.75')
 
       expect(fetchMock.lastCall().method).toBe('POST')
-      expect(lastBody(fetchMock)).toEqual({
+      expect(fetchMock.lastJsonBody()).toEqual({
         tariff_version_id: 5,
         range_min: 0,
         range_max: 150,
@@ -335,7 +331,7 @@ describe('householdService — Hogares', () => {
 
       await createTariffRange(5, '150', '', '2.5')
 
-      expect(lastBody(fetchMock)).toEqual({
+      expect(fetchMock.lastJsonBody()).toEqual({
         tariff_version_id: 5,
         range_min: 150,
         range_max: null,
@@ -352,7 +348,7 @@ describe('householdService — Hogares', () => {
 
       expect(fetchMock.lastCall().method).toBe('PUT')
       expect(fetchMock.lastCall().url).toContain('/tariff-ranges/10')
-      expect(lastBody(fetchMock)).toEqual({
+      expect(fetchMock.lastJsonBody()).toEqual({
         range_min: 10,
         range_max: null,
         price_per_kwh: 2.5,

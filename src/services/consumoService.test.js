@@ -19,14 +19,6 @@ function lecturaApi(overrides = {}) {
   }
 }
 
-function jsonBody(call) {
-  return JSON.parse(call.body)
-}
-
-function isMeterReadingsList(url) {
-  return url.includes('/meter-readings') && !url.includes('/dashboards/')
-}
-
 describe('consumoService', () => {
   let fetchMock
 
@@ -71,7 +63,7 @@ describe('consumoService', () => {
 
       const call = fetchMock.lastCall()
       expect(call.method).toBe('POST')
-      expect(jsonBody(call)).toEqual({
+      expect(fetchMock.lastJsonBody()).toEqual({
         household_id: 1,
         reading_date: '2026-11-05',
         reading_kwh: 54.6,
@@ -91,7 +83,7 @@ describe('consumoService', () => {
 
       expect(fetchMock.calls.map((call) => call.method)).toEqual(['GET', 'POST'])
       expect(fetchMock.calls[0].url).toContain('/households')
-      expect(jsonBody(fetchMock.lastCall()).household_id).toBe(7)
+      expect(fetchMock.lastJsonBody().household_id).toBe(7)
     })
 
     it('resuelve el Hogar desde la primera Lectura cuando no hay Hogares', async () => {
@@ -109,7 +101,7 @@ describe('consumoService', () => {
       expect(fetchMock.calls.map((call) => call.method)).toEqual(['GET', 'GET', 'POST'])
       expect(fetchMock.calls[1].url).toContain('/meter-readings')
       expect(fetchMock.calls[1].url).toContain('limit=1')
-      expect(jsonBody(fetchMock.lastCall()).household_id).toBe(42)
+      expect(fetchMock.lastJsonBody().household_id).toBe(42)
     })
 
     it('rechaza el registro cuando no existe ningún Hogar disponible', async () => {
@@ -150,7 +142,7 @@ describe('consumoService', () => {
       const call = fetchMock.lastCall()
       expect(call.method).toBe('PUT')
       expect(call.url).toContain('/meter-readings/12')
-      expect(jsonBody(call)).toEqual({ reading_date: '2026-10-02', reading_kwh: 310.5 })
+      expect(fetchMock.lastJsonBody()).toEqual({ reading_date: '2026-10-02', reading_kwh: 310.5 })
     })
   })
 
@@ -194,17 +186,16 @@ describe('consumoService', () => {
     }) {
       fetchMock.on(
         'GET',
-        (url) => url.includes('/dashboards/household/'),
+        '/dashboards/household/',
         historyStatus === 200
           ? { json: history }
           : { status: historyStatus, json: { detail: 'Historial no disponible' } },
       )
-      fetchMock.on(
-        'GET',
-        (url) => isMeterReadingsList(url) && url.includes('reading_date_from='),
-        { json: periodReadings },
-      )
-      fetchMock.on('GET', isMeterReadingsList, { json: readings })
+      // Las rutas se evalúan en orden y gana la primera subcadena que coincide:
+      // el historial ya quedó arriba y la consulta filtrada por fechas se
+      // distingue del listado general por el parámetro reading_date_from.
+      fetchMock.on('GET', 'reading_date_from=', { json: periodReadings })
+      fetchMock.on('GET', '/meter-readings', { json: readings })
       fetchMock.on('GET', '/billing-periods', { json: periods })
       fetchMock.on(
         'GET',

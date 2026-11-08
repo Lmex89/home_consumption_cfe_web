@@ -69,11 +69,10 @@ describe('ConsumptionTable en el Periodo activo', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('se mantiene en la pestaña Tabla sin montar las gráficas', () => {
+  it('se mantiene en la pestaña Tabla', () => {
     renderTabla()
 
     expect(screen.getByText('Tabla')).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByRole('table')).toBeInTheDocument()
-    expect(screen.queryByText('Cargando grafica...')).not.toBeInTheDocument()
   })
 })

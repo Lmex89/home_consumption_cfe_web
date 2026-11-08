@@ -2,13 +2,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { message } from 'antd'
 import AddTariffVersionForm from './AddTariffVersionForm'
-import { createTariffVersion } from '../services/householdService'
+import { installFetchMock } from '../test/fetchMock'
 
-vi.mock('../services/householdService', () => ({
-  createTariffVersion: vi.fn(),
-}))
-
-const createdVersion = { id: 11, tariffId: 7, startDate: '2026-01-15', endDate: null }
+const createdVersion = { id: 11, tariff_id: 7, start_date: '2026-01-15', end_date: null }
 
 function renderForm(overrides = {}) {
   const onVersionAdded = overrides.onVersionAdded ?? vi.fn()
@@ -24,6 +20,8 @@ function renderForm(overrides = {}) {
   return { onVersionAdded }
 }
 
+// jsdom sanitiza los valores inválidos de un input type="date"; este helper
+// inyecta el valor ISO que el formulario necesita sin simular tecleo.
 function setDate(label, value) {
   fireEvent.change(screen.getByLabelText(label), { target: { value } })
 }
@@ -33,11 +31,15 @@ async function submit(user) {
 }
 
 describe('Formulario de Versión de tarifa', () => {
+  let fetchMock
+
   beforeEach(() => {
-    vi.mocked(createTariffVersion).mockReset()
+    localStorage.clear()
+    fetchMock = installFetchMock()
   })
 
   afterEach(() => {
+    fetchMock.restore()
     message.destroy()
   })
 
@@ -50,14 +52,11 @@ describe('Formulario de Versión de tarifa', () => {
     expect(
       await screen.findByText('La fecha de inicio es obligatoria.'),
     ).toBeInTheDocument()
-    expect(createTariffVersion).not.toHaveBeenCalled()
+    expect(fetchMock.calls).toHaveLength(0)
   })
 
-  it('envía tariffId, startDate y endDate null cuando la fecha de fin está vacía', async () => {
-    vi.mocked(createTariffVersion).mockResolvedValue({
-      success: true,
-      tariffVersion: createdVersion,
-    })
+  it('envía tariff_id, start_date y end_date null cuando la fecha de fin está vacía', async () => {
+    fetchMock.on('POST', '/tariff-versions', { status: 201, json: createdVersion })
     renderForm()
     const user = userEvent.setup()
 
@@ -65,15 +64,20 @@ describe('Formulario de Versión de tarifa', () => {
     await submit(user)
 
     await waitFor(() => {
-      expect(createTariffVersion).toHaveBeenCalledWith(7, '2026-01-15', null)
+      expect(fetchMock.lastJsonBody()).toEqual({
+        tariff_id: 7,
+        start_date: '2026-01-15',
+        end_date: null,
+      })
+    })
+    expect(fetchMock.lastCall()).toMatchObject({
+      method: 'POST',
+      url: expect.stringContaining('/tariff-versions'),
     })
   })
 
   it('muestra el mensaje de éxito, notifica al padre y limpia el formulario', async () => {
-    vi.mocked(createTariffVersion).mockResolvedValue({
-      success: true,
-      tariffVersion: createdVersion,
-    })
+    fetchMock.on('POST', '/tariff-versions', { status: 201, json: createdVersion })
     const { onVersionAdded } = renderForm()
     const user = userEvent.setup()
 
@@ -93,9 +97,10 @@ describe('Formulario de Versión de tarifa', () => {
   })
 
   it('muestra el mensaje del backend cuando la creación falla', async () => {
-    vi.mocked(createTariffVersion).mockRejectedValue(
-      new Error('La versión de tarifa se traslapa con una existente.'),
-    )
+    fetchMock.on('POST', '/tariff-versions', {
+      status: 500,
+      json: { detail: 'La versión de tarifa se traslapa con una existente.' },
+    })
     vi.spyOn(console, 'error').mockImplementation(() => {})
     const { onVersionAdded } = renderForm()
     const user = userEvent.setup()
