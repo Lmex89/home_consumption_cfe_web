@@ -1,8 +1,8 @@
 import { apiEndpoints, backendConfig, buildApiUrl } from '../config/apiConfig'
 import { requestApi } from '../lib/apiClient'
 
-export async function listHouseholds() {
-  const households = await requestApi(apiEndpoints.households, {
+export async function listHouseholds(request = requestApi) {
+  const households = await request(apiEndpoints.households, {
     query: { limit: 500, offset: 0 },
   })
 

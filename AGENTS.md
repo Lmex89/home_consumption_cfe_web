@@ -243,6 +243,9 @@ npm run test:coverage   # vitest run --coverage — v8 report in coverage/
 
 `npm test` runs the suite once; use `npx vitest` for watch mode. `npm run test:coverage` writes an informational report to the gitignored `coverage/` directory (`text` and `html` reporters); it excludes `src/main.jsx` (imports the PWA virtual module) and `src/test/**` (setup and fetch mock), so the report measures product code only. **There is no coverage threshold**, and the suite **does not run in CI** (the repo has no CI workflow and no coverage gate); `npm run lint` remains the only automated check.
 
+`src/services/householdRequester.test.js` demonstrates a browser-free Node test with an injected fake request function. `listHouseholds` accepts this optional requester and defaults to `requestApi` for application callers; the shared test setup only installs browser shims when `window` exists.
+The Vitest test timeout is 30 seconds so UI tests remain reliable on busy local and CI machines.
+
 **Node caveat**: Vitest 5 declares Node ≥22.12. The suite passes on the Node 20.20.2 installed via nvm on this machine, but prefer Node 22+/24 for tests when available. On Node 20 a *failing* test can crash the reporter while printing the failure (`Map.groupBy` is missing there), so trust the exit code and the failing file names instead of the tail of the console output.
 
 ### Conventions
