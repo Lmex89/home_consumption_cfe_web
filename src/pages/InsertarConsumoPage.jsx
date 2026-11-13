@@ -5,7 +5,7 @@ import ConsumptionTable from '../components/ConsumptionTable'
 import MetricCard from '../components/MetricCard'
 import { useHouseholds } from '../hooks/useHouseholds'
 import { useMeterReadingsPagination } from '../hooks/useMeterReadingsPagination'
-import { createConsumption, getDashboardConsumptions } from '../services/consumoService'
+import { createConsumption, listLatestPeriodReadings } from '../services/consumoService'
 import styles from './InsertarConsumoPage.module.css'
 
 function InsertarConsumoPage() {
@@ -39,8 +39,8 @@ function InsertarConsumoPage() {
     setError('')
 
     try {
-      const updatedData = await getDashboardConsumptions({ householdId })
-      setLatestItems(updatedData.items)
+      const items = await listLatestPeriodReadings(householdId)
+      setLatestItems(items)
     } catch {
       setError('No fue posible cargar el historial del household seleccionado.')
       setLatestItems([])

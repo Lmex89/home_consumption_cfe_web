@@ -1,4 +1,4 @@
-import { getDashboardConsumptions } from './consumoService'
+import { loadDashboardData } from './dashboardData'
 
 const periods = [
   { id: 1, start_date: '2026-01-01', end_date: '2026-02-28' },
@@ -67,12 +67,12 @@ function fakeRequester({ withoutPeriods = false, failCost = false, failHistory =
 
 describe('Paridad del Dashboard', () => {
   it('con Periodos devuelve Lecturas ordenadas, resumen, Desglose e historial completos', async () => {
-    const { items, summary, billing, chart } = await getDashboardConsumptions({ householdId: 7 }, fakeRequester())
+    const { items, summary, billing, chart } = await loadDashboardData({ householdId: 7, billingPeriodId: 2 }, fakeRequester())
     expect({ items, summary, billing, chart }).toEqual({ items: expectedItems, summary: expectedSummary, billing: expectedBilling, chart: expectedChart })
   })
 
   it('sin Periodos conserva las Lecturas y devuelve Desglose e historial vacíos', async () => {
-    const { items, summary, billing, chart } = await getDashboardConsumptions({ householdId: 7 }, fakeRequester({ withoutPeriods: true }))
+    const { items, summary, billing, chart } = await loadDashboardData({ householdId: 7 }, fakeRequester({ withoutPeriods: true }))
     expect({ items, summary, billing, chart }).toEqual({
       items: [{ id: 9, householdId: 7, fecha: '2026-01-01', kWh: 10, note: '', isInitial: false }, ...expectedItems],
       summary: { ...expectedSummary, total: 560, average: 83.33333333333333, min: 10, accumulated: 170 },
@@ -81,12 +81,12 @@ describe('Paridad del Dashboard', () => {
   })
 
   it('conserva las Lecturas y el historial cuando falla el costo', async () => {
-    const { items, summary, billing, chart } = await getDashboardConsumptions({ householdId: 7 }, fakeRequester({ failCost: true }))
+    const { items, summary, billing, chart } = await loadDashboardData({ householdId: 7, billingPeriodId: 2 }, fakeRequester({ failCost: true }))
     expect({ items, summary, billing, chart }).toEqual({ items: expectedItems, summary: expectedSummary, billing: emptyBilling, chart: expectedChart })
   })
 
   it('conserva las Lecturas y el Desglose cuando falla el historial', async () => {
-    const { items, summary, billing, chart } = await getDashboardConsumptions({ householdId: 7 }, fakeRequester({ failHistory: true }))
+    const { items, summary, billing, chart } = await loadDashboardData({ householdId: 7, billingPeriodId: 2 }, fakeRequester({ failHistory: true }))
     expect({ items, summary, billing, chart }).toEqual({ items: expectedItems, summary: expectedSummary, billing: expectedBilling, chart: { readings: [] } })
   })
 })
