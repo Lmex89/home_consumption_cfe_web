@@ -105,8 +105,8 @@ function buildBilling(costDashboard) {
   }
 }
 
-async function getLatestBillingPeriodId(householdId) {
-  const periods = await fetchBillingPeriods(householdId)
+async function getLatestBillingPeriodId(householdId, requester) {
+  const periods = await fetchBillingPeriods(householdId, requester)
 
   if (!Array.isArray(periods) || periods.length === 0) {
     return null
@@ -119,8 +119,8 @@ async function getLatestBillingPeriodId(householdId) {
   return sortedPeriods.at(-1)?.id ?? null
 }
 
-export async function fetchBillingPeriods(householdId) {
-  const periods = await requestApi(apiEndpoints.billingPeriods, {
+export async function fetchBillingPeriods(householdId, requester = requestApi) {
+  const periods = await requester(apiEndpoints.billingPeriods, {
     query: {
       household_id: householdId,
       limit: LIMITS.billingPeriods,
@@ -172,12 +172,12 @@ export async function listHouseholds() {
   }))
 }
 
-export async function getDashboardConsumptions(filters = {}) {
+export async function getDashboardConsumptions(filters = {}, requester = requestApi) {
   const householdFilter = filters.householdId ? Number(filters.householdId) : undefined
   const billingPeriodFilter = filters.billingPeriodId ? Number(filters.billingPeriodId) : undefined
 
   // First, fetch all readings with basic filters
-  const rawReadings = await requestApi(apiEndpoints.meterReadings, {
+  const rawReadings = await requester(apiEndpoints.meterReadings, {
     query: {
       household_id: householdFilter,
       reading_date_from: filters.startDate,
@@ -199,18 +199,18 @@ export async function getDashboardConsumptions(filters = {}) {
 
   if (householdId) {
     if (!billingPeriodId) {
-      billingPeriodId = await getLatestBillingPeriodId(householdId)
+      billingPeriodId = await getLatestBillingPeriodId(householdId, requester)
     }
 
     if (billingPeriodId) {
       try {
-        costDashboard = await requestApi(apiEndpoints.billingPeriodDashboard(billingPeriodId))
+        costDashboard = await requester(apiEndpoints.billingPeriodDashboard(billingPeriodId))
       } catch {
         costDashboard = null
       }
 
       // Fetch billing period dates to filter readings within the period range
-      const periods = await fetchBillingPeriods(householdId)
+      const periods = await fetchBillingPeriods(householdId, requester)
       const period = periods.find((p) => p.id === billingPeriodId)
       if (period) {
         billingPeriodDates = {
@@ -227,7 +227,7 @@ export async function getDashboardConsumptions(filters = {}) {
   // If we have a billing period, filter readings by date range
   // since the backend may not support billing_period_id filtering
   if (householdId && billingPeriodDates) {
-    const periodReadingsRaw = await requestApi(apiEndpoints.meterReadings, {
+    const periodReadingsRaw = await requester(apiEndpoints.meterReadings, {
       query: {
         household_id: householdId,
         reading_date_from: billingPeriodDates.start,
@@ -248,7 +248,7 @@ export async function getDashboardConsumptions(filters = {}) {
 
   if (householdId && billingPeriodId) {
     try {
-      const historyDashboard = await requestApi(apiEndpoints.meterReadingsDashboard(householdId), {
+      const historyDashboard = await requester(apiEndpoints.meterReadingsDashboard(householdId), {
         query: {
           billing_period_id: billingPeriodId,
         },
