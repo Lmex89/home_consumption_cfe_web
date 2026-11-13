@@ -31,6 +31,10 @@ it('reutiliza Periodos al cambiar de Periodo activo', async () => {
   const requester = vi.fn(async (url) => url === '/meter-readings' ? [] : {})
   const result = await loadDashboardData({ householdId: 7, billingPeriodId: 2, periods }, requester)
   expect(result.billingPeriodId).toBe(2)
+  expect(result.billingPeriods).toEqual([
+    { value: 2, label: '2026-03-01 - 2026-04-01', startDate: '2026-03-01', endDate: '2026-04-01' },
+    { value: 1, label: '2026-01-01 - 2026-02-01', startDate: '2026-01-01', endDate: '2026-02-01' },
+  ])
   expect(requester.mock.calls.some(([url]) => url === '/billing-periods')).toBe(false)
   expect(requester.mock.calls.find(([url]) => url === '/meter-readings')[1].query).toMatchObject({ reading_date_from: '2026-03-01', reading_date_to: '2026-04-01' })
 })

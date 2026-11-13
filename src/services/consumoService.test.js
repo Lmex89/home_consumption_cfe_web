@@ -3,6 +3,7 @@ import {
   fetchAllMeterReadings,
   fetchBillingPeriods,
   listBillingPeriods,
+  normalizeBillingPeriods,
   updateConsumption,
 } from './consumoService'
 import { installFetchMock } from '../test/fetchMock'
@@ -220,5 +221,20 @@ describe('consumoService', () => {
       await expect(listBillingPeriods(null)).resolves.toEqual([])
       expect(fetchMock.calls).toHaveLength(0)
     })
+  })
+
+  it('normaliza Periodos sin mutar la lista y conserva etiquetas de fechas ausentes', () => {
+    const periods = [
+      { id: 1, start_date: null, end_date: null },
+      { id: 2, start_date: '2026-10-01', end_date: '2026-11-30' },
+    ]
+    const original = structuredClone(periods)
+
+    expect(normalizeBillingPeriods(periods)).toEqual([
+      { value: 2, label: '2026-10-01 - 2026-11-30', startDate: '2026-10-01', endDate: '2026-11-30' },
+      { value: 1, label: 'N/A - N/A', startDate: null, endDate: null },
+    ])
+    expect(periods).toEqual(original)
+    expect(normalizeBillingPeriods([])).toEqual([])
   })
 })

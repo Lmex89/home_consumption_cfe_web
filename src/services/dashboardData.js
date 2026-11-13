@@ -1,6 +1,6 @@
 import { apiEndpoints, buildApiUrl } from '../config/apiConfig'
 import { requestApi } from '../lib/apiClient'
-import { fetchBillingPeriods, normalizeReading } from './consumoService'
+import { fetchBillingPeriods, normalizeBillingPeriods, normalizeReading } from './consumoService'
 
 function toNumber(value) {
   const parsed = Number(value)
@@ -85,12 +85,7 @@ function buildBilling(costDashboard) {
 
 export async function loadDashboardData({ householdId, billingPeriodId, periods, startDate, endDate }, requester = requestApi) {
   const rawPeriods = periods ?? await fetchBillingPeriods(householdId, requester)
-  const billingPeriods = rawPeriods.map((period) => ({
-    value: period.id,
-    label: `${period.start_date || 'N/A'} - ${period.end_date || 'N/A'}`,
-    startDate: period.start_date,
-    endDate: period.end_date,
-  })).sort((a, b) => b.endDate.localeCompare(a.endDate))
+  const billingPeriods = normalizeBillingPeriods(rawPeriods)
   const now = new Date()
   const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-')
   const active = billingPeriods.find((period) => period.value === Number(billingPeriodId))

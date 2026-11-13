@@ -41,10 +41,13 @@ export async function fetchBillingPeriods(householdId, requester = requestApi) {
   return Array.isArray(periods) ? periods : []
 }
 
-function formatPeriodOption(period) {
-  const start = period.start_date || 'N/A'
-  const end = period.end_date || 'N/A'
-  return `${start} - ${end}`
+export function normalizeBillingPeriods(periods) {
+  return periods.map((period) => ({
+    value: period.id,
+    label: `${period.start_date || 'N/A'} - ${period.end_date || 'N/A'}`,
+    startDate: period.start_date,
+    endDate: period.end_date,
+  })).sort((left, right) => (right.endDate || '').localeCompare(left.endDate || ''))
 }
 
 async function resolveDefaultHouseholdId() {
@@ -103,18 +106,7 @@ export async function listBillingPeriods(householdId) {
     return []
   }
 
-  const periods = await fetchBillingPeriods(householdId)
-
-  const sortedPeriods = [...periods].sort(
-    (left, right) => new Date(right.end_date).getTime() - new Date(left.end_date).getTime(),
-  )
-
-  return sortedPeriods.map((period) => ({
-    value: period.id,
-    label: formatPeriodOption(period),
-    startDate: period.start_date,
-    endDate: period.end_date,
-  }))
+  return normalizeBillingPeriods(await fetchBillingPeriods(householdId))
 }
 
 export async function fetchAllMeterReadings(householdId) {
