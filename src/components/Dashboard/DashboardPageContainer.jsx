@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  getDashboardConsumptions,
-  listBillingPeriods,
   updateConsumption,
 } from '../../services/consumoService'
+import { loadDashboardData } from '../../services/dashboardData'
 import { useHouseholds } from '../../hooks/useHouseholds'
 import { useMeterReadingsPagination } from '../../hooks/useMeterReadingsPagination'
 import DashboardPage from './DashboardPage'
@@ -21,6 +20,7 @@ function DashboardPageContainer() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const latestRequestIdRef = useRef(0)
+  const periodsRef = useRef(null)
 
   const {
     households,
@@ -43,135 +43,62 @@ function DashboardPageContainer() {
     enableShowAll: true,
   })
 
-  /**
-   * Load dashboard data for a specific household and billing period
-   */
-  const loadDashboard = useCallback(async ({ householdId, billingPeriodId }) => {
+  const loadDashboard = useCallback(async ({ householdId, billingPeriodId, periods }) => {
     const requestId = ++latestRequestIdRef.current
     setIsLoading(true)
     setError('')
-
     try {
-      const data = await getDashboardConsumptions({
-        householdId,
-        billingPeriodId,
-      })
+      const data = await loadDashboardData({ householdId, billingPeriodId, periods })
       if (latestRequestIdRef.current !== requestId) return
+      periodsRef.current = data.periods
+      setBillingPeriods(data.billingPeriods)
+      setSelectedBillingPeriodId(data.billingPeriodId)
       setDashboardData(data)
     } catch {
-      if (latestRequestIdRef.current !== requestId) return
-      setError('No fue posible cargar los datos del dashboard.')
-    } finally {
       if (latestRequestIdRef.current === requestId) {
-        setIsLoading(false)
+        setError('No fue posible cargar los datos del dashboard.')
       }
+    } finally {
+      if (latestRequestIdRef.current === requestId) setIsLoading(false)
     }
   }, [])
 
-  /**
-   * Initialize dashboard on mount and when households load
-   */
   useEffect(() => {
     if (isLoadingHouseholds) return
-
-    // Without households there is nothing to fetch: stop the skeleton and
-    // surface why (network failure or an account with no households).
     if (households.length === 0) {
       setIsLoading(false)
       setError(householdsError || 'No hay viviendas registradas.')
       return
     }
-
-    let isMounted = true
-
-    const initialize = async () => {
-      setIsLoading(true)
-      setError('')
-
-      try {
-        const hasDefaultHousehold = households.some((h) => h.value === 1)
-        const initialHouseholdId = hasDefaultHousehold ? 1 : (households[0]?.value ?? 1)
-
-        const periods = await listBillingPeriods(initialHouseholdId)
-        const today = new Date().toISOString().slice(0, 10)
-        const currentPeriod = periods.find(
-          (p) => today >= p.startDate && today <= p.endDate,
-        )
-        const initialBillingPeriodId = currentPeriod?.value ?? periods[0]?.value ?? null
-
-        if (!isMounted) return
-
-        setSelectedHouseholdId(initialHouseholdId)
-        setBillingPeriods(periods)
-        setSelectedBillingPeriodId(initialBillingPeriodId)
-
-        const data = await getDashboardConsumptions({
-          householdId: initialHouseholdId,
-          billingPeriodId: initialBillingPeriodId,
-        })
-        if (isMounted) {
-          setDashboardData(data)
-        }
-      } catch {
-        if (isMounted) {
-          setError('No fue posible cargar los datos del dashboard.')
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    initialize()
-
-    return () => {
-      isMounted = false
-    }
-  }, [households, isLoadingHouseholds, householdsError])
-
-  /**
-   * Handle household selection change
-   */
-  const handleHouseholdChange = async (householdId) => {
+    const householdId = households.some((h) => h.value === 1) ? 1 : households[0].value
     setSelectedHouseholdId(householdId)
+    loadDashboard({ householdId })
+    const requestCounter = latestRequestIdRef
+    return () => { requestCounter.current++ }
+  }, [households, isLoadingHouseholds, householdsError, loadDashboard])
+
+  const handleHouseholdChange = (householdId) => {
+    setSelectedHouseholdId(householdId)
+    periodsRef.current = null
     resetPagination()
-
-    try {
-      const periods = await listBillingPeriods(householdId)
-      const today = new Date().toISOString().slice(0, 10)
-      const currentPeriod = periods.find(
-        (p) => today >= p.startDate && today <= p.endDate,
-      )
-      const nextBillingPeriodId = currentPeriod?.value ?? periods[0]?.value ?? null
-
-      setBillingPeriods(periods)
-      setSelectedBillingPeriodId(nextBillingPeriodId)
-      await loadDashboard({ householdId, billingPeriodId: nextBillingPeriodId })
-    } catch {
-      setBillingPeriods([])
-      setSelectedBillingPeriodId(null)
-      await loadDashboard({ householdId, billingPeriodId: null })
-    }
+    return loadDashboard({ householdId })
   }
 
-  /**
-   * Handle billing period selection change
-   */
-  const handleBillingPeriodChange = async (billingPeriodId) => {
+  const handleBillingPeriodChange = (billingPeriodId) => {
     setSelectedBillingPeriodId(billingPeriodId)
     resetPagination()
-    await loadDashboard({ householdId: selectedHouseholdId, billingPeriodId })
+    return loadDashboard({ householdId: selectedHouseholdId, billingPeriodId, periods: periodsRef.current })
   }
 
-  /**
-   * Handle meter reading update
-   */
   const handleUpdateReading = async (meterReadingId, values) => {
+    const requestId = latestRequestIdRef.current
     await updateConsumption(meterReadingId, values)
+    if (requestId !== latestRequestIdRef.current) return
+    resetPagination()
     await loadDashboard({
       householdId: selectedHouseholdId,
       billingPeriodId: selectedBillingPeriodId,
+      periods: periodsRef.current,
     })
   }
 

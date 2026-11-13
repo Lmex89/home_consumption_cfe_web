@@ -1,7 +1,7 @@
 // Shared test setup: jest-dom matchers plus the browser APIs Ant Design expects in jsdom.
 import '@testing-library/jest-dom/vitest'
 
-window.matchMedia = (query) => ({
+if (typeof window !== 'undefined') window.matchMedia = (query) => ({
   matches: false,
   media: query,
   onchange: null,

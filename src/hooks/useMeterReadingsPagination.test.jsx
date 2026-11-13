@@ -199,4 +199,44 @@ describe('useMeterReadingsPagination en las Lecturas', () => {
 
     expect(result.current.displayItems.map((item) => item.id)).toEqual([101, 102])
   })
+
+  it.each(['éxito', 'error'])('ignora el %s tardío de Mostrar todo tras cambiar de Hogar', async (outcome) => {
+    let finishOld
+    let finishNew
+    globalThis.fetch = vi.fn()
+      .mockImplementationOnce(() => new Promise((resolve) => { finishOld = resolve }))
+      .mockImplementationOnce(() => new Promise((resolve) => { finishNew = resolve }))
+    const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const { result, rerender } = renderHook(
+        ({ householdId }) => useMeterReadingsPagination({ periodItems: [], householdId }),
+        { initialProps: { householdId: 1 } },
+      )
+      let oldRequest
+      act(() => { oldRequest = result.current.handleToggleShowAll() })
+      expect(result.current.isLoadingAll).toBe(true)
+      act(() => result.current.resetPagination())
+      rerender({ householdId: 2 })
+      expect(result.current.isLoadingAll).toBe(false)
+      let newRequest
+      act(() => { newRequest = result.current.handleToggleShowAll() })
+      await act(async () => {
+        finishOld(outcome === 'éxito'
+          ? new Response(JSON.stringify([lecturaApi(1, '2026-11-01')]), { status: 200 })
+          : new Response('fallo', { status: 500 }))
+        await oldRequest
+      })
+      expect(result.current.isLoadingAll).toBe(true)
+      expect(result.current.allItems).toBeNull()
+      expect(errorLog).not.toHaveBeenCalled()
+      await act(async () => {
+        finishNew(new Response(JSON.stringify([{ ...lecturaApi(2, '2026-11-02'), household_id: 2 }]), { status: 200 }))
+        await newRequest
+      })
+      expect(result.current.isLoadingAll).toBe(false)
+      expect(result.current.displayItems.map((item) => item.householdId)).toEqual([2])
+    } finally {
+      errorLog.mockRestore()
+    }
+  })
 })
