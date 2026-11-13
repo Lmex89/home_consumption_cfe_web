@@ -94,6 +94,7 @@ function DashboardPageContainer() {
     const requestId = latestRequestIdRef.current
     await updateConsumption(meterReadingId, values)
     if (requestId !== latestRequestIdRef.current) return
+    resetPagination()
     await loadDashboard({
       householdId: selectedHouseholdId,
       billingPeriodId: selectedBillingPeriodId,
