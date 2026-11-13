@@ -1,21 +1,10 @@
 import { apiEndpoints, buildApiUrl } from '../config/apiConfig'
 import { requestApi } from '../lib/apiClient'
-import { fetchBillingPeriods } from './consumoService'
+import { fetchBillingPeriods, normalizeReading } from './consumoService'
 
 function toNumber(value) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
-}
-
-function normalizeReading(reading) {
-  return {
-    id: reading.id,
-    householdId: reading.household_id,
-    fecha: reading.reading_date,
-    kWh: toNumber(reading.reading_kwh),
-    note: reading.is_initial ? 'Lectura inicial' : '',
-    isInitial: Boolean(reading.is_initial),
-  }
 }
 
 function normalizeDashboardReading(reading) {

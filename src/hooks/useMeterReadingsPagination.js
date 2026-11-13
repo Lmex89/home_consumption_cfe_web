@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { fetchAllMeterReadings } from '../services/consumoService'
 
 /**
@@ -17,6 +17,7 @@ export function useMeterReadingsPagination({ periodItems, householdId, enableSho
   const [pageSize, setPageSize] = useState(10)
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoadingAll, setIsLoadingAll] = useState(false)
+  const requestIdRef = useRef(0)
 
   // Sort period items in descending order (newest first)
   const sortedPeriodItems = useMemo(
@@ -39,14 +40,15 @@ export function useMeterReadingsPagination({ periodItems, householdId, enableSho
 
     // Fetch all items if switching to "show all" and not already loaded
     if (newShowAll && !allItems && householdId && enableShowAll) {
+      const requestId = ++requestIdRef.current
       setIsLoadingAll(true)
       try {
         const readings = await fetchAllMeterReadings(householdId)
-        setAllItems(readings)
+        if (requestId === requestIdRef.current) setAllItems(readings)
       } catch (error) {
-        console.error('Error fetching all meter readings:', error)
+        if (requestId === requestIdRef.current) console.error('Error fetching all meter readings:', error)
       } finally {
-        setIsLoadingAll(false)
+        if (requestId === requestIdRef.current) setIsLoadingAll(false)
       }
     }
   }
@@ -71,9 +73,11 @@ export function useMeterReadingsPagination({ periodItems, householdId, enableSho
       }
 
   const resetPagination = () => {
+    requestIdRef.current++
     setShowAll(false)
     setAllItems(null)
     setCurrentPage(1)
+    setIsLoadingAll(false)
   }
 
   return {

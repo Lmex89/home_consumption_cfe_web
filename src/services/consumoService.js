@@ -18,7 +18,7 @@ function toNumber(value) {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-function normalizeReading(reading) {
+export function normalizeReading(reading) {
   return {
     id: reading.id,
     householdId: reading.household_id,

@@ -71,8 +71,8 @@ describe('Paridad del Dashboard', () => {
     expect({ items, summary, billing, chart }).toEqual({ items: expectedItems, summary: expectedSummary, billing: expectedBilling, chart: expectedChart })
   })
 
-  it('sin Periodos conserva las Lecturas y devuelve Desglose e historial vacíos', async () => {
-    const { items, summary, billing, chart } = await loadDashboardData({ householdId: 7 }, fakeRequester({ withoutPeriods: true }))
+  it.each([undefined, 2])('sin Periodos conserva las Lecturas con Periodo solicitado %s', async (billingPeriodId) => {
+    const { items, summary, billing, chart } = await loadDashboardData({ householdId: 7, billingPeriodId }, fakeRequester({ withoutPeriods: true }))
     expect({ items, summary, billing, chart }).toEqual({
       items: [{ id: 9, householdId: 7, fecha: '2026-01-01', kWh: 10, note: '', isInitial: false }, ...expectedItems],
       summary: { ...expectedSummary, total: 560, average: 83.33333333333333, min: 10, accumulated: 170 },

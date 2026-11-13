@@ -33,6 +33,16 @@ beforeEach(() => {
 })
 
 it.each([
+  [[{ value: 2 }, { value: 1 }, { value: 3 }], 1],
+  [[{ value: 2 }, { value: 3 }], 2],
+])('selecciona el Hogar inicial correcto', async (households, expectedId) => {
+  householdState.current = { households, isLoading: false }
+  render(<DashboardPageContainer />)
+  await waitFor(() => expect(loadDashboardData).toHaveBeenCalledWith({ householdId: expectedId }))
+  expect(await screen.findByTestId('data')).toHaveTextContent(String(expectedId))
+})
+
+it.each([
   ['Hogar', 'Hogar 2', 'Hogar 3', 'householdId'],
   ['Periodo', 'Periodo 2', 'Periodo 3', 'billingPeriodId'],
 ])('mantiene el último %s activo cuando termina después una carga anterior', async (_, first, second, key) => {
